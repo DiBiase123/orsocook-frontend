@@ -148,7 +148,6 @@ class RecipeService extends ChangeNotifier {
     try {
       final authHeaders = await _getAuthHeaders();
       final response = await _dio.post(
-        // 🔥 CAMBIATO DA PUT A POST
         '/recipes',
         data: recipe.toJson(),
         options: Options(headers: authHeaders),
@@ -196,33 +195,50 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
+  // ✅ MODIFICATO: Aggiunto parametro imageFile opzionale per update
   Future<Recipe?> updateRecipe(String id, Recipe recipe,
       {File? imageFile}) async {
-    AppLogger.debug('🔵🔵🔵 updateRecipe INIZIO - id: $id');
+    try {
+      final authHeaders = await _getAuthHeaders();
 
-    final authHeaders = await _getAuthHeaders();
-    AppLogger.debug('🔵🔵🔵 Auth headers: ${authHeaders.keys}');
+      final response = await _dio.put(
+        '/recipes/$id',
+        data: recipe.toJson(),
+        options: Options(headers: authHeaders),
+      );
 
-    AppLogger.debug('🔵🔵🔵 Chiamata PUT /recipes/$id');
-    final response = await _dio.put(
-      '/recipes/$id',
-      data: recipe.toJson(),
-      options: Options(headers: authHeaders),
-    );
+      if (response.data['success'] != true) return null;
 
-    AppLogger.debug('🔵🔵🔵 response status: ${response.statusCode}');
-    AppLogger.debug('🔵🔵🔵 response data: ${response.data}');
+      final json = response.data['data'] as Map<String, dynamic>;
+      final updatedRecipe = Recipe.fromJson(json);
 
-    if (response.data['success'] != true) {
-      AppLogger.error('❌ success = false: ${response.data['message']}');
+      final index = _cachedRecipes.indexWhere((r) => r.id == id);
+      if (index != -1) {
+        _cachedRecipes[index] = updatedRecipe;
+        notifyListeners();
+      }
+
+      // ✅ SE C'È UNA NUOVA IMMAGINE, CARICALA
+      if (imageFile != null) {
+        AppLogger.api('Upload nuova immagine per ricetta: $id');
+        final imageUrl = await uploadRecipeImage(id, imageFile);
+        if (imageUrl != null) {
+          // ✅ AGGIORNA LA RICETTA NELLA CACHE CON IL NUOVO URL
+          final updateIndex = _cachedRecipes.indexWhere((r) => r.id == id);
+          if (updateIndex != -1) {
+            final recipeWithImage =
+                _cachedRecipes[updateIndex].copyWith(imageUrl: imageUrl);
+            _cachedRecipes[updateIndex] = recipeWithImage;
+            notifyListeners();
+          }
+        }
+      }
+
+      return updatedRecipe;
+    } catch (e) {
+      AppLogger.error('Errore aggiornamento', e);
       return null;
     }
-
-    final json = response.data['data'] as Map<String, dynamic>;
-    final updatedRecipe = Recipe.fromJson(json);
-    AppLogger.debug('✅ Recipe aggiornata: ${updatedRecipe.title}');
-
-    // ... resto del codice (cache, upload immagine) ...
   }
 
   Future<bool> deleteRecipe(String id) async {
@@ -247,11 +263,6 @@ class RecipeService extends ChangeNotifier {
   }
 
   Future<String?> uploadRecipeImage(String recipeId, File imageFile) async {
-    // 🔥🔥🔥 DEBUG 🔥🔥🔥
-    AppLogger.debug('🚀🚀🚀 UPLOAD CHIAMATO! recipeId: $recipeId');
-    AppLogger.debug('📁 File path: ${imageFile.path}');
-    AppLogger.debug('📏 File size: ${await imageFile.length()}');
-    // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
     try {
       final authHeaders = await _authService.getAuthHeaders();
       final token = authHeaders['Authorization']?.replaceFirst('Bearer ', '');
@@ -267,8 +278,9 @@ class RecipeService extends ChangeNotifier {
           filename: path.basename(imageFile.path),
         ),
       });
-      final response = await _dio.put(
-        '/recipes/$recipeId/image',
+
+      final response = await _dio.post(
+        '/recipes/$recipeId/upload-image',
         data: formData,
         options: Options(
           headers: {
@@ -311,7 +323,7 @@ class RecipeService extends ChangeNotifier {
       if (token == null) return false;
 
       final response = await _dio.delete(
-        '/recipes/$recipeId/image',
+        '/recipes/$recipeId/remove-image',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

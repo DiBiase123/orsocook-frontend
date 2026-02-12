@@ -217,6 +217,24 @@ class EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
+  Future<void> _uploadImageIfNeeded(RecipeService recipeService) async {
+    final currentContext = context;
+    if (!currentContext.mounted) return;
+
+    if (_selectedImage != null) {
+      final newImageUrl = await recipeService.uploadRecipeImage(
+        _editedRecipe.id,
+        _selectedImage!,
+      );
+
+      if (newImageUrl != null) {
+        setState(() => _imageUrl = newImageUrl);
+      }
+    } else if (_imageUrl.isEmpty && widget.recipe.imageUrl != null) {
+      await recipeService.removeRecipeImage(_editedRecipe.id);
+    }
+  }
+
   // ========== VALIDAZIONI ==========
   String? _validateRequired(String? value, String fieldName) {
     return (value == null || value.isEmpty)
@@ -368,26 +386,75 @@ class EditRecipeScreenState extends State<EditRecipeScreen> {
 
   // ========== SALVATAGGIO ==========
   Future<void> _saveChanges() async {
-    AppLogger.debug('🔥🔥🔥 _saveChanges INIZIO');
+    final currentContext = context;
+    if (!currentContext.mounted) return;
 
-    final recipeService = Provider.of<RecipeService>(context, listen: false);
+    if (!_formKey.currentState!.validate()) return;
+    if (_editedRecipe.ingredients.isEmpty) {
+      _showSnackBar('Aggiungi almeno un ingrediente', Colors.orange);
+      return;
+    }
+    if (_editedRecipe.instructions.isEmpty) {
+      _showSnackBar('Aggiungi almeno un passo del procedimento', Colors.orange);
+      return;
+    }
 
-    // 📌 Usa un'immagine FISSA che siamo sicuri esista
-    final testImage =
-        File('/home/flutter_211/Documents/progetto_ricette/test_image.jpg');
+    setState(() => _isSaving = true);
 
-    final result = await recipeService.updateRecipe(
-      _editedRecipe.id,
-      _editedRecipe,
-      imageFile: testImage,
-    );
+    final recipeService =
+        Provider.of<RecipeService>(currentContext, listen: false);
 
-    AppLogger.debug('🔥🔥🔥 Risultato updateRecipe: $result');
+    try {
+      await _uploadImageIfNeeded(recipeService);
 
-    if (result != null) {
-      _showSnackBar('✅ TEST RIUSCITO', Colors.green);
-    } else {
-      _showSnackBar('❌ TEST FALLITO', Colors.red);
+      final updatedRecipe = Recipe.fromJson({
+        'id': _editedRecipe.id,
+        'title': _titleController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'imageUrl': _imageUrl,
+        'prepTime': int.tryParse(_prepTimeController.text) ?? 0,
+        'cookTime': int.tryParse(_cookTimeController.text) ?? 0,
+        'servings': int.tryParse(_servingsController.text) ?? 1,
+        'difficulty': _editedRecipe.difficulty,
+        'isPublic': _editedRecipe.isPublic,
+        'ingredients': _editedRecipe.ingredients,
+        'instructions': _editedRecipe.instructions,
+        'tags': _editedRecipe.tags,
+      });
+
+      final savedRecipe = await recipeService.updateRecipe(
+        updatedRecipe.id,
+        updatedRecipe,
+      );
+
+      if (currentContext.mounted) {
+        setState(() => _isSaving = false);
+      }
+
+      if (savedRecipe != null) {
+        _showSnackBar(
+            '"${savedRecipe.title}" aggiornata con successo!', Colors.green);
+        if (currentContext.mounted) {
+          Navigator.of(currentContext).pop(savedRecipe);
+        }
+      } else {
+        _showSnackBar('Errore durante l\'aggiornamento', Colors.red);
+      }
+    } catch (e) {
+      if (currentContext.mounted) {
+        setState(() => _isSaving = false);
+      }
+      AppLogger.error('❌ Errore aggiornamento ricetta', e);
+
+      if (e is DioException) {
+        String errorMsg = 'Errore del server';
+        if (e.response?.data is Map && e.response!.data['message'] != null) {
+          errorMsg = e.response!.data['message'];
+        }
+        _showSnackBar('Errore: $errorMsg', Colors.red);
+      } else {
+        _showSnackBar('Errore: ${e.toString().split(".")[0]}', Colors.red);
+      }
     }
   }
 
@@ -599,31 +666,21 @@ class EditRecipeScreenState extends State<EditRecipeScreen> {
                 )),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      AppLogger.debug('🟥🟥🟥 PULSANTE SALVA PREMUTO!');
-                      AppLogger.debug('🟥🟥🟥 _hasChanges: $_hasChanges');
-                      AppLogger.debug('🟥🟥🟥 _isSaving: $_isSaving');
-                      if (_hasChanges && !_isSaving) {
-                        _saveChanges();
-                      } else {
-                        AppLogger.debug('🟥🟥🟥 Condizioni non soddisfatte!');
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Colors.deepOrange,
-                    ),
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : const Text('SALVA MODIFICHE',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: ElevatedButton(
+                  onPressed: _hasChanges && !_isSaving ? _saveChanges : null,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    backgroundColor: Colors.deepOrange,
                   ),
-                ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Text('SALVA MODIFICHE',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                )),
               ]),
               const SizedBox(height: 40),
             ]),
