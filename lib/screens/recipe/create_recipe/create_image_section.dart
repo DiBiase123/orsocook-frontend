@@ -1,17 +1,19 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../utils/logger.dart';
 
 class CreateImageSection extends StatefulWidget {
-  final File? selectedImage;
-  final Function(File?) onImageSelected;
+  final Uint8List? imageBytes;
+  final XFile? selectedImageXFile;
+  final Function(XFile?) onImageSelected;
   final Function() onImageRemoved;
   final Function() pickImage;
 
   const CreateImageSection({
     super.key,
-    required this.selectedImage,
+    required this.imageBytes,
+    required this.selectedImageXFile,
     required this.onImageSelected,
     required this.onImageRemoved,
     required this.pickImage,
@@ -23,29 +25,27 @@ class CreateImageSection extends StatefulWidget {
 
 class _CreateImageSectionState extends State<CreateImageSection> {
   Future<void> _selectImageFromGallery() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 85,
       maxWidth: 1200,
     );
-
     if (image != null) {
-      widget.onImageSelected(File(image.path));
+      widget.onImageSelected(image);
       AppLogger.debug('🖼️ Immagine selezionata: ${image.path}');
     }
   }
 
   Future<void> _selectImageFromCamera() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 85,
       maxWidth: 1200,
     );
-
     if (image != null) {
-      widget.onImageSelected(File(image.path));
+      widget.onImageSelected(image);
       AppLogger.debug('📸 Foto scattata: ${image.path}');
     }
   }
@@ -102,7 +102,7 @@ class _CreateImageSectionState extends State<CreateImageSection> {
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
             const SizedBox(height: 16),
-            if (widget.selectedImage != null)
+            if (widget.selectedImageXFile != null)
               _buildImagePreview()
             else
               _buildAddImageButton(),
@@ -124,19 +124,27 @@ class _CreateImageSectionState extends State<CreateImageSection> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.file(
-              widget.selectedImage!,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return const Center(
-                  child: Icon(
-                    Icons.broken_image,
-                    size: 60,
-                    color: Colors.grey,
+            child: widget.imageBytes != null
+                ? Image.memory(
+                    widget.imageBytes!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          size: 60,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                  )
+                : const Center(
+                    child: Icon(
+                      Icons.image,
+                      size: 60,
+                      color: Colors.grey,
+                    ),
                   ),
-                );
-              },
-            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -146,7 +154,7 @@ class _CreateImageSectionState extends State<CreateImageSection> {
             OutlinedButton.icon(
               icon: const Icon(Icons.camera_alt),
               label: const Text('Cambia Foto'),
-              onPressed: _showImageSourceSelector, // MODIFICATO
+              onPressed: _showImageSourceSelector,
             ),
             OutlinedButton.icon(
               icon: const Icon(Icons.delete, color: Colors.red),
@@ -162,7 +170,7 @@ class _CreateImageSectionState extends State<CreateImageSection> {
 
   Widget _buildAddImageButton() {
     return GestureDetector(
-      onTap: _showImageSourceSelector, // MODIFICATO
+      onTap: _showImageSourceSelector,
       child: Container(
         width: double.infinity,
         height: 180,

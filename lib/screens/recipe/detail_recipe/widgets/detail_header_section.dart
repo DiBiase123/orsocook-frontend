@@ -27,14 +27,16 @@ class DetailHeaderSection extends StatelessWidget {
             const Icon(Icons.person, size: 16, color: Colors.grey),
             const SizedBox(width: 4),
             Text(
-              recipe.author['username'] ?? 'Autore sconosciuto',
+              recipe.author.displayName ??
+                  recipe.author.username ??
+                  'Autore sconosciuto',
               style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(width: 16),
             const Icon(Icons.category, size: 16, color: Colors.grey),
             const SizedBox(width: 4),
             Text(
-              recipe.category['name'] ?? 'Categoria',
+              recipe.category?.name ?? 'Senza categoria',
               style: const TextStyle(color: Colors.grey),
             ),
           ],

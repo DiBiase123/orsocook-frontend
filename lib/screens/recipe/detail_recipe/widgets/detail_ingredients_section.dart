@@ -6,6 +6,24 @@ class DetailIngredientsSection extends StatelessWidget {
 
   const DetailIngredientsSection({super.key, required this.recipe});
 
+  String _formatIngredient(Ingredient ingredient) {
+    final buffer = StringBuffer();
+
+    if (ingredient.quantity != null && ingredient.quantity!.isNotEmpty) {
+      buffer.write(ingredient.quantity);
+    }
+
+    if (ingredient.unit != null && ingredient.unit!.isNotEmpty) {
+      if (buffer.isNotEmpty) buffer.write(' ');
+      buffer.write(ingredient.unit);
+    }
+
+    if (buffer.isNotEmpty) buffer.write(' ');
+    buffer.write(ingredient.name);
+
+    return buffer.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -27,7 +45,7 @@ class DetailIngredientsSection extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      '${ingredient['quantity']} ${ingredient['unit']} ${ingredient['name']}',
+                      _formatIngredient(ingredient),
                       style: const TextStyle(fontSize: 16),
                     ),
                   ),

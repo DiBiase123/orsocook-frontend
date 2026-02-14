@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CreateHeader extends StatelessWidget implements PreferredSizeWidget {
+class CreateHeader extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onBackPressed;
 
@@ -9,9 +9,6 @@ class CreateHeader extends StatelessWidget implements PreferredSizeWidget {
     required this.isLoading,
     required this.onBackPressed,
   });
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {

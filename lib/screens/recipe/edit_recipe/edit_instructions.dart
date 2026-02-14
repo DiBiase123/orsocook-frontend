@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class EditInstructions extends StatefulWidget {
-  final List<dynamic> instructions;
+  final List<Map<String, dynamic>> instructions;
   final TextEditingController instructionController;
   final Function() onAddInstruction;
   final Function(int) onRemoveInstruction;
@@ -23,7 +23,7 @@ class _EditInstructionsState extends State<EditInstructions> {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -39,16 +39,18 @@ class _EditInstructionsState extends State<EditInstructions> {
                     controller: widget.instructionController,
                     maxLines: 2,
                     decoration: const InputDecoration(
-                      labelText: 'Nuovo passo',
+                      labelText: 'Descrizione passo',
                       border: OutlineInputBorder(),
+                      hintText: 'Descrivi il passo...',
                     ),
                     onSubmitted: (_) => widget.onAddInstruction(),
                   ),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.add, color: Colors.green),
+                  icon: const Icon(Icons.add_circle, color: Colors.green),
                   onPressed: widget.onAddInstruction,
+                  tooltip: 'Aggiungi passo',
                 ),
               ],
             ),
@@ -59,39 +61,28 @@ class _EditInstructionsState extends State<EditInstructions> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...widget.instructions
-                  .map((instruction) => _buildInstructionItem(instruction)),
+              ...widget.instructions.asMap().entries.map((entry) {
+                final index = entry.key;
+                final instruction = entry.value;
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue[50],
+                      child: Text('${instruction['step']}'),
+                    ),
+                    title: Text(instruction['description']),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.remove_circle, color: Colors.red),
+                      onPressed: () => widget.onRemoveInstruction(index),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                );
+              }).toList(),
             ],
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInstructionItem(dynamic instruction) {
-    // Estrai i valori direttamente
-    String step = '1';
-    String description = 'Istruzione';
-
-    if (instruction is Map) {
-      final instructionMap = instruction as Map<String, dynamic>;
-      step = instructionMap['step']?.toString() ?? '1';
-      description = instructionMap['description']?.toString() ?? 'Istruzione';
-    }
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue[50],
-          child: Text(step),
-        ),
-        title: Text(description),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () => widget.onRemoveInstruction(
-            widget.instructions.indexOf(instruction),
-          ),
         ),
       ),
     );

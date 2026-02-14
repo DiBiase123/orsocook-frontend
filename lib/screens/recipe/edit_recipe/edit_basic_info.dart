@@ -7,11 +7,11 @@ class EditBasicInfo extends StatefulWidget {
   final TextEditingController cookTimeController;
   final TextEditingController servingsController;
   final String difficulty;
+  final String category;
   final bool isPublic;
   final Function(String) onDifficultyChanged;
+  final Function(String) onCategoryChanged;
   final Function(bool) onIsPublicChanged;
-  final Function(String?, String) validateRequired;
-  final Function(String?, String) validateNumber;
 
   const EditBasicInfo({
     super.key,
@@ -21,11 +21,11 @@ class EditBasicInfo extends StatefulWidget {
     required this.cookTimeController,
     required this.servingsController,
     required this.difficulty,
+    required this.category,
     required this.isPublic,
     required this.onDifficultyChanged,
+    required this.onCategoryChanged,
     required this.onIsPublicChanged,
-    required this.validateRequired,
-    required this.validateNumber,
   });
 
   @override
@@ -33,11 +33,47 @@ class EditBasicInfo extends StatefulWidget {
 }
 
 class _EditBasicInfoState extends State<EditBasicInfo> {
+  // VALIDATORI INTERNI AL COMPONENTE
+  String? _validateRequired(String? value, String fieldName) {
+    if (value == null || value.isEmpty) {
+      return '$fieldName è obbligatorio';
+    }
+    return null;
+  }
+
+  String? _validateTime(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Il tempo è obbligatorio';
+    }
+    final time = int.tryParse(value);
+    if (time == null || time <= 0) {
+      return 'Inserisci un numero valido';
+    }
+    if (time > 600) {
+      return 'Tempo troppo lungo (max 600 min)';
+    }
+    return null;
+  }
+
+  String? _validateServings(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Il numero di porzioni è obbligatorio';
+    }
+    final servings = int.tryParse(value);
+    if (servings == null || servings <= 0) {
+      return 'Inserisci un numero valido';
+    }
+    if (servings > 50) {
+      return 'Numero di porzioni troppo alto';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -49,44 +85,60 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
             TextFormField(
               controller: widget.titleController,
               decoration: const InputDecoration(
-                labelText: 'Titolo *',
+                labelText: 'Titolo della ricetta *',
                 border: OutlineInputBorder(),
+                hintText: 'es. Spaghetti alla Carbonara',
               ),
-              validator: (value) => widget.validateRequired(value, 'Il titolo'),
+              validator: (value) => _validateRequired(value, 'Il titolo'),
             ),
             const SizedBox(height: 16),
             TextFormField(
-              initialValue: widget.descriptionController.text, // CORRETTO
+              controller: widget.descriptionController,
               maxLines: 3,
               decoration: const InputDecoration(
                 labelText: 'Descrizione',
                 border: OutlineInputBorder(),
+                hintText: 'Descrivi brevemente la tua ricetta...',
               ),
-              onChanged: (value) {
-                widget.descriptionController.text = value;
-              },
             ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: _buildNumberField(
-                    widget.prepTimeController,
-                    'Preparazione (min) *',
+                  child: TextFormField(
+                    controller: widget.prepTimeController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Preparazione (min) *',
+                      border: OutlineInputBorder(),
+                      suffixText: 'min',
+                    ),
+                    validator: _validateTime,
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildNumberField(
-                    widget.cookTimeController,
-                    'Cottura (min) *',
+                  child: TextFormField(
+                    controller: widget.cookTimeController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Cottura (min) *',
+                      border: OutlineInputBorder(),
+                      suffixText: 'min',
+                    ),
+                    validator: _validateTime,
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildNumberField(
-                    widget.servingsController,
-                    'Porzioni *',
+                  child: TextFormField(
+                    controller: widget.servingsController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Porzioni *',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: _validateServings,
                   ),
                 ),
               ],
@@ -96,7 +148,8 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: widget.difficulty, // CORRETTO
+                    value:
+                        widget.difficulty.isNotEmpty ? widget.difficulty : null,
                     decoration: const InputDecoration(
                       labelText: 'Difficoltà',
                       border: OutlineInputBorder(),
@@ -124,36 +177,44 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: SwitchListTile(
-                    title: const Text('Pubblica'),
-                    subtitle: const Text('Visibile a tutti'),
-                    value: widget.isPublic,
-                    onChanged: widget.onIsPublicChanged,
+                  child: DropdownButtonFormField<String>(
+                    value: widget.category.isNotEmpty ? widget.category : null,
+                    decoration: const InputDecoration(
+                      labelText: 'Categoria',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      'Antipasti',
+                      'Primi',
+                      'Secondi',
+                      'Contorni',
+                      'Dolci',
+                      'Bevande',
+                    ].map((category) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        widget.onCategoryChanged(value);
+                      }
+                    },
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              title: const Text('Ricetta pubblica'),
+              subtitle: const Text('Visibile a tutti gli utenti'),
+              value: widget.isPublic,
+              onChanged: widget.onIsPublicChanged,
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildNumberField(
-    TextEditingController controller,
-    String label,
-  ) {
-    return TextFormField(
-      initialValue: controller.text, // CORRETTO
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      validator: (value) => widget.validateNumber(value, label.split(' ')[0]),
-      onChanged: (value) {
-        controller.text = value;
-      },
     );
   }
 }

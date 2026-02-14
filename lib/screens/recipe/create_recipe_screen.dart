@@ -1,16 +1,20 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/services/recipe_service.dart';
+import 'package:orsocook/services/cloudinary_upload_service.dart';
+import 'package:orsocook/services/auth_service.dart';
 import 'package:provider/provider.dart';
-import '../../models/recipe.dart';
-import '../../services/recipe_service.dart';
-import '../../utils/logger.dart';
-import 'create_recipe/create_image_section.dart';
+import 'package:orsocook/utils/logger.dart';
+
+// IMPORT CORRETTI
+import 'create_recipe/create_header.dart';
 import 'create_recipe/create_basic_info.dart';
+import 'create_recipe/create_image_section.dart';
 import 'create_recipe/create_ingredients.dart';
 import 'create_recipe/create_instructions.dart';
 import 'create_recipe/create_tags.dart';
-import 'create_recipe/create_header.dart';
 
 class CreateRecipeScreen extends StatefulWidget {
   const CreateRecipeScreen({super.key});
@@ -20,315 +24,257 @@ class CreateRecipeScreen extends StatefulWidget {
 }
 
 class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
-  // ✅ CONTROLLER E VARIABILI
-  late final GlobalKey<FormState> formKey;
-  late final TextEditingController titleController;
-  late final TextEditingController descriptionController;
-  late final TextEditingController prepTimeController;
-  late final TextEditingController cookTimeController;
-  late final TextEditingController servingsController;
+  final _formKey = GlobalKey<FormState>();
 
-  final List<Map<String, dynamic>> ingredients = [];
-  final List<Map<String, dynamic>> instructions = [];
-  final List<String> tags = [];
+  // Controllers
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _prepTimeController = TextEditingController();
+  final _cookTimeController = TextEditingController();
+  final _servingsController = TextEditingController();
 
-  String difficulty = 'MEDIUM';
-  String category = 'Primi';
-  bool isPublic = true;
-  bool isLoading = false;
-  File? selectedImage;
+  // Controllers per ingredienti
+  final _ingredientNameController = TextEditingController();
+  final _ingredientQuantityController = TextEditingController();
+  final _ingredientUnitController = TextEditingController();
 
-  late final TextEditingController ingredientNameController;
-  late final TextEditingController ingredientQuantityController;
-  late final TextEditingController ingredientUnitController;
-  late final TextEditingController instructionController;
-  late final TextEditingController tagController;
+  // Controller per istruzioni
+  final _instructionController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
+  // Controller per tags
+  final _tagController = TextEditingController();
 
-    // ✅ INIZIALIZZAZIONE CONTROLLER
-    formKey = GlobalKey<FormState>();
-    titleController = TextEditingController();
-    descriptionController = TextEditingController();
-    prepTimeController = TextEditingController();
-    cookTimeController = TextEditingController();
-    servingsController = TextEditingController(text: '4');
-    ingredientNameController = TextEditingController();
-    ingredientQuantityController = TextEditingController();
-    ingredientUnitController = TextEditingController();
-    instructionController = TextEditingController();
-    tagController = TextEditingController();
+  // State
+  String _selectedDifficulty = 'MEDIUM';
+  String _selectedCategory = '';
+  bool _isPublic = true;
+  List<Map<String, dynamic>> _ingredients = [];
+  List<Map<String, dynamic>> _instructions = [];
+  List<String> _tags = [];
 
-    AppLogger.recipe('➕ CreateRecipeScreen inizializzata');
-
-    // ✅ DATI DI ESEMPIO (rimuovere in produzione)
-    ingredients.add({'name': 'Farina', 'quantity': '200', 'unit': 'g'});
-    ingredients.add({'name': 'Uova', 'quantity': '2', 'unit': ''});
-    instructions
-        .add({'step': 1, 'description': 'Mescolare gli ingredienti secchi'});
-    instructions
-        .add({'step': 2, 'description': 'Aggiungere le uova e mescolare'});
-    tags.addAll(['facile', 'veloce', 'italiano']);
-  }
+  // Image handling
+  Uint8List? _imageBytes;
+  XFile? _selectedImageXFile;
+  bool _isUploading = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    // ✅ DISPOSE CONTROLLER
-    titleController.dispose();
-    descriptionController.dispose();
-    prepTimeController.dispose();
-    cookTimeController.dispose();
-    servingsController.dispose();
-    ingredientNameController.dispose();
-    ingredientQuantityController.dispose();
-    ingredientUnitController.dispose();
-    instructionController.dispose();
-    tagController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _prepTimeController.dispose();
+    _cookTimeController.dispose();
+    _servingsController.dispose();
+    _ingredientNameController.dispose();
+    _ingredientQuantityController.dispose();
+    _ingredientUnitController.dispose();
+    _instructionController.dispose();
+    _tagController.dispose();
     super.dispose();
-    AppLogger.debug('♻️ CreateRecipeScreen disposed');
   }
 
-  // ==================== METODI IMMAGINE ====================
   Future<void> _pickImage() async {
-    if (!mounted) return;
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Galleria'),
-              onTap: () async {
-                Navigator.pop(context);
-                await _selectImageFromGallery();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Fotocamera'),
-              onTap: () async {
-                Navigator.pop(context);
-                await _selectImageFromCamera();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _selectImageFromGallery() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 85,
       maxWidth: 1200,
     );
-    if (image != null && mounted) {
-      setState(() {
-        selectedImage = File(image.path);
-      });
-    }
-  }
 
-  Future<void> _selectImageFromCamera() async {
-    final picker = ImagePicker();
-    final image = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85,
-      maxWidth: 1200,
-    );
-    if (image != null && mounted) {
+    if (image != null) {
+      final bytes = await image.readAsBytes();
       setState(() {
-        selectedImage = File(image.path);
+        _selectedImageXFile = image;
+        _imageBytes = bytes;
       });
     }
   }
 
   void _removeImage() {
-    if (!mounted) return;
-    setState(() => selectedImage = null);
+    setState(() {
+      _selectedImageXFile = null;
+      _imageBytes = null;
+    });
   }
 
-  // ==================== METODI INGREDIENTI ====================
   void _addIngredient() {
-    if (ingredientNameController.text.isEmpty) return;
-    ingredients.add({
-      'name': ingredientNameController.text,
-      'quantity': ingredientQuantityController.text.isNotEmpty
-          ? ingredientQuantityController.text
-          : '1',
-      'unit': ingredientUnitController.text,
+    if (_ingredientNameController.text.trim().isEmpty) return;
+
+    setState(() {
+      _ingredients.add({
+        'name': _ingredientNameController.text.trim(),
+        'quantity': _ingredientQuantityController.text.trim().isEmpty
+            ? null
+            : _ingredientQuantityController.text.trim(),
+        'unit': _ingredientUnitController.text.trim().isEmpty
+            ? null
+            : _ingredientUnitController.text.trim(),
+      });
+
+      _ingredientNameController.clear();
+      _ingredientQuantityController.clear();
+      _ingredientUnitController.clear();
     });
-    ingredientNameController.clear();
-    ingredientQuantityController.clear();
-    ingredientUnitController.clear();
-    if (mounted) setState(() {});
   }
 
   void _removeIngredient(int index) {
-    if (index >= 0 && index < ingredients.length) {
-      ingredients.removeAt(index);
-      if (mounted) setState(() {});
-    }
+    setState(() {
+      _ingredients.removeAt(index);
+    });
   }
 
-  // ==================== METODI ISTRUZIONI ====================
   void _addInstruction() {
-    if (instructionController.text.isEmpty) return;
-    instructions.add({
-      'step': instructions.length + 1,
-      'description': instructionController.text,
+    if (_instructionController.text.trim().isEmpty) return;
+
+    setState(() {
+      _instructions.add({
+        'step': _instructions.length + 1,
+        'description': _instructionController.text.trim(),
+      });
+      _instructionController.clear();
     });
-    instructionController.clear();
-    if (mounted) setState(() {});
   }
 
   void _removeInstruction(int index) {
-    if (index >= 0 && index < instructions.length) {
-      instructions.removeAt(index);
-      // Riorganizza i numeri dei passi
-      for (var i = 0; i < instructions.length; i++) {
-        instructions[i]['step'] = i + 1;
+    setState(() {
+      _instructions.removeAt(index);
+      // Rinumera gli step
+      for (var i = 0; i < _instructions.length; i++) {
+        _instructions[i]['step'] = i + 1;
       }
-      if (mounted) setState(() {});
-    }
+    });
   }
 
-  // ==================== METODI TAG ====================
   void _addTag() {
-    final tag = tagController.text.trim().toLowerCase();
-    if (tag.isEmpty || tags.contains(tag)) return;
-    tags.add(tag);
-    tagController.clear();
-    if (mounted) setState(() {});
+    if (_tagController.text.trim().isEmpty) return;
+
+    final newTag = _tagController.text.trim().toLowerCase();
+    if (!_tags.contains(newTag)) {
+      setState(() {
+        _tags.add(newTag);
+        _tagController.clear();
+      });
+    } else {
+      _tagController.clear();
+    }
   }
 
   void _removeTag(String tag) {
-    tags.remove(tag);
-    if (mounted) setState(() {});
+    setState(() {
+      _tags.remove(tag);
+    });
   }
 
-  // ==================== GESTIONE USCITA ====================
-  void _showExitConfirmation() {
-    if (_hasUnsavedChanges()) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Annullare?'),
-          content: const Text(
-              'Le modifiche non salvate andranno perse. Continuare?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('NO'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                if (mounted) Navigator.pop(context);
-              },
-              child: const Text('SÌ'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      if (mounted) Navigator.pop(context);
-    }
+  void _handleBackPressed() {
+    Navigator.pop(context);
   }
 
-  bool _hasUnsavedChanges() {
-    return titleController.text.isNotEmpty ||
-        descriptionController.text.isNotEmpty ||
-        ingredients.isNotEmpty ||
-        selectedImage != null;
-  }
+  Future<void> _saveRecipe() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  // ==================== SUBMIT RICETTA ====================
-  Future<void> _submitRecipe() async {
-    if (!formKey.currentState!.validate()) return;
-    if (ingredients.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aggiungi almeno un ingrediente'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-    if (instructions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aggiungi almeno un passaggio'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    setState(() => isLoading = true);
+    setState(() => _isLoading = true);
 
     try {
-      final recipeService = Provider.of<RecipeService>(context, listen: false);
+      // 1. Upload immagine su Cloudinary (se presente)
+      String? imageUrl;
+      if (_selectedImageXFile != null && _imageBytes != null) {
+        setState(() => _isUploading = true);
 
-      final recipeToCreate = Recipe.fromJson({
-        'id': '',
-        'title': titleController.text.trim(),
-        'description': descriptionController.text.trim(),
-        'slug': titleController.text.trim().toLowerCase().replaceAll(' ', '-'),
-        'imageUrl': '',
-        'prepTime': int.tryParse(prepTimeController.text) ?? 0,
-        'cookTime': int.tryParse(cookTimeController.text) ?? 0,
-        'servings': int.tryParse(servingsController.text) ?? 4,
-        'difficulty': difficulty,
-        'isPublic': isPublic,
-        'views': 0,
-        'authorId': '',
-        'author': {},
-        'categoryId': '',
-        'category': {'name': category},
-        'ingredients': ingredients,
-        'instructions': instructions,
-        'tags': tags,
-        'createdAt': DateTime.now().toIso8601String(),
-        'updatedAt': DateTime.now().toIso8601String(),
-        'commentCount': 0,
-      });
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final uploadService = CloudinaryUploadService(authService);
 
-      // ✅ CHIAMA createRecipe CON L'IMMAGINE
-      final createdRecipe = await recipeService.createRecipe(
-        recipeToCreate,
-        imageFile: selectedImage, // PASSA L'IMMAGINE!
+        imageUrl = await uploadService.uploadImage(
+          imageBytes: _imageBytes!,
+          fileName: _selectedImageXFile!.name,
+          folder: 'orsocook/recipes',
+        );
+
+        AppLogger.debug('✅ Immagine caricata: $imageUrl');
+        setState(() => _isUploading = false);
+      }
+
+      // 2. Ottieni l'utente corrente
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final currentUserId = authService.userId ?? '';
+      final currentUsername = authService.username ?? '';
+
+      // 3. Crea oggetto ricetta
+      final recipe = Recipe(
+        id: '',
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        slug: '',
+        imageUrl: imageUrl,
+        prepTime: int.tryParse(_prepTimeController.text) ?? 0,
+        cookTime: int.tryParse(_cookTimeController.text) ?? 0,
+        servings: int.tryParse(_servingsController.text) ?? 1,
+        difficulty: _selectedDifficulty == 'EASY'
+            ? Difficulty.EASY
+            : _selectedDifficulty == 'HARD'
+                ? Difficulty.HARD
+                : Difficulty.MEDIUM,
+        isPublic: _isPublic,
+        views: 0,
+        favoriteCount: 0,
+        likeCount: 0,
+        commentCount: 0,
+        isFavorite: false,
+        isLiked: false,
+        author: UserAuthor(
+          id: currentUserId,
+          username: currentUsername,
+          displayName: currentUsername,
+          avatarUrl: authService.avatarUrl,
+        ),
+        category: _selectedCategory.isNotEmpty
+            ? Category(
+                id: '',
+                name: _selectedCategory,
+                slug: _selectedCategory.toLowerCase().replaceAll(' ', '-'),
+              )
+            : null,
+        ingredients: _ingredients
+            .map((i) => Ingredient(
+                  name: i['name'] ?? '',
+                  quantity: i['quantity']?.toString(),
+                  unit: i['unit']?.toString(),
+                ))
+            .toList(),
+        instructions: _instructions
+            .map((i) => Instruction(
+                  step: i['step'] ?? 0,
+                  description: i['description'] ?? '',
+                ))
+            .toList(),
+        tags: _tags
+            .map((tagName) => Tag(
+                  id: '',
+                  name: tagName,
+                  slug: '',
+                ))
+            .toList(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
-      if (mounted) {
-        setState(() => isLoading = false);
+      // 4. Crea ricetta nel backend
+      final recipeService = Provider.of<RecipeService>(context, listen: false);
+      final createdRecipe = await recipeService.createRecipe(recipe);
 
-        if (createdRecipe != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('"${createdRecipe.title}" creata con successo!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.of(context).pop(true);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Errore durante la creazione della ricetta'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+      if (createdRecipe != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ricetta creata con successo!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true);
+      } else {
+        throw Exception('Errore nella creazione della ricetta');
       }
     } catch (e) {
-      AppLogger.error('Errore creazione ricetta', e);
+      AppLogger.error('❌ Errore salvataggio ricetta', e);
       if (mounted) {
-        setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Errore: ${e.toString()}'),
@@ -336,121 +282,124 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
           ),
         );
       }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isUploading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CreateHeader(
-        isLoading: isLoading,
-        onBackPressed: _showExitConfirmation,
-      ),
-      body: Form(
-        key: formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // ✅ SEZIONE IMMAGINE
-              CreateImageSection(
-                selectedImage: selectedImage,
-                onImageSelected: (image) {
-                  if (mounted) setState(() => selectedImage = image);
-                },
-                onImageRemoved: _removeImage,
-                pickImage: _pickImage,
-              ),
-              const SizedBox(height: 16),
-
-              // ✅ SEZIONE INFO BASE
-              CreateBasicInfo(
-                titleController: titleController,
-                descriptionController: descriptionController,
-                prepTimeController: prepTimeController,
-                cookTimeController: cookTimeController,
-                servingsController: servingsController,
-                difficulty: difficulty,
-                category: category,
-                isPublic: isPublic,
-                onDifficultyChanged: (value) {
-                  if (mounted) setState(() => difficulty = value);
-                },
-                onCategoryChanged: (value) {
-                  if (mounted) setState(() => category = value);
-                },
-                onIsPublicChanged: (value) {
-                  if (mounted) setState(() => isPublic = value);
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // ✅ SEZIONE INGREDIENTI
-              CreateIngredients(
-                ingredients: ingredients,
-                nameController: ingredientNameController,
-                quantityController: ingredientQuantityController,
-                unitController: ingredientUnitController,
-                onAddIngredient: _addIngredient,
-                onRemoveIngredient: _removeIngredient,
-              ),
-              const SizedBox(height: 16),
-
-              // ✅ SEZIONE ISTRUZIONI
-              CreateInstructions(
-                instructions: instructions,
-                instructionController: instructionController,
-                onAddInstruction: _addInstruction,
-                onRemoveInstruction: _removeInstruction,
-              ),
-              const SizedBox(height: 16),
-
-              // ✅ SEZIONE TAG
-              CreateTags(
-                tags: tags,
-                tagController: tagController,
-                onAddTag: _addTag,
-                onRemoveTag: _removeTag,
-              ),
-              const SizedBox(height: 32),
-
-              // ✅ BOTTONE PUBBLICA
-              ElevatedButton(
-                onPressed: isLoading ? null : _submitRecipe,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  backgroundColor: Colors.deepOrange,
-                ),
-                child: isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text(
-                        'PUBBLICA RICETTA',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                '* Campi obbligatori',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              const SizedBox(height: 40),
-            ],
-          ),
+      appBar: AppBar(
+        title: const Text('Crea Nuova Ricetta'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _handleBackPressed,
         ),
+        actions: [
+          if (_isLoading || _isUploading)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else
+            TextButton.icon(
+              onPressed: _saveRecipe,
+              icon: const Icon(Icons.save, color: Colors.white),
+              label: const Text(
+                'Salva',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+        ],
       ),
+      body: _isUploading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Caricamento immagine in corso...'),
+                ],
+              ),
+            )
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  CreateBasicInfo(
+                    titleController: _titleController,
+                    descriptionController: _descriptionController,
+                    prepTimeController: _prepTimeController,
+                    cookTimeController: _cookTimeController,
+                    servingsController: _servingsController,
+                    difficulty: _selectedDifficulty,
+                    category: _selectedCategory,
+                    isPublic: _isPublic,
+                    onDifficultyChanged: (value) {
+                      setState(() => _selectedDifficulty = value);
+                    },
+                    onCategoryChanged: (value) {
+                      setState(() => _selectedCategory = value);
+                    },
+                    onIsPublicChanged: (value) {
+                      setState(() => _isPublic = value);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CreateImageSection(
+                    imageBytes: _imageBytes,
+                    selectedImageXFile: _selectedImageXFile,
+                    onImageSelected: (image) async {
+                      if (image != null) {
+                        final bytes = await image.readAsBytes();
+                        setState(() {
+                          _selectedImageXFile = image;
+                          _imageBytes = bytes;
+                        });
+                      }
+                    },
+                    onImageRemoved: _removeImage,
+                    pickImage: _pickImage,
+                  ),
+                  const SizedBox(height: 16),
+                  CreateIngredients(
+                    ingredients: _ingredients,
+                    nameController: _ingredientNameController,
+                    quantityController: _ingredientQuantityController,
+                    unitController: _ingredientUnitController,
+                    onAddIngredient: _addIngredient,
+                    onRemoveIngredient: _removeIngredient,
+                  ),
+                  const SizedBox(height: 16),
+                  CreateInstructions(
+                    instructions: _instructions,
+                    instructionController: _instructionController,
+                    onAddInstruction: _addInstruction,
+                    onRemoveInstruction: _removeInstruction,
+                  ),
+                  const SizedBox(height: 16),
+                  CreateTags(
+                    tags: _tags,
+                    tagController: _tagController,
+                    onAddTag: _addTag,
+                    onRemoveTag: _removeTag,
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
     );
   }
 }

@@ -3,22 +3,22 @@ import '../../../../models/recipe.dart';
 class DetailHelpers {
   /// Verifica se l'utente corrente è il proprietario della ricetta
   static bool isRecipeOwner(String? currentUserId, Recipe recipe) {
-    if (currentUserId == null || recipe.author.isEmpty) {
+    if (currentUserId == null) {
       return false;
     }
 
-    // ✅ Estrae l'ID dell'autore dalla ricetta
-    final recipeAuthorId = _extractAuthorId(recipe.author);
+    // Ottieni l'ID dell'autore direttamente dall'oggetto UserAuthor
+    final recipeAuthorId = recipe.author.id;
     if (recipeAuthorId.isEmpty) return false;
 
-    // ✅ Normalizza entrambi gli ID per confronto case-insensitive
+    // Normalizza entrambi gli ID per confronto case-insensitive
     final normalizedCurrentId = currentUserId.trim().toLowerCase();
     final normalizedAuthorId = recipeAuthorId.trim().toLowerCase();
 
     return normalizedCurrentId == normalizedAuthorId;
   }
 
-  /// Estrae l'ID dell'autore da diverse strutture possibili
+  /// Estrae l'ID dell'autore da diverse strutture possibili (mantenuto per retrocompatibilità)
   static String _extractAuthorId(Map<String, dynamic> author) {
     if (author.isEmpty) return '';
 
@@ -88,6 +88,9 @@ class DetailHelpers {
 
       if (tag is String) {
         tagName = tag;
+      } else if (tag is Tag) {
+        // Nuovo formato type-safe
+        tagName = tag.name;
       } else if (tag is Map) {
         // Prova le diverse strutture possibili
         if (tag.containsKey('tag') &&

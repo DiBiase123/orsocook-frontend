@@ -248,7 +248,7 @@ class FavoriteService extends ChangeNotifier {
     }
   }
 
-  // Helper per creare recipe placeholder
+  // Helper per creare recipe placeholder (VERSIONE CORRETTA)
   Recipe _createPlaceholderRecipe(String id) {
     return Recipe(
       id: id,
@@ -259,14 +259,25 @@ class FavoriteService extends ChangeNotifier {
       prepTime: 0,
       cookTime: 0,
       servings: 0,
-      difficulty: 'MEDIUM',
+      difficulty: Difficulty.MEDIUM, // Usa l'enum, non stringa
       isPublic: true,
       views: 0,
-      author: {},
-      category: {},
-      ingredients: [],
-      instructions: [],
-      tags: [],
+      favoriteCount: 0, // Aggiunto
+      likeCount: 0, // Aggiunto
+      commentCount: 0, // Aggiunto
+      isFavorite: false, // Aggiunto
+      isLiked: false, // Aggiunto
+      author: UserAuthor(
+        // Usa UserAuthor, non Map
+        id: '',
+        username: '',
+        displayName: null,
+        avatarUrl: null,
+      ),
+      category: null, // Usa null invece di {}
+      ingredients: [], // Lista vuota di Ingredient
+      instructions: [], // Lista vuota di Instruction
+      tags: [], // Lista vuota di Tag
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

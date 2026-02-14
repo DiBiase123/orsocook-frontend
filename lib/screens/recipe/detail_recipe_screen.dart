@@ -305,27 +305,42 @@ class _DetailRecipeScreenState extends State<DetailRecipeScreen> {
     }
   }
 
-  /// Estrae l'ID autore dalla mappa author
-  String? _extractAuthorId(Map<String, dynamic> author) {
-    if (author.isEmpty) return null;
+  /// Estrae l'ID autore dall'oggetto author (può essere Map o UserAuthor)
+  String? _extractAuthorId(dynamic author) {
+    if (author == null) return null;
 
-    const possibleKeys = ['id', 'userId', '_id', 'authorId', 'user_id'];
-
-    for (final key in possibleKeys) {
-      final value = author[key];
-      if (value != null && value.toString().isNotEmpty) {
-        return value.toString();
-      }
+    // CASO 1: Se è UserAuthor (nuovo modello type-safe)
+    if (author is UserAuthor) {
+      return author.id;
     }
 
-    if (author.containsKey('user') && author['user'] is Map) {
-      final userMap = author['user'] as Map<String, dynamic>;
+    // CASO 2: Se è Map (vecchio formato)
+    if (author is Map<String, dynamic>) {
+      if (author.isEmpty) return null;
+
+      const possibleKeys = ['id', 'userId', '_id', 'authorId', 'user_id'];
+
       for (final key in possibleKeys) {
-        final value = userMap[key];
+        final value = author[key];
         if (value != null && value.toString().isNotEmpty) {
           return value.toString();
         }
       }
+
+      if (author.containsKey('user') && author['user'] is Map) {
+        final userMap = author['user'] as Map<String, dynamic>;
+        for (final key in possibleKeys) {
+          final value = userMap[key];
+          if (value != null && value.toString().isNotEmpty) {
+            return value.toString();
+          }
+        }
+      }
+    }
+
+    // CASO 3: Se è già una stringa (direttamente l'ID)
+    if (author is String) {
+      return author;
     }
 
     return null;

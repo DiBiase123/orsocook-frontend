@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class EditIngredients extends StatefulWidget {
-  final List<dynamic> ingredients;
+  final List<Map<String, dynamic>> ingredients;
   final TextEditingController nameController;
   final TextEditingController quantityController;
   final TextEditingController unitController;
@@ -27,7 +27,7 @@ class _EditIngredientsState extends State<EditIngredients> {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -40,29 +40,45 @@ class _EditIngredientsState extends State<EditIngredients> {
               children: [
                 Expanded(
                   flex: 3,
-                  child: _buildTextField(
-                    widget.nameController,
-                    'Nuovo ingrediente',
+                  child: TextField(
+                    controller: widget.nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome ingrediente',
+                      border: OutlineInputBorder(),
+                      hintText: 'es. Farina',
+                    ),
+                    onSubmitted: (_) => widget.onAddIngredient(),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _buildTextField(
-                    widget.quantityController,
-                    'Qtà',
+                  child: TextField(
+                    controller: widget.quantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Qtà',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => widget.onAddIngredient(),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _buildTextField(
-                    widget.unitController,
-                    'Unità',
+                  child: TextField(
+                    controller: widget.unitController,
+                    decoration: const InputDecoration(
+                      labelText: 'Unità',
+                      border: OutlineInputBorder(),
+                      hintText: 'g, ml, etc.',
+                    ),
+                    onSubmitted: (_) => widget.onAddIngredient(),
                   ),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.add, color: Colors.green),
+                  icon: const Icon(Icons.add_circle, color: Colors.green),
                   onPressed: widget.onAddIngredient,
+                  tooltip: 'Aggiungi ingrediente',
                 ),
               ],
             ),
@@ -73,53 +89,28 @@ class _EditIngredientsState extends State<EditIngredients> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...widget.ingredients
-                  .asMap()
-                  .entries
-                  .map((entry) => _buildIngredientItem(entry.key, entry.value)),
+              ...widget.ingredients.asMap().entries.map((entry) {
+                final index = entry.key;
+                final ingredient = entry.value;
+
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.deepOrange[50],
+                    child: Text('${index + 1}'),
+                  ),
+                  title: Text(ingredient['name']),
+                  subtitle: Text(
+                      '${ingredient['quantity'] ?? ''} ${ingredient['unit'] ?? ''}'
+                          .trim()),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.remove_circle, color: Colors.red),
+                    onPressed: () => widget.onRemoveIngredient(index),
+                  ),
+                  dense: true,
+                );
+              }).toList(),
             ],
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(TextEditingController controller, String label) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      onSubmitted: (_) => widget.onAddIngredient(),
-    );
-  }
-
-  Widget _buildIngredientItem(int index, dynamic ingredient) {
-    // Estrai i valori direttamente qui - NO extractValue esterno
-    String name = 'Ingrediente';
-    String quantity = '';
-    String unit = '';
-
-    if (ingredient is Map) {
-      final ingredientMap = ingredient as Map<String, dynamic>;
-      name = ingredientMap['name']?.toString() ?? 'Ingrediente';
-      quantity = ingredientMap['quantity']?.toString() ?? '';
-      unit = ingredientMap['unit']?.toString() ?? '';
-    }
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.deepOrange[50],
-          child: Text('${index + 1}'),
-        ),
-        title: Text(name),
-        subtitle: Text('$quantity $unit'.trim()),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () => widget.onRemoveIngredient(index),
         ),
       ),
     );

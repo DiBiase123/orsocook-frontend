@@ -148,7 +148,8 @@ class _CreateBasicInfoState extends State<CreateBasicInfo> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: widget.difficulty, // CORRETTO
+                    value:
+                        widget.difficulty.isNotEmpty ? widget.difficulty : null,
                     decoration: const InputDecoration(
                       labelText: 'Difficoltà',
                       border: OutlineInputBorder(),
@@ -177,7 +178,7 @@ class _CreateBasicInfoState extends State<CreateBasicInfo> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: widget.category, // CORRETTO
+                    value: widget.category.isNotEmpty ? widget.category : null,
                     decoration: const InputDecoration(
                       labelText: 'Categoria',
                       border: OutlineInputBorder(),

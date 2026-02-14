@@ -99,15 +99,16 @@ class _CreateIngredientsState extends State<CreateIngredients> {
                     child: Text('${index + 1}'),
                   ),
                   title: Text(ingredient['name']),
-                  subtitle:
-                      Text('${ingredient['quantity']} ${ingredient['unit']}'),
+                  subtitle: Text(
+                      '${ingredient['quantity'] ?? ''} ${ingredient['unit'] ?? ''}'
+                          .trim()),
                   trailing: IconButton(
                     icon: const Icon(Icons.remove_circle, color: Colors.red),
                     onPressed: () => widget.onRemoveIngredient(index),
                   ),
                   dense: true,
                 );
-              })
+              }).toList(),
             ],
           ],
         ),

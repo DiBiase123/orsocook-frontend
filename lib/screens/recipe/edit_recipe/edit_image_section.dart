@@ -1,19 +1,22 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../config.dart';
 import '../../../../utils/logger.dart';
 
 class EditImageSection extends StatefulWidget {
-  final File? selectedImage;
+  final Uint8List? imageBytes;
+  final XFile? selectedImageXFile;
   final String imageUrl;
-  final Function(File?) onImageSelected;
+  final Function(XFile?) onImageSelected;
   final Function() onImageRemoved;
   final Function() pickImage;
 
   const EditImageSection({
     super.key,
-    required this.selectedImage,
+    required this.imageBytes,
+    required this.selectedImageXFile,
     required this.imageUrl,
     required this.onImageSelected,
     required this.onImageRemoved,
@@ -45,7 +48,7 @@ class _EditImageSectionState extends State<EditImageSection> {
     );
 
     if (image != null) {
-      widget.onImageSelected(File(image.path));
+      widget.onImageSelected(image);
       AppLogger.debug('🖼️ Immagine selezionata: ${image.path}');
     }
   }
@@ -59,7 +62,7 @@ class _EditImageSectionState extends State<EditImageSection> {
     );
 
     if (image != null) {
-      widget.onImageSelected(File(image.path));
+      widget.onImageSelected(image);
       AppLogger.debug('📸 Foto scattata: ${image.path}');
     }
   }
@@ -116,7 +119,7 @@ class _EditImageSectionState extends State<EditImageSection> {
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
             const SizedBox(height: 16),
-            if (widget.selectedImage != null || widget.imageUrl.isNotEmpty)
+            if (widget.selectedImageXFile != null || widget.imageUrl.isNotEmpty)
               _buildImagePreview()
             else
               _buildAddImageButton(),
@@ -138,9 +141,9 @@ class _EditImageSectionState extends State<EditImageSection> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: widget.selectedImage != null
-                ? Image.file(
-                    widget.selectedImage!,
+            child: widget.imageBytes != null
+                ? Image.memory(
+                    widget.imageBytes!,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return const Center(
@@ -152,30 +155,44 @@ class _EditImageSectionState extends State<EditImageSection> {
                       );
                     },
                   )
-                : Image.network(
-                    _getFullImageUrl(widget.imageUrl),
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 60,
-                          color: Colors.grey,
-                        ),
-                      );
-                    },
-                  ),
+                : widget.selectedImageXFile != null
+                    ? Image.file(
+                        File(widget.selectedImageXFile!.path),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 60,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                      )
+                    : Image.network(
+                        _getFullImageUrl(widget.imageUrl),
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 60,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                      ),
           ),
         ),
         const SizedBox(height: 16),
@@ -185,7 +202,7 @@ class _EditImageSectionState extends State<EditImageSection> {
             OutlinedButton.icon(
               icon: const Icon(Icons.camera_alt),
               label: const Text('Cambia Foto'),
-              onPressed: _showImageSourceSelector, // MODIFICATO
+              onPressed: _showImageSourceSelector,
             ),
             OutlinedButton.icon(
               icon: const Icon(Icons.delete, color: Colors.red),
@@ -201,7 +218,7 @@ class _EditImageSectionState extends State<EditImageSection> {
 
   Widget _buildAddImageButton() {
     return GestureDetector(
-      onTap: _showImageSourceSelector, // MODIFICATO
+      onTap: _showImageSourceSelector,
       child: Container(
         width: double.infinity,
         height: 180,
@@ -232,7 +249,7 @@ class _EditImageSectionState extends State<EditImageSection> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Tocca per selezionare dalla galleria o scattare una foto', // AGGIORNATO TESTO
+              'Tocca per selezionare dalla galleria o scattare una foto',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,

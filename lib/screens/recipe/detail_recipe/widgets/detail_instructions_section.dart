@@ -36,7 +36,7 @@ class DetailInstructionsSection extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          '${instruction['step']}',
+                          '${instruction.step}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -49,7 +49,7 @@ class DetailInstructionsSection extends StatelessWidget {
                     // Descrizione passo
                     Expanded(
                       child: Text(
-                        instruction['description'],
+                        instruction.description,
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),

@@ -61,8 +61,9 @@ class _CreateInstructionsState extends State<CreateInstructions> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...widget.instructions.map((instruction) {
-                final index = widget.instructions.indexOf(instruction);
+              ...widget.instructions.asMap().entries.map((entry) {
+                final index = entry.key;
+                final instruction = entry.value;
 
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 4),
@@ -73,14 +74,13 @@ class _CreateInstructionsState extends State<CreateInstructions> {
                     ),
                     title: Text(instruction['description']),
                     trailing: IconButton(
-                      icon:
-                          const Icon(Icons.remove_circle, color: Colors.red),
+                      icon: const Icon(Icons.remove_circle, color: Colors.red),
                       onPressed: () => widget.onRemoveInstruction(index),
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
                 );
-              })
+              }).toList(),
             ],
           ],
         ),

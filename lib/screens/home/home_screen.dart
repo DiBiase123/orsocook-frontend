@@ -136,10 +136,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final query = _searchQuery!.toLowerCase();
     return recipes.where((recipe) {
-      return recipe.title.toLowerCase().contains(query) ||
-          recipe.description.toLowerCase().contains(query) ||
-          recipe.ingredients.any(
-              (ing) => ing['name'].toString().toLowerCase().contains(query));
+      // Cerca nel titolo
+      if (recipe.title.toLowerCase().contains(query)) return true;
+
+      // Cerca nella descrizione
+      if (recipe.description.toLowerCase().contains(query)) return true;
+
+      // Cerca negli ingredienti (ora sono oggetti Ingredient)
+      for (var ingredient in recipe.ingredients) {
+        if (ingredient.name.toLowerCase().contains(query)) return true;
+      }
+
+      return false;
     }).toList();
   }
 

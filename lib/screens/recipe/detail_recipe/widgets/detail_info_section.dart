@@ -17,6 +17,18 @@ class DetailInfoSection extends StatelessWidget {
     );
   }
 
+  // Helper per convertire Difficulty in stringa leggibile
+  String _getDifficultyString(Difficulty difficulty) {
+    switch (difficulty) {
+      case Difficulty.EASY:
+        return 'Facile';
+      case Difficulty.MEDIUM:
+        return 'Media';
+      case Difficulty.HARD:
+        return 'Difficile';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -32,8 +44,9 @@ class DetailInfoSection extends StatelessWidget {
             // Numero di persone
             _buildInfoItem(Icons.people, '${recipe.servings} pers.'),
 
-            // Difficoltà
-            _buildInfoItem(Icons.bar_chart, recipe.difficulty),
+            // Difficoltà (convertita in stringa)
+            _buildInfoItem(
+                Icons.bar_chart, _getDifficultyString(recipe.difficulty)),
 
             // Visualizzazioni
             _buildInfoItem(Icons.visibility, '${recipe.views} visual.'),
