@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
-class CreateHeader extends StatelessWidget {
+class RecipeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isLoading;
-  final VoidCallback onBackPressed;
+  final VoidCallback onSave;
+  final VoidCallback onBack;
 
-  const CreateHeader({
+  const RecipeAppBar({
     super.key,
     required this.isLoading,
-    required this.onBackPressed,
+    required this.onSave,
+    required this.onBack,
   });
 
   @override
@@ -16,7 +18,7 @@ class CreateHeader extends StatelessWidget {
       title: const Text('Crea Nuova Ricetta'),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
-        onPressed: onBackPressed,
+        onPressed: onBack,
       ),
       actions: [
         if (isLoading)
@@ -27,8 +29,17 @@ class CreateHeader extends StatelessWidget {
               height: 20,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
+          )
+        else
+          TextButton.icon(
+            onPressed: onSave,
+            icon: const Icon(Icons.save, color: Colors.white),
+            label: const Text('Salva', style: TextStyle(color: Colors.white)),
           ),
       ],
     );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

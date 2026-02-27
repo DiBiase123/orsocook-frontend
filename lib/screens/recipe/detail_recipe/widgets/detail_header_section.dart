@@ -6,6 +6,22 @@ class DetailHeaderSection extends StatelessWidget {
 
   const DetailHeaderSection({super.key, required this.recipe});
 
+  String _getAuthorDisplayName() {
+    // Prova displayName se non è null e non è vuoto
+    if (recipe.author.displayName != null &&
+        recipe.author.displayName!.isNotEmpty) {
+      return recipe.author.displayName!;
+    }
+
+    // Altrimenti prova username (non nullable)
+    if (recipe.author.username.isNotEmpty) {
+      return recipe.author.username;
+    }
+
+    // Fallback
+    return 'Autore sconosciuto';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -27,9 +43,7 @@ class DetailHeaderSection extends StatelessWidget {
             const Icon(Icons.person, size: 16, color: Colors.grey),
             const SizedBox(width: 4),
             Text(
-              recipe.author.displayName ??
-                  recipe.author.username ??
-                  'Autore sconosciuto',
+              _getAuthorDisplayName(),
               style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(width: 16),

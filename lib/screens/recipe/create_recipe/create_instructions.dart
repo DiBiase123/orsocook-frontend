@@ -80,7 +80,7 @@ class _CreateInstructionsState extends State<CreateInstructions> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ],
         ),

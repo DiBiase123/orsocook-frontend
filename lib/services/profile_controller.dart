@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:orsocook/services/avatar_service.dart';
@@ -6,7 +6,7 @@ import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/profile_service.dart';
 import 'package:orsocook/services/comment_service.dart';
 import 'package:orsocook/models/recipe.dart';
-import 'package:orsocook/models/user_profile.dart'; // ← NUOVO IMPORT
+import 'package:orsocook/models/user_profile.dart';
 
 class ProfileController extends ChangeNotifier {
   // Dependencies
@@ -16,7 +16,8 @@ class ProfileController extends ChangeNotifier {
   final CommentService _commentService;
 
   // State
-  File? _selectedAvatar;
+  XFile? _selectedAvatarXFile; // ← MODIFICATO: da File a XFile
+  Uint8List? _selectedAvatarBytes; // ← NUOVO: per i bytes
   bool _isChangingAvatar = false;
   bool _isPickingAvatar = false;
   int _selectedTabIndex = 0;
@@ -24,7 +25,8 @@ class ProfileController extends ChangeNotifier {
   bool _isDisposed = false;
 
   // Getters
-  File? get selectedAvatar => _selectedAvatar;
+  XFile? get selectedAvatar => _selectedAvatarXFile; // ← MODIFICATO
+  Uint8List? get selectedAvatarBytes => _selectedAvatarBytes; // ← NUOVO
   bool get isChangingAvatar => _isChangingAvatar;
   bool get isPickingAvatar => _isPickingAvatar;
   int get selectedTabIndex => _selectedTabIndex;
@@ -41,13 +43,12 @@ class ProfileController extends ChangeNotifier {
   List<Recipe>? get recentFavorites =>
       _profileService.currentProfile?.recentFavorites;
 
-  bool get isShowingTempAvatar => _selectedAvatar != null;
-  File? get avatarFile => _selectedAvatar;
+  bool get isShowingTempAvatar => _selectedAvatarXFile != null; // ← MODIFICATO
   bool get isBusy =>
       _isChangingAvatar || _isPickingAvatar || _profileService.isLoading;
 
   String? get displayAvatarUrl {
-    if (_selectedAvatar != null) return null;
+    if (_selectedAvatarXFile != null) return null; // ← MODIFICATO
     final profileAvatar = _profileService.currentProfile?.user.avatarUrl;
     final authAvatar = _authService.avatarUrl;
     return profileAvatar ?? authAvatar;
@@ -67,9 +68,10 @@ class ProfileController extends ChangeNotifier {
 
   @override
   void dispose() {
-    _isDisposed = true; // ← PRIMA le tue pulizie
-    super.dispose(); // ← POI la classe parent
+    _isDisposed = true;
+    super.dispose();
   }
+
   // ================ AVATAR MANAGEMENT ================
 
   Future<void> pickAvatarImage() async {
@@ -88,16 +90,17 @@ class ProfileController extends ChangeNotifier {
       );
 
       if (pickedFile != null) {
-        final image = File(pickedFile.path);
-        final sizeInBytes = await image.length();
-        final sizeInMB = sizeInBytes / (1024 * 1024);
+        // Leggi i bytes dall'XFile
+        final bytes = await pickedFile.readAsBytes();
+        final sizeInMB = bytes.length / (1024 * 1024);
 
         if (sizeInMB > 5.0) {
           throw Exception(
               'L\'immagine è troppo grande (${sizeInMB.toStringAsFixed(1)}MB). Massimo 5MB');
         }
 
-        _selectedAvatar = image;
+        _selectedAvatarXFile = pickedFile;
+        _selectedAvatarBytes = bytes;
         _safeNotify();
       }
     } catch (e) {
@@ -109,7 +112,9 @@ class ProfileController extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> uploadAvatar() async {
-    if (_isDisposed || _selectedAvatar == null) {
+    if (_isDisposed ||
+        _selectedAvatarXFile == null ||
+        _selectedAvatarBytes == null) {
       return {
         'success': false,
         'message': 'Controller dismesso o nessuna immagine'
@@ -121,7 +126,10 @@ class ProfileController extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final result = await _avatarService.uploadAvatar(_selectedAvatar!);
+      final result = await _avatarService.uploadAvatar(
+        imageBytes: _selectedAvatarBytes!,
+        fileName: _selectedAvatarXFile!.name,
+      );
 
       if (result['success'] == true) {
         final newAvatarUrl = result['avatarUrl'] as String?;
@@ -146,7 +154,8 @@ class ProfileController extends ChangeNotifier {
 
         _safeNotify();
         await refreshProfile();
-        _selectedAvatar = null;
+        _selectedAvatarXFile = null;
+        _selectedAvatarBytes = null;
 
         return {
           'success': true,
@@ -183,7 +192,8 @@ class ProfileController extends ChangeNotifier {
 
   void clearSelectedAvatar() {
     if (_isDisposed) return;
-    _selectedAvatar = null;
+    _selectedAvatarXFile = null;
+    _selectedAvatarBytes = null;
     _safeNotify();
   }
 
@@ -216,7 +226,8 @@ class ProfileController extends ChangeNotifier {
     try {
       await _authService.logout();
       _profileService.clearProfile();
-      _selectedAvatar = null;
+      _selectedAvatarXFile = null;
+      _selectedAvatarBytes = null;
       _lastSuccessMessage = null;
       _safeNotify();
     } catch (e) {

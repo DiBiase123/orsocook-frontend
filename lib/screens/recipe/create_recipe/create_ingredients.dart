@@ -108,7 +108,7 @@ class _CreateIngredientsState extends State<CreateIngredients> {
                   ),
                   dense: true,
                 );
-              }).toList(),
+              }),
             ],
           ],
         ),

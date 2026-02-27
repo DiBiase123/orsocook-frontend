@@ -1,4 +1,4 @@
-import '../../../../models/recipe.dart';
+import 'package:orsocook/models/recipe.dart';
 
 class DetailHelpers {
   /// Verifica se l'utente corrente è il proprietario della ricetta
@@ -16,34 +16,6 @@ class DetailHelpers {
     final normalizedAuthorId = recipeAuthorId.trim().toLowerCase();
 
     return normalizedCurrentId == normalizedAuthorId;
-  }
-
-  /// Estrae l'ID dell'autore da diverse strutture possibili (mantenuto per retrocompatibilità)
-  static String _extractAuthorId(Map<String, dynamic> author) {
-    if (author.isEmpty) return '';
-
-    // Prova tutte le chiavi possibili per l'ID
-    const possibleKeys = ['id', 'userId', '_id', 'authorId', 'user_id'];
-
-    for (final key in possibleKeys) {
-      final value = author[key];
-      if (value != null && value.toString().isNotEmpty) {
-        return value.toString();
-      }
-    }
-
-    // Fallback: cerca in oggetti annidati
-    if (author.containsKey('user') && author['user'] is Map) {
-      final userMap = author['user'] as Map<String, dynamic>;
-      for (final key in possibleKeys) {
-        final value = userMap[key];
-        if (value != null && value.toString().isNotEmpty) {
-          return value.toString();
-        }
-      }
-    }
-
-    return '';
   }
 
   /// Costruisce URL completo per l'immagine

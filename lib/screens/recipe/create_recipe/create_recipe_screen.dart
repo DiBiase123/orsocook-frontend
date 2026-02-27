@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/screens/recipe/edit_recipe/viewmodels/edit_recipe_viewmodel.dart';
-import 'package:orsocook/screens/recipe/edit_recipe/widgets/edit_app_bar.dart';
-import 'package:orsocook/screens/recipe/edit_recipe/widgets/edit_form.dart';
+import 'package:orsocook/screens/recipe/create_recipe/viewmodels/create_recipe_viewmodel.dart';
+import 'package:orsocook/screens/recipe/create_recipe/widgets/recipe_app_bar.dart';
+import 'package:orsocook/screens/recipe/create_recipe/widgets/recipe_form.dart';
 
-class EditRecipeScreen extends StatefulWidget {
-  final Recipe recipe;
-
-  const EditRecipeScreen({
-    super.key,
-    required this.recipe,
-  });
+class CreateRecipeScreen extends StatefulWidget {
+  const CreateRecipeScreen({super.key});
 
   @override
-  State<EditRecipeScreen> createState() => _EditRecipeScreenState();
+  State<CreateRecipeScreen> createState() => _CreateRecipeScreenState();
 }
 
-class _EditRecipeScreenState extends State<EditRecipeScreen> {
+class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -27,24 +21,23 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => EditRecipeViewModel(
+          create: (_) => CreateRecipeViewModel(
             authService: Provider.of<AuthService>(context, listen: false),
             recipeService: Provider.of<RecipeService>(context, listen: false),
-            originalRecipe: widget.recipe,
           ),
         ),
       ],
-      child: Consumer<EditRecipeViewModel>(
+      child: Consumer<CreateRecipeViewModel>(
         builder: (context, viewModel, _) {
           return Scaffold(
-            appBar: EditAppBar(
+            appBar: RecipeAppBar(
               isLoading: viewModel.isLoading || viewModel.isUploading,
               onSave: () => _saveRecipe(context, viewModel),
               onBack: () => Navigator.pop(context),
             ),
             body: viewModel.isUploading
                 ? const _UploadingIndicator()
-                : EditForm(formKey: _formKey),
+                : RecipeForm(formKey: _formKey),
           );
         },
       ),
@@ -52,7 +45,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   }
 
   Future<void> _saveRecipe(
-      BuildContext context, EditRecipeViewModel viewModel) async {
+      BuildContext context, CreateRecipeViewModel viewModel) async {
     if (!viewModel.validate(_formKey)) return;
 
     // Salva le reference del contesto PRIMA delle chiamate async
@@ -60,14 +53,14 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     final navigator = Navigator.of(context);
 
     try {
-      final updatedRecipe = await viewModel.saveRecipe();
+      final createdRecipe = await viewModel.saveRecipe();
 
       if (!mounted) return;
 
-      if (updatedRecipe != null) {
+      if (createdRecipe != null) {
         scaffoldMessenger.showSnackBar(
           const SnackBar(
-            content: Text('Ricetta aggiornata con successo!'),
+            content: Text('Ricetta creata con successo!'),
             backgroundColor: Colors.green,
           ),
         );

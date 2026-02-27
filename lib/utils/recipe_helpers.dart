@@ -1,5 +1,5 @@
-import '../models/recipe.dart';
-import '../services/auth_service.dart';
+import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/services/auth_service.dart';
 
 /// Utility per operazioni comuni sulle ricette
 class RecipeHelpers {
@@ -74,7 +74,7 @@ class RecipeHelpers {
       prepTime: 0,
       cookTime: 0,
       servings: 0,
-      difficulty: Difficulty.MEDIUM,
+      difficulty: Difficulty.medium, // ← CORRETTO: medium invece di MEDIUM
       isPublic: true,
       views: 0,
       favoriteCount: 0,

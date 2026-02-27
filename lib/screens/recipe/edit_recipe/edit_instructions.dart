@@ -80,7 +80,7 @@ class _EditInstructionsState extends State<EditInstructions> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ],
         ),

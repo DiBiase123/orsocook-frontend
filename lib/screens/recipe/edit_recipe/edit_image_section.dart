@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../../config.dart';
-import '../../../../utils/logger.dart';
+import 'package:orsocook/config.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class EditImageSection extends StatefulWidget {
   final Uint8List? imageBytes;
@@ -11,7 +11,6 @@ class EditImageSection extends StatefulWidget {
   final String imageUrl;
   final Function(XFile?) onImageSelected;
   final Function() onImageRemoved;
-  final Function() pickImage;
 
   const EditImageSection({
     super.key,
@@ -20,7 +19,6 @@ class EditImageSection extends StatefulWidget {
     required this.imageUrl,
     required this.onImageSelected,
     required this.onImageRemoved,
-    required this.pickImage,
   });
 
   @override
@@ -28,101 +26,124 @@ class EditImageSection extends StatefulWidget {
 }
 
 class _EditImageSectionState extends State<EditImageSection> {
+  final ImagePicker _picker = ImagePicker();
+
   String _getFullImageUrl(String imageUrl) {
     if (imageUrl.isEmpty) return '';
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    if (imageUrl.startsWith('/')) {
-      return '${Config.apiBaseUrl}$imageUrl';
-    }
-    return '${Config.apiBaseUrl}/$imageUrl';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return imageUrl.startsWith('/')
+        ? '${Config.apiBaseUrl}$imageUrl'
+        : '${Config.apiBaseUrl}/$imageUrl';
   }
 
-  Future<void> _selectImageFromGallery() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-      maxWidth: 1200,
-    );
-
-    if (image != null) {
-      widget.onImageSelected(image);
-      AppLogger.debug('🖼️ Immagine selezionata: ${image.path}');
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1200,
+      );
+      if (image != null) {
+        widget.onImageSelected(image);
+        AppLogger.debug('🖼️ Immagine selezionata: ${image.path}');
+      }
+    } catch (e) {
+      AppLogger.error('Errore selezione immagine', e);
     }
   }
 
-  Future<void> _selectImageFromCamera() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85,
-      maxWidth: 1200,
-    );
-
-    if (image != null) {
-      widget.onImageSelected(image);
-      AppLogger.debug('📸 Foto scattata: ${image.path}');
+  Widget _buildImageWidget() {
+    if (widget.imageBytes != null) {
+      return Image.memory(
+        widget.imageBytes!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _buildErrorIcon(),
+      );
     }
+    if (widget.selectedImageXFile != null) {
+      return Image.file(
+        File(widget.selectedImageXFile!.path),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _buildErrorIcon(),
+      );
+    }
+    if (widget.imageUrl.isNotEmpty) {
+      return Image.network(
+        _getFullImageUrl(widget.imageUrl),
+        fit: BoxFit.cover,
+        loadingBuilder: (_, child, progress) {
+          return progress == null
+              ? child
+              : Center(
+                  child: CircularProgressIndicator(
+                    value: progress.expectedTotalBytes != null
+                        ? progress.cumulativeBytesLoaded /
+                            progress.expectedTotalBytes!
+                        : null,
+                  ),
+                );
+        },
+        errorBuilder: (_, __, ___) => _buildErrorIcon(),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildErrorIcon() {
+    return const Center(
+      child: Icon(Icons.broken_image, size: 60, color: Colors.grey),
+    );
   }
 
   void _showImageSourceSelector() {
     showModalBottomSheet(
       context: context,
-      builder: (context) => SafeArea(
+      builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Scegli dalla Galleria'),
-              onTap: () {
-                Navigator.pop(context);
-                _selectImageFromGallery();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Scatta una Foto'),
-              onTap: () {
-                Navigator.pop(context);
-                _selectImageFromCamera();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.close),
-              title: const Text('Annulla'),
-              onTap: () => Navigator.pop(context),
-            ),
+            _buildSourceTile(Icons.photo_library, 'Scegli dalla Galleria',
+                ImageSource.gallery),
+            _buildSourceTile(
+                Icons.camera_alt, 'Scatta una Foto', ImageSource.camera),
+            _buildSourceTile(Icons.close, 'Annulla', null, isCancel: true),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildSourceTile(IconData icon, String label, ImageSource? source,
+      {bool isCancel = false}) {
+    return ListTile(
+      leading: Icon(icon, color: isCancel ? Colors.red : null),
+      title: Text(label,
+          style: isCancel ? const TextStyle(color: Colors.red) : null),
+      onTap: () {
+        Navigator.pop(context);
+        if (source != null) _pickImage(source);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hasImage =
+        widget.selectedImageXFile != null || widget.imageUrl.isNotEmpty;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Immagine della Ricetta',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            const Text('Immagine della Ricetta',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text(
-              'Modifica la foto della tua ricetta (opzionale)',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
+            const Text('Modifica la foto della tua ricetta (opzionale)',
+                style: TextStyle(color: Colors.grey, fontSize: 12)),
             const SizedBox(height: 16),
-            if (widget.selectedImageXFile != null || widget.imageUrl.isNotEmpty)
-              _buildImagePreview()
-            else
-              _buildAddImageButton(),
+            hasImage ? _buildImagePreview() : _buildAddImageButton(),
           ],
         ),
       ),
@@ -141,58 +162,7 @@ class _EditImageSectionState extends State<EditImageSection> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: widget.imageBytes != null
-                ? Image.memory(
-                    widget.imageBytes!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 60,
-                          color: Colors.grey,
-                        ),
-                      );
-                    },
-                  )
-                : widget.selectedImageXFile != null
-                    ? Image.file(
-                        File(widget.selectedImageXFile!.path),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              size: 60,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      )
-                    : Image.network(
-                        _getFullImageUrl(widget.imageUrl),
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              size: 60,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      ),
+            child: _buildImageWidget(),
           ),
         ),
         const SizedBox(height: 16),
@@ -225,36 +195,23 @@ class _EditImageSectionState extends State<EditImageSection> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: Colors.grey[100],
-          border: Border.all(
-            color: Colors.grey.shade300,
-            width: 2,
-          ),
+          border: Border.all(color: Colors.grey.shade300, width: 2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.add_photo_alternate,
-              size: 60,
-              color: Colors.grey[500],
-            ),
+            Icon(Icons.add_photo_alternate, size: 60, color: Colors.grey[500]),
             const SizedBox(height: 16),
-            Text(
-              'Aggiungi Foto',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            Text('Aggiungi Foto',
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(
               'Tocca per selezionare dalla galleria o scattare una foto',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
             ),
           ],
         ),

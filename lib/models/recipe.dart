@@ -243,9 +243,9 @@ class Recipe {
 }
 
 enum Difficulty {
-  EASY('EASY'),
-  MEDIUM('MEDIUM'),
-  HARD('HARD');
+  easy('EASY'),
+  medium('MEDIUM'),
+  hard('HARD');
 
   final String value;
   const Difficulty(this.value);
@@ -253,7 +253,7 @@ enum Difficulty {
   static Difficulty fromString(String value) {
     return values.firstWhere(
       (d) => d.value == value,
-      orElse: () => MEDIUM,
+      orElse: () => medium, // Aggiornato anche qui
     );
   }
 }

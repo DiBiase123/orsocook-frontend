@@ -1,11 +1,10 @@
-import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http_parser/http_parser.dart';
-import '../config.dart';
-import '../utils/logger.dart';
+import 'package:orsocook/config.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class AvatarService extends ChangeNotifier {
   bool _isUploading = false;
@@ -42,8 +41,11 @@ class AvatarService extends ChangeNotifier {
     }
   }
 
-  // Upload avatar
-  Future<Map<String, dynamic>> uploadAvatar(File imageFile) async {
+  // Upload avatar - MODIFICATO per accettare Uint8List
+  Future<Map<String, dynamic>> uploadAvatar({
+    required Uint8List imageBytes,
+    required String fileName,
+  }) async {
     _isUploading = true;
     _resetError();
     notifyListeners();
@@ -64,34 +66,10 @@ class AvatarService extends ChangeNotifier {
 
       // DEBUG ESTESO
       AppLogger.debug("=== AVATAR SERVICE DEBUG ===");
-      AppLogger.debug("1. File path: ${imageFile.path}");
-
-      try {
-        final exists = await imageFile.exists();
-        AppLogger.debug("2. File exists: $exists");
-
-        if (exists) {
-          final size = await imageFile.length();
-          AppLogger.debug("3. File size: $size bytes");
-        }
-      } catch (e) {
-        AppLogger.debug("2-3. File check error: $e");
-      }
-
-      AppLogger.debug("4. Token length: ${token.length}");
-      AppLogger.debug(
-          "5. Token (first 20): ${token.substring(0, token.length < 20 ? token.length : 20)}...");
-      AppLogger.debug("6. URL: $url");
-
-      // ===== BLOCCO DEBUG =====
-      AppLogger.debug('🔥🔥🔥 AVATAR UPLOAD DEBUG');
-      AppLogger.debug('URL: $url');
-      AppLogger.debug('Token presente: true');
-      AppLogger.debug(
-          'Token (primi 10): ${token.substring(0, token.length > 10 ? 10 : token.length)}...');
-      AppLogger.debug('File path: ${imageFile.path}');
-      AppLogger.debug('File size: ${await imageFile.length()} bytes');
-      // ========================
+      AppLogger.debug("1. File name: $fileName");
+      AppLogger.debug("2. File size: ${imageBytes.length} bytes");
+      AppLogger.debug("3. Token length: ${token.length}");
+      AppLogger.debug("4. URL: $url");
 
       // Crea la richiesta multipart
       final request = http.MultipartRequest('PUT', Uri.parse(url));
@@ -99,44 +77,32 @@ class AvatarService extends ChangeNotifier {
       // Aggiungi header Authorization
       request.headers['Authorization'] = 'Bearer $token';
 
-      // Aggiungi il file immagine
-      final fileStream = http.ByteStream(imageFile.openRead());
-      final fileLength = await imageFile.length();
-
       // Ottieni l'estensione del file per determinare il content-type
-      final extension = imageFile.path.split('.').last.toLowerCase();
+      final extension = fileName.split('.').last.toLowerCase();
       final contentType = _getMediaType(extension);
 
-      AppLogger.debug("11. File extension: $extension");
-      AppLogger.debug("12. Content-Type: ${contentType.mimeType}");
+      AppLogger.debug("5. File extension: $extension");
+      AppLogger.debug("6. Content-Type: ${contentType.mimeType}");
 
-      final multipartFile = http.MultipartFile(
+      // Crea il multipart file direttamente dai bytes
+      final multipartFile = http.MultipartFile.fromBytes(
         'avatar',
-        fileStream,
-        fileLength,
-        filename: imageFile.path.split('/').last,
+        imageBytes,
+        filename: fileName,
         contentType: contentType,
       );
 
       request.files.add(multipartFile);
 
-      // DEBUG aggiuntivo
-      AppLogger.debug("7. Field name: '${multipartFile.field}'");
-      AppLogger.debug("8. Filename: '${multipartFile.filename}'");
-      AppLogger.debug("9. File length: ${multipartFile.length}");
-      AppLogger.debug("10. Request files count: ${request.files.length}");
+      AppLogger.debug("7. Request files count: ${request.files.length}");
       AppLogger.debug("=== END AVATAR DEBUG ===");
 
       // Invia la richiesta
       AppLogger.debug("Invio richiesta multipart...");
       final streamedResponse = await request.send();
 
-      // 🔥 DEBUG CRUCIALE - STATUS CODE IMMEDIATO
+      // Debug della risposta
       AppLogger.debug('📥 RESPONSE STATUS: ${streamedResponse.statusCode}');
-      AppLogger.debug(
-          "Content-Type: ${streamedResponse.headers['content-type']}");
-      AppLogger.debug(
-          "Content-Length: ${streamedResponse.headers['content-length']}");
 
       final response = await http.Response.fromStream(streamedResponse);
 

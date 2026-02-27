@@ -13,7 +13,7 @@ class FavoriteService extends ChangeNotifier {
   // Cache locale dei preferiti
   final Map<String, Recipe> _favoritesCache = {};
   DateTime? _lastFetchTime;
-  final Duration _cacheDuration = Duration(minutes: 5);
+  final Duration _cacheDuration = const Duration(minutes: 5);
 
   // Stati
   bool _isLoading = false;
@@ -57,7 +57,7 @@ class FavoriteService extends ChangeNotifier {
 
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}/api/favorites'),
-        headers: authHeaders, // ✅ USA authHeaders
+        headers: authHeaders,
       );
 
       if (response.statusCode == 200) {
@@ -105,7 +105,7 @@ class FavoriteService extends ChangeNotifier {
 
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/api/favorites/$recipeId'),
-        headers: authHeaders, // ✅ USA authHeaders
+        headers: authHeaders,
       );
 
       if (response.statusCode == 201) {
@@ -139,7 +139,7 @@ class FavoriteService extends ChangeNotifier {
 
       final response = await http.delete(
         Uri.parse('${Config.apiBaseUrl}/api/favorites/$recipeId'),
-        headers: authHeaders, // ✅ USA authHeaders
+        headers: authHeaders,
       );
 
       if (response.statusCode == 200) {
@@ -171,7 +171,7 @@ class FavoriteService extends ChangeNotifier {
 
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}/api/favorites/check/$recipeId'),
-        headers: authHeaders, // ✅ USA authHeaders
+        headers: authHeaders,
       );
 
       if (response.statusCode == 200) {
@@ -259,25 +259,24 @@ class FavoriteService extends ChangeNotifier {
       prepTime: 0,
       cookTime: 0,
       servings: 0,
-      difficulty: Difficulty.MEDIUM, // Usa l'enum, non stringa
+      difficulty: Difficulty.medium, // ← CORRETTO: medium invece di MEDIUM
       isPublic: true,
       views: 0,
-      favoriteCount: 0, // Aggiunto
-      likeCount: 0, // Aggiunto
-      commentCount: 0, // Aggiunto
-      isFavorite: false, // Aggiunto
-      isLiked: false, // Aggiunto
+      favoriteCount: 0,
+      likeCount: 0,
+      commentCount: 0,
+      isFavorite: false,
+      isLiked: false,
       author: UserAuthor(
-        // Usa UserAuthor, non Map
         id: '',
         username: '',
         displayName: null,
         avatarUrl: null,
       ),
-      category: null, // Usa null invece di {}
-      ingredients: [], // Lista vuota di Ingredient
-      instructions: [], // Lista vuota di Instruction
-      tags: [], // Lista vuota di Tag
+      category: null,
+      ingredients: [],
+      instructions: [],
+      tags: [],
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

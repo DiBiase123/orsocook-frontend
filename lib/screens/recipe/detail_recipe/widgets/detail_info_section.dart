@@ -20,11 +20,11 @@ class DetailInfoSection extends StatelessWidget {
   // Helper per convertire Difficulty in stringa leggibile
   String _getDifficultyString(Difficulty difficulty) {
     switch (difficulty) {
-      case Difficulty.EASY:
+      case Difficulty.easy:
         return 'Facile';
-      case Difficulty.MEDIUM:
+      case Difficulty.medium:
         return 'Media';
-      case Difficulty.HARD:
+      case Difficulty.hard:
         return 'Difficile';
     }
   }

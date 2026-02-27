@@ -148,7 +148,7 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value:
+                    initialValue:
                         widget.difficulty.isNotEmpty ? widget.difficulty : null,
                     decoration: const InputDecoration(
                       labelText: 'Difficoltà',
@@ -178,24 +178,34 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: widget.category.isNotEmpty ? widget.category : null,
+                    initialValue:
+                        widget.category.isNotEmpty ? widget.category : null,
                     decoration: const InputDecoration(
                       labelText: 'Categoria',
                       border: OutlineInputBorder(),
                     ),
                     items: const [
-                      'Antipasti',
-                      'Primi',
-                      'Secondi',
-                      'Contorni',
-                      'Dolci',
-                      'Bevande',
-                    ].map((category) {
-                      return DropdownMenuItem(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
+                      DropdownMenuItem(
+                        value: 'ANTIPASTO',
+                        child: Text('Antipasto'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'PRIMO',
+                        child: Text('Primo'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'SECONDO',
+                        child: Text('Secondo'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'CONTORNO',
+                        child: Text('Contorno'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'DOLCE',
+                        child: Text('Dolce'),
+                      ),
+                    ],
                     onChanged: (value) {
                       if (value != null) {
                         widget.onCategoryChanged(value);

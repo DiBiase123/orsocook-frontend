@@ -1,8 +1,8 @@
 // lib/screens/home/widgets/empty_state.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../services/recipe_service.dart';
-import '../../../utils/logger.dart';
+import 'package:orsocook/services/recipe_service.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class EmptyState extends StatelessWidget {
   final String? searchQuery;
@@ -36,8 +36,8 @@ class EmptyState extends StatelessWidget {
       );
     }
 
-    // Se c'è un errore, mostra errore
-    if (recipeService.hasError) {
+    // Se c'è un errore, mostra errore (usa lastError != null)
+    if (recipeService.lastError != null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -50,7 +50,7 @@ class EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              recipeService.lastError ?? 'Errore sconosciuto',
+              recipeService.lastError!,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.grey),
             ),

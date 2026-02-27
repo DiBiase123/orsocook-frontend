@@ -36,6 +36,8 @@ class _EditIngredientsState extends State<EditIngredients> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
+
+            // Input row
             Row(
               children: [
                 Expanded(
@@ -83,33 +85,51 @@ class _EditIngredientsState extends State<EditIngredients> {
               ],
             ),
             const SizedBox(height: 16),
-            if (widget.ingredients.isNotEmpty) ...[
-              const Text(
-                'Lista ingredienti:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              ...widget.ingredients.asMap().entries.map((entry) {
-                final index = entry.key;
-                final ingredient = entry.value;
 
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.deepOrange[50],
-                    child: Text('${index + 1}'),
+            // Lista ingredienti
+            if (widget.ingredients.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text(
+                    'Nessun ingrediente aggiunto',
+                    style: TextStyle(color: Colors.grey),
                   ),
-                  title: Text(ingredient['name']),
-                  subtitle: Text(
-                      '${ingredient['quantity'] ?? ''} ${ingredient['unit'] ?? ''}'
-                          .trim()),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_circle, color: Colors.red),
-                    onPressed: () => widget.onRemoveIngredient(index),
+                ),
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Lista ingredienti:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  dense: true,
-                );
-              }).toList(),
-            ],
+                  const SizedBox(height: 8),
+                  ...widget.ingredients.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final ingredient = entry.value;
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.deepOrange[50],
+                        child: Text('${index + 1}'),
+                      ),
+                      title: Text(ingredient['name'] ?? ''),
+                      subtitle: Text(
+                        '${ingredient['quantity'] ?? ''} ${ingredient['unit'] ?? ''}'
+                            .trim(),
+                      ),
+                      trailing: IconButton(
+                        icon:
+                            const Icon(Icons.remove_circle, color: Colors.red),
+                        onPressed: () => widget.onRemoveIngredient(index),
+                      ),
+                      dense: true,
+                    );
+                  }),
+                ],
+              ),
           ],
         ),
       ),

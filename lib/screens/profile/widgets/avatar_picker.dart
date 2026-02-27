@@ -126,11 +126,21 @@ class AvatarPickerWidget extends StatelessWidget {
     AuthService authService,
     BuildContext context,
   ) {
-    // Priorità 1: File temporaneo selezionato
+    // Priorità 1: File temporaneo selezionato (XFile)
     if (controller.selectedAvatar != null) {
-      return Image.file(
-        controller.selectedAvatar!,
-        fit: BoxFit.cover,
+      return FutureBuilder(
+        future: controller.selectedAvatar!.readAsBytes(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData) {
+            return Image.memory(
+              snapshot.data!,
+              fit: BoxFit.cover,
+            );
+          }
+          // Mostra un placeholder durante il caricamento
+          return _buildPlaceholderIcon(context);
+        },
       );
     }
 

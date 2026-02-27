@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:orsocook/config.dart';
@@ -46,8 +45,10 @@ class CloudinaryUploadService {
 
       debugPrint('📦 URL: $uri');
 
+      final multipartFile =
+          MultipartFile.fromBytes(imageBytes, filename: fileName);
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromBytes(imageBytes, filename: fileName),
+        'file': multipartFile,
         'api_key': signatureData['apiKey'],
         'timestamp': signatureData['timestamp'],
         'signature': signatureData['signature'],
