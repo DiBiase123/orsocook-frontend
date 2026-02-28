@@ -152,7 +152,7 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value:
+                    initialValue:
                         widget.difficulty.isNotEmpty ? widget.difficulty : null,
                     decoration: const InputDecoration(
                       labelText: 'Difficoltà',
@@ -182,7 +182,8 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: widget.category.isNotEmpty ? widget.category : null,
+                    initialValue:
+                        widget.category.isNotEmpty ? widget.category : null,
                     decoration: const InputDecoration(
                       labelText: 'Categoria',
                       border: OutlineInputBorder(),

@@ -31,45 +31,14 @@ class _LikeButtonState extends State<LikeButton> {
   @override
   void initState() {
     super.initState();
-    _checkInitialState();
-  }
-
-  Future<void> _checkInitialState() async {
-    try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-
-      if (!authService.isLoggedIn) {
-        AppLogger.debug('User not logged in, like button disabled');
-        setState(() {
-          _hasCheckedInitialState = true;
-        });
-        return;
-      }
-
-      final likeService = Provider.of<LikeService>(context, listen: false);
-
-      // Carica il count dei likes
-      await likeService.getLikesCountFromAPI(widget.recipeId);
-
-      // Controlla se l'utente ha già messo like
-      final result = await likeService.checkLiked(widget.recipeId);
-
-      AppLogger.debug(
-          'Recipe ${widget.recipeId} liked status from API: ${result['liked']}');
-
+    // NON facciamo chiamate API qui, usiamo solo la cache
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {
           _hasCheckedInitialState = true;
         });
       }
-    } catch (e) {
-      AppLogger.error('Error checking liked status', e);
-      if (mounted) {
-        setState(() {
-          _hasCheckedInitialState = true;
-        });
-      }
-    }
+    });
   }
 
   Future<void> _toggleLike(LikeService likeService) async {
@@ -90,17 +59,10 @@ class _LikeButtonState extends State<LikeButton> {
       if (!success) {
         _showErrorSnackbar('Errore durante l\'operazione');
       } else {
-        // Notifica callback se fornito
         widget.onToggle?.call();
-
-        // Mostra feedback
         final isNowLiked = likeService.isLiked(widget.recipeId);
         _showSuccessSnackbar(
             isNowLiked ? 'Mi piace aggiunto!' : 'Mi piace rimosso!');
-
-        AppLogger.success(isNowLiked
-            ? 'Recipe ${widget.recipeId} liked'
-            : 'Recipe ${widget.recipeId} unliked');
       }
     } catch (e) {
       AppLogger.error('Error toggling like', e);
@@ -113,8 +75,6 @@ class _LikeButtonState extends State<LikeButton> {
   }
 
   void _showLoginPrompt() {
-    AppLogger.auth('User not logged in, showing login prompt');
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Accedi per mettere "Mi piace" alle ricette'),
@@ -123,7 +83,7 @@ class _LikeButtonState extends State<LikeButton> {
           label: 'ACCEDI',
           textColor: Colors.white,
           onPressed: () {
-            AppLogger.navigation('Navigate to login from like button');
+            // Naviga al login
           },
         ),
       ),
@@ -156,8 +116,10 @@ class _LikeButtonState extends State<LikeButton> {
       builder: (context, likeService, child) {
         final isLiked = likeService.isLiked(widget.recipeId);
         final likesCount = likeService.getLikesCount(widget.recipeId);
+        final authService = Provider.of<AuthService>(context);
+        final isLoggedIn = authService.isLoggedIn;
 
-        // Se non abbiamo ancora controllato lo stato, mostra loading
+        // Se non abbiamo ancora inizializzato, mostra un placeholder
         if (!_hasCheckedInitialState && widget.showLoading) {
           return SizedBox(
             width: widget.size,
@@ -172,10 +134,7 @@ class _LikeButtonState extends State<LikeButton> {
           );
         }
 
-        final authService = Provider.of<AuthService>(context);
-        final isLoggedIn = authService.isLoggedIn;
-
-        // Se non loggato, bottone disabilitato (COME FAVORITE_BUTTON)
+        // Utente non loggato
         if (!isLoggedIn) {
           return Stack(
             children: [
@@ -188,10 +147,9 @@ class _LikeButtonState extends State<LikeButton> {
                 onPressed: _showLoginPrompt,
                 tooltip: 'Accedi per mettere "Mi piace"',
               ),
-              // Badge disabilitato (solo numero)
               if (likesCount > 0)
                 Positioned(
-                  bottom: 4, // Basso a destra
+                  bottom: 4,
                   right: 4,
                   child: Container(
                     padding: const EdgeInsets.all(2),
@@ -218,7 +176,7 @@ class _LikeButtonState extends State<LikeButton> {
           );
         }
 
-        // Se in processing, mostra loading
+        // In elaborazione
         if (_isProcessing && widget.showLoading) {
           return SizedBox(
             width: widget.size,
@@ -233,43 +191,28 @@ class _LikeButtonState extends State<LikeButton> {
           );
         }
 
-        // Colore basato su stato
-        Color getIconColor() {
-          if (!isLoggedIn) return Colors.grey;
-          if (isLiked) return Colors.blue;
-          return widget.color ?? Colors.grey[700]!;
-        }
-
-        // Bottone normale CON BADGE (COME FAVORITE_BUTTON + BADGE)
+        // Bottone normale
         return Stack(
           children: [
             IconButton(
               iconSize: widget.size,
               icon: Icon(
                 isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                color: getIconColor(),
+                color:
+                    isLiked ? Colors.blue : widget.color ?? Colors.grey[700]!,
               ),
               onPressed: () => _toggleLike(likeService),
               tooltip: isLiked ? 'Rimuovi mi piace' : 'Metti mi piace',
             ),
-
-            // BADGE con numero (solo se > 0) - POSIZIONE: BASSO A DESTRA
             if (likesCount > 0)
               Positioned(
-                bottom: 4, // Angolo in basso a destra
+                bottom: 4,
                 right: 4,
                 child: Container(
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: isLiked ? Colors.blue : Colors.grey[600],
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(25),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
                   ),
                   constraints: const BoxConstraints(
                     minWidth: 16,
@@ -281,7 +224,6 @@ class _LikeButtonState extends State<LikeButton> {
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      height: 1.1,
                     ),
                     textAlign: TextAlign.center,
                   ),

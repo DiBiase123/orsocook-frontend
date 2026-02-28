@@ -32,6 +32,17 @@ class _CategoriesBarState extends State<CategoriesBar> {
     }
   }
 
+  String _getSelectedCategoryName(List<_CategoryItem> categories) {
+    if (widget.selectedCategorySlug == null) {
+      return 'Tutte';
+    }
+    final selected = categories.firstWhere(
+      (c) => c.slug == widget.selectedCategorySlug,
+      orElse: () => const _CategoryItem(id: 'all', name: 'Tutte', slug: ''),
+    );
+    return selected.name;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -44,7 +55,6 @@ class _CategoriesBarState extends State<CategoriesBar> {
 
         final categories = categoryService.categories;
 
-        // Lista completa: "Tutte" + categorie reali
         final allCategories = [
           const _CategoryItem(
             id: 'all',
@@ -59,63 +69,62 @@ class _CategoriesBarState extends State<CategoriesBar> {
               )),
         ];
 
+        final selectedName = _getSelectedCategoryName(allCategories);
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: DropdownButtonFormField<String>(
-            value: widget.selectedCategorySlug,
-            decoration: InputDecoration(
-              labelText: 'Categoria',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+          child: PopupMenuButton<String>(
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: 'Categoria',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: const Icon(Icons.category),
+                suffixIcon: Icon(Icons.arrow_drop_down,
+                    color: theme.colorScheme.primary),
               ),
-              prefixIcon: const Icon(Icons.category),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                selectedName,
+                style: const TextStyle(fontSize: 16),
+              ),
             ),
-            items: allCategories.map((category) {
-              return DropdownMenuItem<String>(
-                value: category.slug.isEmpty ? null : category.slug,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        category.name,
-                        style: const TextStyle(fontSize: 16),
+            itemBuilder: (context) {
+              return allCategories.map((category) {
+                return PopupMenuItem<String>(
+                  value: category.slug.isEmpty ? null : category.slug,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(category.name),
                       ),
-                    ),
-                    if (category.recipeCount > 0 && category.id != 'all')
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${category.recipeCount}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
+                      if (category.recipeCount > 0 && category.id != 'all')
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${category.recipeCount}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              // 👈 Evita chiamate multiple
+                    ],
+                  ),
+                );
+              }).toList();
+            },
+            onSelected: (value) {
               if (value == widget.selectedCategorySlug) return;
-
-              AppLogger.debug('🎯 Categoria selezionata: $value');
               widget.onCategorySelected?.call(value);
             },
-            // Stile del dropdown quando aperto
-            dropdownColor: theme.colorScheme.surface,
-            icon: Icon(Icons.arrow_drop_down, color: theme.colorScheme.primary),
-            isExpanded: true,
           ),
         );
       },

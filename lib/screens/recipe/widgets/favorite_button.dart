@@ -34,52 +34,14 @@ class _FavoriteButtonState extends State<FavoriteButton> {
   @override
   void initState() {
     super.initState();
-    _checkInitialState();
-  }
-
-  Future<void> _checkInitialState() async {
-    try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-
-      if (!authService.isLoggedIn) {
-        AppLogger.debug('User not logged in, favorite button disabled');
-        setState(() {
-          _hasCheckedInitialState = true;
-        });
-        return;
-      }
-
-      final favoriteService =
-          Provider.of<FavoriteService>(context, listen: false);
-
-      // Prima controlla la cache locale
-      if (favoriteService.isFavorite(widget.recipeId)) {
-        AppLogger.debug('Recipe ${widget.recipeId} is favorite (from cache)');
-        setState(() {
-          _hasCheckedInitialState = true;
-        });
-        return;
-      }
-
-      // Se non in cache, chiama l'API
-      final result = await favoriteService.checkFavorite(widget.recipeId);
-
-      AppLogger.debug(
-          'Recipe ${widget.recipeId} favorite status from API: ${result['isFavorite']}');
-
+    // NON facciamo chiamate API qui, usiamo solo la cache
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {
           _hasCheckedInitialState = true;
         });
       }
-    } catch (e) {
-      AppLogger.error('Error checking favorite status', e);
-      if (mounted) {
-        setState(() {
-          _hasCheckedInitialState = true;
-        });
-      }
-    }
+    });
   }
 
   Future<void> _toggleFavorite(FavoriteService favoriteService) async {
@@ -166,12 +128,13 @@ class _FavoriteButtonState extends State<FavoriteButton> {
 
   @override
   Widget build(BuildContext context) {
-    // USA CONSUMER PER FAVORITE SERVICE
     return Consumer<FavoriteService>(
       builder: (context, favoriteService, child) {
         final isFavorite = favoriteService.isFavorite(widget.recipeId);
+        final authService = Provider.of<AuthService>(context);
+        final isLoggedIn = authService.isLoggedIn;
 
-        // Se non abbiamo ancora controllato lo stato, mostra loading
+        // Se non abbiamo ancora inizializzato, mostra loading
         if (!_hasCheckedInitialState && widget.showLoading) {
           return SizedBox(
             width: widget.size,
@@ -185,9 +148,6 @@ class _FavoriteButtonState extends State<FavoriteButton> {
             ),
           );
         }
-
-        final authService = Provider.of<AuthService>(context);
-        final isLoggedIn = authService.isLoggedIn;
 
         // Se non loggato, bottone disabilitato
         if (!isLoggedIn) {

@@ -9,9 +9,17 @@ class LikeService extends ChangeNotifier {
   // Dipendenza su AuthService
   final AuthService _authService;
 
-  // Cache locale dei likes
+  // Cache locale dei likes con timestamp
   final Map<String, int> _likesCountCache = {};
   final Map<String, bool> _likedStatusCache = {};
+  final Map<String, DateTime> _likesCountTimestamp = {};
+  final Map<String, DateTime> _likedStatusTimestamp = {};
+
+  // Cache delle richieste in corso per evitare duplicati
+  final Set<String> _pendingRequests = {};
+
+  // Tempo di validità della cache (5 minuti)
+  static const Duration _cacheValidity = Duration(minutes: 5);
 
   // Lista di listener per aggiornamenti like
   final List<Function(String, bool)> _likeUpdateListeners = [];
@@ -62,6 +70,16 @@ class LikeService extends ChangeNotifier {
   }
 
   // ============================================
+  // METODI DI UTILITY
+  // ============================================
+
+  // Verifica se la cache è ancora valida
+  bool _isCacheValid(DateTime? timestamp) {
+    if (timestamp == null) return false;
+    return DateTime.now().difference(timestamp) < _cacheValidity;
+  }
+
+  // ============================================
   // METODI PUBBLICI
   // ============================================
 
@@ -83,31 +101,71 @@ class LikeService extends ChangeNotifier {
         '📥 Preloading likes count for ${recipeIds.length} recipes');
 
     try {
-      // Filtra solo le ricette non già in cache
-      final recipesToLoad =
-          recipeIds.where((id) => !_likesCountCache.containsKey(id)).toList();
+      // Filtra solo le ricette non in cache o con cache scaduta
+      final recipesToLoad = recipeIds.where((id) {
+        // Se c'è già una richiesta in corso per questo ID, salta
+        if (_pendingRequests.contains(id)) {
+          AppLogger.debug('⏳ Richiesta già in corso per $id, salto');
+          return false;
+        }
+
+        final hasCount = _likesCountCache.containsKey(id);
+        final hasStatus = _likedStatusCache.containsKey(id);
+        final countTimestamp = _likesCountTimestamp[id];
+        final statusTimestamp = _likedStatusTimestamp[id];
+
+        // Se entrambi sono in cache e validi, non serve ricaricare
+        if (hasCount &&
+            hasStatus &&
+            _isCacheValid(countTimestamp) &&
+            _isCacheValid(statusTimestamp)) {
+          return false;
+        }
+
+        return true;
+      }).toList();
 
       if (recipesToLoad.isEmpty) {
-        AppLogger.debug('✅ All likes counts already cached');
+        AppLogger.debug('✅ All likes counts already cached and valid');
         return;
       }
 
       AppLogger.debug('📊 Need to load ${recipesToLoad.length} likes counts');
+
+      // Marca come pending per evitare doppie richieste
+      for (final id in recipesToLoad) {
+        _pendingRequests.add(id);
+      }
 
       // Carica i counts in parallelo
       await Future.wait(
         recipesToLoad.map((recipeId) => getLikesCountFromAPI(recipeId)),
       );
 
+      // Carica anche gli stati liked per quelli nuovi
+      await Future.wait(
+        recipesToLoad.map((recipeId) => checkLiked(recipeId)),
+      );
+
       AppLogger.success(
           '✅ Likes count preloaded for ${recipesToLoad.length} recipes');
     } catch (e) {
       AppLogger.error('Error preloading likes count', e);
+    } finally {
+      // Rimuovi i pending
+      for (final id in recipeIds) {
+        _pendingRequests.remove(id);
+      }
     }
   }
 
   // Ottieni likes count da API (pubblico)
   Future<int> getLikesCountFromAPI(String recipeId) async {
+    // Se già in cache e valido, restituisci cache
+    if (_isCacheValid(_likesCountTimestamp[recipeId])) {
+      return _likesCountCache[recipeId] ?? 0;
+    }
+
     AppLogger.api('GET /api/recipes/$recipeId/likes');
 
     try {
@@ -116,24 +174,17 @@ class LikeService extends ChangeNotifier {
       );
 
       AppLogger.debug('📡 Response status: ${response.statusCode}');
-      AppLogger.debug('📡 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
-        // ✅ DEBUG: Mostra struttura completa
-        AppLogger.debug('📊 Parsed data: $data');
-        AppLogger.debug('📊 Data keys: ${data.keys}');
-
-        // Il backend ritorna: {"success":true,"data":{"count":1}}
-        // Quindi dobbiamo: data['data']['count']
 
         final count = data['data']?['count'] ?? 0;
 
         AppLogger.debug('✅ Final count for $recipeId: $count');
 
-        // Aggiorna cache
+        // Aggiorna cache e timestamp
         _likesCountCache[recipeId] = count;
+        _likesCountTimestamp[recipeId] = DateTime.now();
 
         return count;
       } else {
@@ -147,8 +198,15 @@ class LikeService extends ChangeNotifier {
 
   // Controlla se l'utente ha messo like (privato)
   Future<Map<String, dynamic>> checkLiked(String recipeId) async {
+    // Se già in cache e valido, restituisci cache
+    if (_isCacheValid(_likedStatusTimestamp[recipeId])) {
+      return {'liked': _likedStatusCache[recipeId] ?? false, 'likedAt': null};
+    }
+
     try {
       if (!_authService.isLoggedIn) {
+        _likedStatusCache[recipeId] = false;
+        _likedStatusTimestamp[recipeId] = DateTime.now();
         return {'liked': false, 'likedAt': null};
       }
 
@@ -158,19 +216,18 @@ class LikeService extends ChangeNotifier {
 
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}/api/recipes/$recipeId/liked'),
-        headers: authHeaders, // ✅ USA authHeaders
+        headers: authHeaders,
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
-        // ✅ CORRETTO: Accedi a data['data']['liked']
         final likedStatus = data['data']?['liked'] ?? false;
 
         AppLogger.debug('Recipe $recipeId liked status from API: $likedStatus');
 
-        // Aggiorna cache
+        // Aggiorna cache e timestamp
         _likedStatusCache[recipeId] = likedStatus;
+        _likedStatusTimestamp[recipeId] = DateTime.now();
         notifyListeners();
 
         return {'liked': likedStatus, 'likedAt': null};
@@ -184,7 +241,7 @@ class LikeService extends ChangeNotifier {
   }
 
   // ============================================
-  // METODI HELPER
+  // METODI PER AGGIUNTA/RIMOZIONE LIKE
   // ============================================
 
   // Aggiorna la conta likes dal backend (REALE)
@@ -193,6 +250,7 @@ class LikeService extends ChangeNotifier {
       AppLogger.debug('🔄 Aggiornamento conta likes per $recipeId da API');
       final count = await getLikesCountFromAPI(recipeId);
       _likesCountCache[recipeId] = count;
+      _likesCountTimestamp[recipeId] = DateTime.now();
       AppLogger.debug('✅ Nuova conta likes per $recipeId: $count');
       return count;
     } catch (e) {
@@ -201,11 +259,7 @@ class LikeService extends ChangeNotifier {
     }
   }
 
-  // ============================================
-  // METODI PER AGGIUNTA/RIMOZIONE LIKE
-  // ============================================
-
-  // Aggiungi like (privato)
+  // Aggiungi like
   Future<bool> addLike(String recipeId) async {
     AppLogger.api('POST /api/recipes/$recipeId/like');
 
@@ -217,22 +271,21 @@ class LikeService extends ChangeNotifier {
 
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/api/recipes/$recipeId/like'),
-        headers: authHeaders, // ✅ USA authHeaders
+        headers: authHeaders,
       );
 
-      // ✅ ACCETTA sia 200 che 201
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
         AppLogger.debug('Add like response: $data');
 
         // 1. Aggiorna cache stato liked
         _likedStatusCache[recipeId] = true;
+        _likedStatusTimestamp[recipeId] = DateTime.now();
 
-        // 2. OTTIENI CONTA REALE DAL BACKEND (NON usare incremento locale)
+        // 2. OTTIENI CONTA REALE DAL BACKEND
         await _refreshLikesCount(recipeId);
 
-        AppLogger.success(
-            '✅ Like aggiunto a ricetta $recipeId (status: ${response.statusCode})');
+        AppLogger.success('✅ Like aggiunto a ricetta $recipeId');
 
         // 3. Notifica UI
         notifyListeners();
@@ -250,7 +303,7 @@ class LikeService extends ChangeNotifier {
     }
   }
 
-  // Rimuovi like (privato)
+  // Rimuovi like
   Future<bool> removeLike(String recipeId) async {
     AppLogger.api('DELETE /api/recipes/$recipeId/like');
 
@@ -263,18 +316,18 @@ class LikeService extends ChangeNotifier {
 
       final response = await http.delete(
         Uri.parse('${Config.apiBaseUrl}/api/recipes/$recipeId/like'),
-        headers: authHeaders, // ✅ USA authHeaders
+        headers: authHeaders,
       );
 
-      // ✅ ACCETTA 200
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         AppLogger.debug('Remove like response: $data');
 
         // 1. Aggiorna cache stato liked
         _likedStatusCache[recipeId] = false;
+        _likedStatusTimestamp[recipeId] = DateTime.now();
 
-        // 2. OTTIENI CONTA REALE DAL BACKEND (NON usare decremento locale)
+        // 2. OTTIENI CONTA REALE DAL BACKEND
         await _refreshLikesCount(recipeId);
 
         AppLogger.success('✅ Like rimosso da ricetta $recipeId');
@@ -295,7 +348,7 @@ class LikeService extends ChangeNotifier {
     }
   }
 
-  // Toggle like (aggiunge/rimuove)
+  // Toggle like
   Future<bool> toggleLike(String recipeId) async {
     final isCurrentlyLiked = isLiked(recipeId);
 
@@ -315,6 +368,9 @@ class LikeService extends ChangeNotifier {
   void clearCache() {
     _likesCountCache.clear();
     _likedStatusCache.clear();
+    _likesCountTimestamp.clear();
+    _likedStatusTimestamp.clear();
+    _pendingRequests.clear();
     notifyListeners();
   }
 }
