@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/recipe/create_recipe/viewmodels/create_recipe_viewmodel.dart';
 import 'package:orsocook/screens/recipe/create_recipe/widgets/recipe_app_bar.dart';
 import 'package:orsocook/screens/recipe/create_recipe/widgets/recipe_form.dart';
@@ -24,6 +25,8 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
           create: (_) => CreateRecipeViewModel(
             authService: Provider.of<AuthService>(context, listen: false),
             recipeService: Provider.of<RecipeService>(context, listen: false),
+            categoryService:
+                Provider.of<CategoryService>(context, listen: false),
           ),
         ),
       ],
@@ -48,7 +51,6 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
       BuildContext context, CreateRecipeViewModel viewModel) async {
     if (!viewModel.validate(_formKey)) return;
 
-    // Salva le reference del contesto PRIMA delle chiamate async
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 

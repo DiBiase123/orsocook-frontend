@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/comment_service.dart';
@@ -9,6 +8,7 @@ import 'package:orsocook/services/avatar_service.dart';
 import 'package:orsocook/services/profile_controller.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
+import 'package:orsocook/services/category_service.dart'; // 👈 NUOVO IMPORT
 import 'package:orsocook/navigation/app_router.dart';
 import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/utils/logger.dart';
@@ -36,6 +36,12 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthService>.value(value: authService),
+
+        // 👇 NUOVO PROVIDER
+        ChangeNotifierProvider<CategoryService>(
+          create: (context) => CategoryService(context.read<AuthService>()),
+        ),
+
         ChangeNotifierProvider<LikeService>(
           create: (context) => LikeService(context.read<AuthService>()),
         ),

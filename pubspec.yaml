@@ -12,9 +12,9 @@ dependencies:
     sdk: flutter
   
   # Networking
-  http: ^1.2.2  # <-- UNA SOLA VOLTA
+  http: ^1.2.2
   dio: ^5.0.0
-  http_parser: ^4.0.2  # <-- PER AVATAR SERVICE
+  http_parser: ^4.0.2
   
   # State Management & Storage
   provider: ^6.1.2
@@ -34,14 +34,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # COMMENTA/RIMUOVI le righe assets/fonts se non hai i file!
-  # assets:
-  #   - assets/images/
-  # 
-  # fonts:
-  #   - family: Roboto
-  #     fonts:
-  #       - asset: fonts/Roboto-Regular.ttf
-  #       - asset: fonts/Roboto-Bold.ttf
-  #         weight: 700

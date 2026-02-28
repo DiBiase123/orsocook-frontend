@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/viewmodels/edit_recipe_viewmodel.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/widgets/edit_app_bar.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/widgets/edit_form.dart';
@@ -30,6 +31,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           create: (_) => EditRecipeViewModel(
             authService: Provider.of<AuthService>(context, listen: false),
             recipeService: Provider.of<RecipeService>(context, listen: false),
+            categoryService:
+                Provider.of<CategoryService>(context, listen: false),
             originalRecipe: widget.recipe,
           ),
         ),
@@ -55,7 +58,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       BuildContext context, EditRecipeViewModel viewModel) async {
     if (!viewModel.validate(_formKey)) return;
 
-    // Salva le reference del contesto PRIMA delle chiamate async
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 

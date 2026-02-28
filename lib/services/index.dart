@@ -6,3 +6,4 @@ export 'favorite_service.dart';
 export 'profile_service.dart';
 export 'profile_controller.dart';
 export 'avatar_service.dart';
+export 'category_service.dart';

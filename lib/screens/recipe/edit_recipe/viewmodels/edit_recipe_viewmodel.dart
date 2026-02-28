@@ -5,11 +5,13 @@ import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/cloudinary_upload_service.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/utils/logger.dart';
 
 class EditRecipeViewModel extends ChangeNotifier {
   final AuthService _authService;
   final RecipeService _recipeService;
+  final CategoryService _categoryService;
   final ImagePicker _picker = ImagePicker();
   final Recipe originalRecipe;
 
@@ -44,11 +46,16 @@ class EditRecipeViewModel extends ChangeNotifier {
   EditRecipeViewModel({
     required AuthService authService,
     required RecipeService recipeService,
+    required CategoryService categoryService,
     required this.originalRecipe,
   })  : _authService = authService,
-        _recipeService = recipeService {
+        _recipeService = recipeService,
+        _categoryService = categoryService {
     _initializeControllers();
   }
+
+  // Getter per categorie - ORA USA CategoryModel
+  List<CategoryModel> get availableCategories => _categoryService.categories;
 
   void _initializeControllers() {
     titleController = TextEditingController(text: originalRecipe.title);
@@ -62,7 +69,7 @@ class EditRecipeViewModel extends ChangeNotifier {
         TextEditingController(text: originalRecipe.servings.toString());
 
     selectedDifficulty = originalRecipe.difficulty.value;
-    selectedCategory = originalRecipe.category?.name ?? '';
+    selectedCategory = originalRecipe.category?.slug ?? '';
     isPublic = originalRecipe.isPublic;
     ingredients = originalRecipe.ingredients.map((i) => i.toJson()).toList();
     instructions = originalRecipe.instructions.map((i) => i.toJson()).toList();
@@ -230,6 +237,17 @@ class EditRecipeViewModel extends ChangeNotifier {
     // Se richiesta rimozione immagine
     final finalImageUrl = removeImage ? null : (imageUrl ?? currentImageUrl);
 
+    CategoryModel? selectedCategoryObj; // ORA CategoryModel
+    if (selectedCategory.isNotEmpty) {
+      try {
+        selectedCategoryObj =
+            _categoryService.getCategoryBySlug(selectedCategory);
+      } catch (e) {
+        AppLogger.error('Errore nel trovare categoria', e);
+      }
+    }
+    print('🔍 MODIFICA - selectedCategory: $selectedCategory');
+    print('🔍 MODIFICA - selectedCategoryObj: $selectedCategoryObj');
     return Recipe(
       id: originalRecipe.id,
       title: titleController.text.trim(),
@@ -253,11 +271,12 @@ class EditRecipeViewModel extends ChangeNotifier {
         displayName: currentUsername,
         avatarUrl: _authService.avatarUrl,
       ),
-      category: selectedCategory.isNotEmpty
+      category: selectedCategoryObj != null
           ? Category(
-              id: '',
-              name: selectedCategory,
-              slug: selectedCategory.toLowerCase().replaceAll(' ', '-'),
+              // QUESTA È Category di recipe.dart
+              id: selectedCategoryObj.id,
+              name: selectedCategoryObj.name,
+              slug: selectedCategoryObj.slug,
             )
           : null,
       ingredients: ingredients
@@ -293,6 +312,10 @@ class EditRecipeViewModel extends ChangeNotifier {
     try {
       final imageUrl = await _uploadImageIfNeeded();
       final updatedRecipe = _buildUpdatedRecipe(imageUrl);
+
+      // 👈 LOG PER VEDERE COSA VIENE INVIATO
+      print('🔍 INVIO AL BACKEND - recipe.toJson(): ${updatedRecipe.toJson()}');
+
       final result =
           await _recipeService.updateRecipe(originalRecipe.id, updatedRecipe);
       return result;

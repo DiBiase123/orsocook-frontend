@@ -24,6 +24,9 @@ class DetailHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 👈 LOG PER DEBUG
+    print('🔍 DetailHeaderSection - category: ${recipe.category}');
+    print('🔍 DetailHeaderSection - category name: ${recipe.category?.name}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

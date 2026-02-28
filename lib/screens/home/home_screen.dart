@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/like_service.dart';
+import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/screens/recipe/detail_recipe_screen.dart';
 import 'package:orsocook/screens/home/widgets/welcome_header.dart';
@@ -21,17 +23,39 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _searchQuery;
-  int _lastRecipeCount = -1;
-  bool _lastLoadingState = false;
+  String? _selectedCategory;
+
+  static const String _prefKeySelectedCategory = 'selected_category';
+  final Duration _animationDuration = const Duration(milliseconds: 300);
 
   @override
   void initState() {
     super.initState();
+    _loadSavedCategory();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadInitialRecipes().catchError((e) {
         AppLogger.error('Errore nel caricamento iniziale', e);
       });
     });
+  }
+
+  // Carica categoria salvata
+  Future<void> _loadSavedCategory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedCategory = prefs.getString(_prefKeySelectedCategory);
+      if (savedCategory != null && savedCategory.isNotEmpty) {
+        setState(() {
+          _selectedCategory = savedCategory;
+        });
+        // Carica ricette con categoria salvata dopo che il widget è montato
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _loadRecipesWithFilters();
+        });
+      }
+    } catch (e) {
+      AppLogger.error('Errore nel caricamento categoria salvata', e);
+    }
   }
 
   Future<void> _loadInitialRecipes() async {
@@ -40,8 +64,16 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final recipeService = context.read<RecipeService>();
       final likeService = context.read<LikeService>();
+      final categoryService = context.read<CategoryService>();
 
-      await recipeService.fetchRecipes(forceRefresh: true, page: 1);
+      if (categoryService.categories.isEmpty) {
+        categoryService.fetchCategories();
+      }
+
+      // Se non c'è categoria salvata, carica tutte
+      if (_selectedCategory == null) {
+        await recipeService.fetchRecipes(forceRefresh: true, page: 1);
+      }
 
       if (!mounted) return;
 
@@ -51,6 +83,44 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       AppLogger.error('Errore caricamento ricette iniziali', e);
     }
+  }
+
+  void _onCategorySelected(String? categorySlug) async {
+    setState(() {
+      _selectedCategory = categorySlug;
+    });
+
+    // Salva la preferenza
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (categorySlug == null) {
+        await prefs.remove(_prefKeySelectedCategory);
+      } else {
+        await prefs.setString(_prefKeySelectedCategory, categorySlug);
+      }
+    } catch (e) {
+      AppLogger.error('Errore nel salvare categoria', e);
+    }
+
+    _loadRecipesWithFilters();
+  }
+
+  Future<void> _loadRecipesWithFilters() async {
+    if (!mounted) return;
+
+    final recipeService = context.read<RecipeService>();
+    final likeService = context.read<LikeService>();
+
+    await recipeService.fetchRecipes(
+      forceRefresh: true,
+      page: 1,
+      category: _selectedCategory,
+    );
+
+    if (!mounted) return;
+
+    final recipeIds = recipeService.cachedRecipes.map((r) => r.id).toList();
+    likeService.preloadLikesCount(recipeIds);
   }
 
   void _navigateToCreateRecipe() {
@@ -135,20 +205,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final query = _searchQuery!.toLowerCase();
-    return recipes.where((recipe) {
-      // Cerca nel titolo
+    final filtered = recipes.where((recipe) {
       if (recipe.title.toLowerCase().contains(query)) return true;
-
-      // Cerca nella descrizione
       if (recipe.description.toLowerCase().contains(query)) return true;
-
-      // Cerca negli ingredienti (ora sono oggetti Ingredient)
       for (var ingredient in recipe.ingredients) {
         if (ingredient.name.toLowerCase().contains(query)) return true;
       }
-
       return false;
     }).toList();
+
+    if (filtered.isEmpty) {
+      AppLogger.debug(
+          '🔍 Nessuna ricetta trovata per: "$query" in categoria: ${_selectedCategory ?? "tutte"}');
+    }
+
+    return filtered;
   }
 
   Widget _buildAvatarButton(AuthService authService) {
@@ -184,17 +255,44 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer2<RecipeService, AuthService>(
       builder: (context, recipeService, authService, child) {
         final recipes = recipeService.cachedRecipes;
-        final recipeCount = recipes.length;
-        final isLoading = recipeService.isLoading;
-
-        if (_lastRecipeCount != recipeCount || _lastLoadingState != isLoading) {
-          _lastRecipeCount = recipeCount;
-          _lastLoadingState = isLoading;
-        }
+        final filteredRecipes = _getFilteredRecipes(recipes);
 
         return Scaffold(
           appBar: _buildAppBar(authService),
-          body: _buildBody(recipeService, recipes),
+          body: Column(
+            children: [
+              const WelcomeHeader(),
+              RecipeSearchBar(onSearchChanged: _onSearchChanged),
+              CategoriesBar(
+                onCategorySelected: _onCategorySelected,
+                selectedCategorySlug: _selectedCategory,
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: _animationDuration,
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  child: filteredRecipes.isNotEmpty
+                      ? RecipeList(
+                          key: ValueKey('$_selectedCategory$_searchQuery'),
+                          onRecipeTap: _onRecipeTap,
+                        )
+                      : EmptyState(
+                          key: ValueKey('empty$_selectedCategory$_searchQuery'),
+                          searchQuery: _searchQuery,
+                          onRetry: _loadRecipesWithFilters,
+                          onCreateRecipe: _navigateToCreateRecipe,
+                        ),
+                ),
+              ),
+            ],
+          ),
           floatingActionButton: _buildFloatingActionButton(context),
         );
       },
@@ -218,30 +316,6 @@ class _HomeScreenState extends State<HomeScreen> {
         GestureDetector(
           onTap: _navigateToProfile,
           child: _buildAvatarButton(authService),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBody(RecipeService recipeService, List<Recipe> recipes) {
-    final filteredRecipes = _getFilteredRecipes(recipes);
-
-    return Column(
-      children: [
-        const WelcomeHeader(),
-        RecipeSearchBar(onSearchChanged: _onSearchChanged),
-        const CategoriesBar(onCategorySelected: null),
-        const SizedBox(height: 8),
-        Expanded(
-          child: filteredRecipes.isNotEmpty
-              ? RecipeList(
-                  onRecipeTap: _onRecipeTap,
-                )
-              : EmptyState(
-                  searchQuery: _searchQuery,
-                  onRetry: _loadInitialRecipes,
-                  onCreateRecipe: _navigateToCreateRecipe,
-                ),
         ),
       ],
     );

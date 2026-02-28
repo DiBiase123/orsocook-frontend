@@ -27,15 +27,68 @@ class AuthResponse {
       final Map<String, dynamic> json =
           jsonDecode(utf8.decode(response.bodyBytes));
 
+      // Estrai data se presente
+      final Map<String, dynamic>? data = json['data'] as Map<String, dynamic>?;
+
+      // ✅ CERCA requiresVerification IN TRE POSTI:
+      // 1. A livello root (json['requiresVerification'])
+      // 2. Dentro data (data?['requiresVerification'])
+      // 3. Nei campi speciali per login (json['data']?['requiresVerification'])
+      bool requiresVerification = false;
+
+      // Controllo a livello root
+      if (json['requiresVerification'] != null) {
+        requiresVerification = json['requiresVerification'] as bool;
+      }
+      // Se non trovato, controlla dentro data
+      else if (data != null && data['requiresVerification'] != null) {
+        requiresVerification = data['requiresVerification'] as bool;
+      }
+      // Controllo nel caso login (struttura diversa)
+      else if (json['data'] is Map &&
+          (json['data'] as Map)['requiresVerification'] != null) {
+        requiresVerification =
+            (json['data'] as Map)['requiresVerification'] as bool;
+      }
+
+      // ✅ GESTIONE MIGLIORATA PER I CAMPI DI SICUREZZA
+      bool isLocked = false;
+      if (json['locked'] != null) {
+        isLocked = json['locked'] as bool;
+      } else if (data != null && data['locked'] != null) {
+        isLocked = data['locked'] as bool;
+      }
+
+      int? lockTime;
+      if (json['lockTime'] != null) {
+        lockTime = _parseInt(json['lockTime']);
+      } else if (data != null && data['lockTime'] != null) {
+        lockTime = _parseInt(data['lockTime']);
+      }
+
+      int? attemptsLeft;
+      if (json['attemptsLeft'] != null) {
+        attemptsLeft = _parseInt(json['attemptsLeft']);
+      } else if (data != null && data['attemptsLeft'] != null) {
+        attemptsLeft = _parseInt(data['attemptsLeft']);
+      }
+
+      String? email;
+      if (json['email'] != null) {
+        email = json['email'] as String;
+      } else if (data != null && data['email'] != null) {
+        email = data['email'] as String;
+      }
+
       return AuthResponse(
         success: json['success'] as bool? ?? false,
         message: json['message'] as String? ?? 'Unknown error',
-        data: json['data'] as Map<String, dynamic>?,
-        requiresVerification: json['requiresVerification'] as bool? ?? false,
-        isLocked: json['locked'] as bool? ?? false,
-        lockTime: _parseInt(json['lockTime']),
-        email: json['email'] as String?,
-        attemptsLeft: _parseInt(json['attemptsLeft']),
+        data: data,
+        requiresVerification: requiresVerification,
+        isLocked: isLocked,
+        lockTime: lockTime,
+        email: email,
+        attemptsLeft: attemptsLeft,
       );
     } catch (e) {
       return AuthResponse(

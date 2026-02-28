@@ -36,18 +36,30 @@ class RecipeService extends ChangeNotifier {
       _authService.getAuthHeaders();
 
   // ==================== FETCH RECIPES ====================
+  // ==================== FETCH RECIPES ====================
   Future<List<Recipe>> fetchRecipes({
     bool forceRefresh = false,
     int page = 1,
+    String? category,
   }) async {
     if (_isLoading && !forceRefresh) return _cachedRecipes;
 
     _setLoadingState(true);
 
     try {
+      final Map<String, dynamic> queryParams = {
+        'page': page,
+        'limit': _pageLimit,
+      };
+
+      // 👇 CORRETTO: category è già String, nessun problema di tipo
+      if (category != null && category.isNotEmpty) {
+        queryParams['category'] = category;
+      }
+
       final response = await _dio.get(
         '/api/recipes',
-        queryParameters: {'page': page, 'limit': _pageLimit},
+        queryParameters: queryParams,
         options: Options(headers: await _getAuthHeaders()),
       );
 

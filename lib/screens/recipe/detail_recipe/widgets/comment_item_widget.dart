@@ -30,19 +30,15 @@ class CommentItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Consumer<AuthService>(
-      builder: (context, authService, child) {
-        final currentUserId = authService.userId;
+      builder: (context, authService, _) {
         final isOwnComment =
-            currentUserId != null && comment.isOwner(currentUserId);
+            authService.userId != null && comment.isOwner(authService.userId!);
 
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
+        return Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -52,32 +48,18 @@ class CommentItemWidget extends StatelessWidget {
               ),
             ],
           ),
-          child: Material(
-            borderRadius: BorderRadius.circular(12),
-            elevation: 0,
-            color: Colors.white,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () {},
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCommentHeader(
-                        context, isOwnComment, authService, theme),
-                    const SizedBox(height: 12),
-                    AnimatedCrossFade(
-                      duration: const Duration(milliseconds: 250),
-                      crossFadeState: isEditing && editCommentId == comment.id
-                          ? CrossFadeState.showFirst
-                          : CrossFadeState.showSecond,
-                      firstChild: _buildEditForm(context, theme),
-                      secondChild: _buildCommentContent(),
-                    ),
-                  ],
-                ),
-              ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // HEADER SEMPLICE
+                _buildHeader(context, isOwnComment, authService),
+                const SizedBox(height: 12),
+
+                // CONTENUTO O EDIT FORM
+                _buildContent(context),
+              ],
             ),
           ),
         );
@@ -85,31 +67,24 @@ class CommentItemWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCommentHeader(BuildContext context, bool isOwnComment,
-      AuthService authService, ThemeData theme) {
-    // Crea una GlobalKey per il pulsante delle azioni
-    final actionButtonKey = GlobalKey();
-
+  Widget _buildHeader(
+      BuildContext context, bool isOwnComment, AuthService authService) {
     return Row(
       children: [
+        // Avatar
         CircleAvatar(
           radius: 18,
-          backgroundColor: theme.colorScheme.secondaryContainer,
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
           backgroundImage: comment.userAvatar != null
               ? NetworkImage(comment.userAvatar!)
               : null,
           child: comment.userAvatar == null
-              ? Text(
-                  comment.userName[0].toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSecondaryContainer,
-                  ),
-                )
+              ? Text(comment.userName[0].toUpperCase())
               : null,
         ),
         const SizedBox(width: 12),
+
+        // Nome e data (EXPANDED per occupare spazio)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,12 +94,10 @@ class CommentItemWidget extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
-                  color: Colors.black87,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 2),
               Text(
                 comment.timeAgo,
                 style: TextStyle(
@@ -135,231 +108,121 @@ class CommentItemWidget extends StatelessWidget {
             ],
           ),
         ),
-        if (isOwnComment && !isEditing && editCommentId != comment.id)
-          _buildCommentActions(context, theme, actionButtonKey),
+
+        // Menu azioni (solo se proprietario e non in editing)
+        if (isOwnComment && !isEditing) _buildMenuButton(context),
       ],
     );
   }
 
-  Widget _buildCommentActions(
-      BuildContext context, ThemeData theme, GlobalKey actionButtonKey) {
-    final colorScheme = theme.colorScheme;
-    final baseColor = colorScheme.secondaryContainer;
-    final outlineColor = colorScheme.outline;
-
-    return Container(
-      key: actionButtonKey, // Assegna la GlobalKey al contenitore
-      child: GestureDetector(
-        onTap: () {
-          _showCustomPopupMenu(context, colorScheme, actionButtonKey);
-        },
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: outlineColor.withAlpha((0.2 * 255).round()),
-              width: 1,
-            ),
-            color: baseColor.withAlpha((0.95 * 255).round()),
-          ),
-          child: Icon(
-            Icons.more_vert_rounded,
-            size: 20,
-            color: colorScheme.onSecondaryContainer,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showCustomPopupMenu(
-      BuildContext context, ColorScheme colorScheme, GlobalKey buttonKey) {
-    // Ottieni il render box usando la GlobalKey
-    final renderBox =
-        buttonKey.currentContext?.findRenderObject() as RenderBox?;
-
-    if (renderBox == null) return;
-
-    // Ottieni la posizione del pulsante
-    final offset = renderBox.localToGlobal(Offset.zero);
-
-    // Calcola la dimensione dello schermo per il posizionamento
-    final screenSize = MediaQuery.of(context).size;
-
-    // Calcola la posizione del menu
-    final left = offset.dx;
-    final top = offset.dy + renderBox.size.height;
-    final right = screenSize.width - (offset.dx + renderBox.size.width);
-    final bottom = screenSize.height - (offset.dy + renderBox.size.height);
-
-    showMenu<String>(
-      context: context,
-      position: RelativeRect.fromLTRB(left, top, right, bottom),
-      color: Colors.white,
-      surfaceTintColor: Colors.transparent,
-      elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: colorScheme.outline.withAlpha((0.1 * 255).round()),
-        ),
-      ),
-      items: [
-        PopupMenuItem<String>(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  Widget _buildMenuButton(BuildContext context) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (value) {
+        if (value == 'edit') {
+          onStartEdit(comment);
+        } else if (value == 'delete') {
+          _showDeleteDialog(context);
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(
           value: 'edit',
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.edit_outlined,
-                size: 18,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'Modifica',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Icon(Icons.edit, size: 18),
+              SizedBox(width: 8),
+              Text('Modifica'),
             ],
           ),
         ),
-        const PopupMenuDivider(height: 6),
-        PopupMenuItem<String>(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        const PopupMenuItem(
           value: 'delete',
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.delete_outline,
-                size: 18,
-                color: Colors.red,
-              ),
-              const SizedBox(width: 10),
-              const Text(
-                'Elimina',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.red,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Icon(Icons.delete, size: 18, color: Colors.red),
+              SizedBox(width: 8),
+              Text('Elimina', style: TextStyle(color: Colors.red)),
             ],
           ),
-        ),
-      ],
-    ).then((value) {
-      if (value == 'edit') {
-        onStartEdit(comment);
-      } else if (value == 'delete') {
-        onDeleteComment(comment.id);
-      }
-    });
-  }
-
-  Widget _buildEditForm(BuildContext context, ThemeData theme) {
-    final colorScheme = theme.colorScheme;
-
-    return Column(
-      children: [
-        TextField(
-          controller: editCommentController,
-          maxLines: 3,
-          minLines: 1,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colorScheme.outline),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colorScheme.outline),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colorScheme.primary, width: 2),
-            ),
-            labelText: 'Modifica commento',
-            labelStyle: TextStyle(color: colorScheme.primary),
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-          ),
-          style: const TextStyle(fontSize: 14),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            TextButton(
-              onPressed: onCancelEdit,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.grey[700],
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.close, size: 16),
-                  SizedBox(width: 6),
-                  Text('ANNULLA'),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed:
-                  isSubmitting ? null : () => onUpdateComment(comment.id),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: isSubmitting
-                  ? SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: colorScheme.onPrimary,
-                      ),
-                    )
-                  : const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.check, size: 16),
-                        SizedBox(width: 6),
-                        Text('SALVA'),
-                      ],
-                    ),
-            ),
-          ],
         ),
       ],
     );
   }
 
-  Widget _buildCommentContent() {
+  Future<void> _showDeleteDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina commento'),
+        content: const Text('Sei sicuro di voler eliminare questo commento?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ANNULLA'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onDeleteComment(comment.id);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('ELIMINA'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    // Se è in modalità editing
+    if (isEditing && editCommentId == comment.id) {
+      return Column(
+        children: [
+          TextField(
+            controller: editCommentController,
+            maxLines: 3,
+            minLines: 1,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              labelText: 'Modifica commento',
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: onCancelEdit,
+                child: const Text('ANNULLA'),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed:
+                    isSubmitting ? null : () => onUpdateComment(comment.id),
+                child: isSubmitting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('SALVA'),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    // Contenuto normale
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SelectableText(
+        Text(
           comment.content,
-          style: const TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: Colors.black87,
-          ),
+          style: const TextStyle(fontSize: 14, height: 1.5),
         ),
         if (comment.isEdited)
           Padding(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:orsocook/screens/recipe/edit_recipe/viewmodels/edit_recipe_viewmodel.dart';
 
 class EditBasicInfo extends StatefulWidget {
   final TextEditingController titleController;
@@ -33,7 +35,6 @@ class EditBasicInfo extends StatefulWidget {
 }
 
 class _EditBasicInfoState extends State<EditBasicInfo> {
-  // VALIDATORI INTERNI AL COMPONENTE
   String? _validateRequired(String? value, String fieldName) {
     if (value == null || value.isEmpty) {
       return '$fieldName è obbligatorio';
@@ -71,6 +72,9 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<EditRecipeViewModel>(context);
+    final categories = viewModel.availableCategories;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -148,7 +152,7 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue:
+                    value:
                         widget.difficulty.isNotEmpty ? widget.difficulty : null,
                     decoration: const InputDecoration(
                       labelText: 'Difficoltà',
@@ -178,33 +182,20 @@ class _EditBasicInfoState extends State<EditBasicInfo> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue:
-                        widget.category.isNotEmpty ? widget.category : null,
+                    value: widget.category.isNotEmpty ? widget.category : null,
                     decoration: const InputDecoration(
                       labelText: 'Categoria',
                       border: OutlineInputBorder(),
                     ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'ANTIPASTO',
-                        child: Text('Antipasto'),
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: '',
+                        child: Text('Nessuna categoria'),
                       ),
-                      DropdownMenuItem(
-                        value: 'PRIMO',
-                        child: Text('Primo'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'SECONDO',
-                        child: Text('Secondo'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'CONTORNO',
-                        child: Text('Contorno'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'DOLCE',
-                        child: Text('Dolce'),
-                      ),
+                      ...categories.map((category) => DropdownMenuItem<String>(
+                            value: category.slug,
+                            child: Text(category.name),
+                          )),
                     ],
                     onChanged: (value) {
                       if (value != null) {
