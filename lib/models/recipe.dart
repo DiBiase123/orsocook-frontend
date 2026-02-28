@@ -1,4 +1,4 @@
-import '../utils/logger.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class Recipe {
   final String id;

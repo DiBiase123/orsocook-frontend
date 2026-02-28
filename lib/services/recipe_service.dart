@@ -5,10 +5,12 @@ import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/config.dart';
+import 'package:orsocook/services/category_service.dart';
 
 class RecipeService extends ChangeNotifier {
   final Dio _dio = Dio();
   final AuthService _authService;
+  final CategoryService _categoryService;
 
   List<Recipe> _cachedRecipes = [];
   bool _isLoading = false;
@@ -18,7 +20,7 @@ class RecipeService extends ChangeNotifier {
 
   static const int _pageLimit = 10;
 
-  RecipeService(this._authService) {
+  RecipeService(this._authService, this._categoryService) {
     _dio.options.baseUrl = Config.buildUrl('');
     _dio.options.connectTimeout = const Duration(seconds: 10);
     _dio.options.receiveTimeout = const Duration(seconds: 10);
@@ -261,6 +263,14 @@ class RecipeService extends ChangeNotifier {
 
       _cachedRecipes.removeWhere((recipe) => recipe.id == id);
       notifyListeners();
+
+      // 🔥 FORZA REFRESH DELLE CATEGORIE
+      try {
+        await _categoryService.refreshCategories();
+        AppLogger.debug('✅ Categorie aggiornate dopo eliminazione');
+      } catch (e) {
+        AppLogger.error('Errore refresh categorie dopo eliminazione', e);
+      }
 
       return true;
     } catch (e) {

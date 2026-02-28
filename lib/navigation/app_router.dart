@@ -6,7 +6,7 @@ import 'package:orsocook/screens/auth/forgot_password_screen.dart';
 import 'package:orsocook/screens/auth/reset_password_screen.dart';
 import 'package:orsocook/screens/home/home_screen.dart';
 import 'package:orsocook/screens/profile/profile_screen.dart';
-import 'package:orsocook/screens/recipe/detail_recipe_screen.dart';
+import 'package:orsocook/screens/recipe/detail_recipe/detail_recipe_screen.dart';
 import 'package:orsocook/screens/recipe/create_recipe/create_recipe_screen.dart';
 import 'package:orsocook/screens/recipe/edit_recipe_screen.dart';
 import 'package:orsocook/screens/legal/privacy_policy_screen.dart';

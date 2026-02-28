@@ -8,7 +8,7 @@ import 'package:orsocook/services/avatar_service.dart';
 import 'package:orsocook/services/profile_controller.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
-import 'package:orsocook/services/category_service.dart'; // 👈 NUOVO IMPORT
+import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/navigation/app_router.dart';
 import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/utils/logger.dart';
@@ -49,7 +49,10 @@ class MyApp extends StatelessWidget {
           create: (context) => FavoriteService(context.read<AuthService>()),
         ),
         ChangeNotifierProvider<RecipeService>(
-          create: (context) => RecipeService(context.read<AuthService>()),
+          create: (context) => RecipeService(
+            context.read<AuthService>(),
+            context.read<CategoryService>(), // 👈 AGGIUNTO
+          ),
         ),
         ChangeNotifierProvider<ProfileService>(
           create: (context) => ProfileService(context.read<AuthService>()),

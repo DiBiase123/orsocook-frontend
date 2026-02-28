@@ -7,42 +7,35 @@ import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/config.dart';
 
 class FavoriteService extends ChangeNotifier {
-  // Dipendenza su AuthService
   final AuthService _authService;
 
-  // Cache locale dei preferiti
-  final Map<String, Recipe> _favoritesCache = {};
-  DateTime? _lastFetchTime;
-  final Duration _cacheDuration = const Duration(minutes: 5);
+  // 👇 ELIMINIAMO LA CACHE
+  // final Map<String, Recipe> _favoritesCache = {};
 
-  // Stati
   bool _isLoading = false;
   String? _error;
 
-  // Costruttore che riceve AuthService
   FavoriteService(this._authService);
 
-  // Getters
   bool get isLoading => _isLoading;
   String? get error => _error;
-  List<Recipe> get favorites => _favoritesCache.values.toList();
 
-  // Verifica se una ricetta è nei preferiti
-  bool isFavorite(String recipeId) {
-    return _favoritesCache.containsKey(recipeId);
+  // 👇 OGNI VOLTA CHE CHIEDIAMO I FAVORITI, ANDIAMO AL BACKEND
+  List<Recipe> get favorites => []; // Vuoto, non usiamo cache
+
+  // Verifica se una ricetta è nei preferiti - SEMPRE DAL BACKEND
+  Future<bool> isFavorite(String recipeId) async {
+    try {
+      final result = await checkFavorite(recipeId);
+      return result['isFavorite'] ?? false;
+    } catch (e) {
+      AppLogger.error('Error checking favorite status', e);
+      return false;
+    }
   }
 
-  // Ottieni i preferiti dell'utente
-  Future<List<Recipe>> getFavorites({bool forceRefresh = false}) async {
-    // Controlla cache se non forzato
-    if (!forceRefresh &&
-        _lastFetchTime != null &&
-        DateTime.now().difference(_lastFetchTime!) < _cacheDuration) {
-      AppLogger.debug(
-          'Using cached favorites (${_favoritesCache.length} items)');
-      return favorites;
-    }
-
+  // Ottieni i preferiti dell'utente - SEMPRE DAL BACKEND
+  Future<List<Recipe>> getFavorites() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -62,21 +55,10 @@ class FavoriteService extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        final favorites = data.map((item) => Recipe.fromJson(item)).toList();
 
-        // Svuota cache
-        _favoritesCache.clear();
-
-        // Popola cache
-        for (var item in data) {
-          final recipe = Recipe.fromJson(item);
-          _favoritesCache[recipe.id] = recipe;
-        }
-
-        _lastFetchTime = DateTime.now();
         _isLoading = false;
-
-        AppLogger.success(
-            'Loaded ${_favoritesCache.length} favorites from API');
+        AppLogger.success('Loaded ${favorites.length} favorites from API');
         notifyListeners();
 
         return favorites;
@@ -109,16 +91,14 @@ class FavoriteService extends ChangeNotifier {
       );
 
       if (response.statusCode == 201) {
-        // Aggiorna cache con placeholder (se non già presente)
-        if (!_favoritesCache.containsKey(recipeId)) {
-          _favoritesCache[recipeId] = _createPlaceholderRecipe(recipeId);
-        }
-
         AppLogger.success('Added recipe $recipeId to favorites');
-        notifyListeners();
+        notifyListeners(); // Notifica che qualcosa è cambiato
         return true;
       } else {
-        throw Exception('Failed to add favorite: ${response.statusCode}');
+        final errorMsg = response.body.isNotEmpty
+            ? json.decode(response.body)['error']
+            : 'Failed to add favorite';
+        throw Exception(errorMsg);
       }
     } catch (e) {
       AppLogger.error('Error adding favorite', e);
@@ -143,14 +123,14 @@ class FavoriteService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        // Rimuovi dalla cache
-        _favoritesCache.remove(recipeId);
-
         AppLogger.success('Removed recipe $recipeId from favorites');
-        notifyListeners();
+        notifyListeners(); // Notifica che qualcosa è cambiato
         return true;
       } else {
-        throw Exception('Failed to remove favorite: ${response.statusCode}');
+        final errorMsg = response.body.isNotEmpty
+            ? json.decode(response.body)['error']
+            : 'Failed to remove favorite';
+        throw Exception(errorMsg);
       }
     } catch (e) {
       AppLogger.error('Error removing favorite', e);
@@ -175,19 +155,7 @@ class FavoriteService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        // Aggiorna cache se necessario
-        if (data['isFavorite'] == true &&
-            !_favoritesCache.containsKey(recipeId)) {
-          _favoritesCache[recipeId] = _createPlaceholderRecipe(recipeId);
-          notifyListeners();
-        } else if (data['isFavorite'] == false) {
-          _favoritesCache.remove(recipeId);
-          notifyListeners();
-        }
-
-        return data;
+        return json.decode(response.body);
       } else {
         throw Exception('Failed to check favorite: ${response.statusCode}');
       }
@@ -197,95 +165,29 @@ class FavoriteService extends ChangeNotifier {
     }
   }
 
-  // Toggle preferito (aggiunge/rimuove) - VERSIONE CORRETTA
-  Future<bool> toggleFavorite(String recipeId, Recipe? recipe) async {
-    final isCurrentlyFavorite = isFavorite(recipeId);
-    bool operationSuccess = false;
-
+  // Toggle preferito
+  Future<bool> toggleFavorite(String recipeId) async {
     try {
+      // 👈 VERIFICA SEMPRE LO STATO ATTUALE DAL BACKEND
+      final checkResult = await checkFavorite(recipeId);
+      final isCurrentlyFavorite = checkResult['isFavorite'] ?? false;
+
+      AppLogger.debug('🔄 Toggle favorite - Stato reale: $isCurrentlyFavorite');
+
       if (isCurrentlyFavorite) {
-        AppLogger.debug('🔄 Removing favorite: $recipeId');
-        operationSuccess = await removeFavorite(recipeId);
+        return await removeFavorite(recipeId);
       } else {
-        AppLogger.debug('🔄 Adding favorite: $recipeId');
-
-        // Prima aggiorna cache ottimisticamente per UI responsiva
-        if (recipe != null) {
-          _favoritesCache[recipeId] = recipe;
-        } else {
-          _favoritesCache[recipeId] = _createPlaceholderRecipe(recipeId);
-        }
-        notifyListeners();
-
-        operationSuccess = await addFavorite(recipeId);
-
-        // Se l'operazione è fallita, rimuovi dalla cache
-        if (!operationSuccess) {
-          _favoritesCache.remove(recipeId);
-          notifyListeners();
-        }
+        return await addFavorite(recipeId);
       }
-
-      return operationSuccess;
     } catch (e) {
       AppLogger.error('Error toggling favorite', e);
-
-      // Revert cache in caso di errore
-      if (isCurrentlyFavorite) {
-        // Stava rimuovendo, ma fallito -> riaggiungi alla cache
-        if (recipe != null) {
-          _favoritesCache[recipeId] = recipe;
-        } else {
-          _favoritesCache[recipeId] = _createPlaceholderRecipe(recipeId);
-        }
-      } else {
-        // Stava aggiungendo, ma fallito -> rimuovi dalla cache
-        _favoritesCache.remove(recipeId);
-      }
-      notifyListeners();
-
       rethrow;
     }
   }
 
-  // Helper per creare recipe placeholder (VERSIONE CORRETTA)
-  Recipe _createPlaceholderRecipe(String id) {
-    return Recipe(
-      id: id,
-      title: 'Loading...',
-      description: '',
-      slug: '',
-      imageUrl: null,
-      prepTime: 0,
-      cookTime: 0,
-      servings: 0,
-      difficulty: Difficulty.medium, // ← CORRETTO: medium invece di MEDIUM
-      isPublic: true,
-      views: 0,
-      favoriteCount: 0,
-      likeCount: 0,
-      commentCount: 0,
-      isFavorite: false,
-      isLiked: false,
-      author: UserAuthor(
-        id: '',
-        username: '',
-        displayName: null,
-        avatarUrl: null,
-      ),
-      category: null,
-      ingredients: [],
-      instructions: [],
-      tags: [],
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-  }
-
-  // Svuota cache
-  void clearCache() {
-    _favoritesCache.clear();
-    _lastFetchTime = null;
+  // Svuota stato (utile per logout)
+  void reset() {
+    _error = null;
     notifyListeners();
   }
 }

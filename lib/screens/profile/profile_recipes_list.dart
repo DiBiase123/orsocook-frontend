@@ -3,11 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/profile_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
-import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/utils/recipe_helpers.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/screens/recipe/detail_recipe_screen.dart';
+import 'package:orsocook/screens/recipe/detail_recipe/detail_recipe_screen.dart';
 
 class ProfileRecipesList extends StatefulWidget {
   final List<Recipe> recipes;
@@ -32,12 +30,12 @@ class ProfileRecipesList extends StatefulWidget {
 class _ProfileRecipesListState extends State<ProfileRecipesList> {
   bool _isLoadingMore = false;
   int _currentPage = 1;
-  final List<Recipe> _loadedRecipes = [];
+  late List<Recipe> _loadedRecipes;
 
   @override
   void initState() {
     super.initState();
-    _loadedRecipes.addAll(widget.recipes);
+    _loadedRecipes = List.from(widget.recipes);
   }
 
   Future<void> _loadMoreRecipes() async {
@@ -86,22 +84,20 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
     AppLogger.navigation('Profile: $text');
   }
 
-  /// Correggi l'autore mancante usando RecipeHelpers
-  Recipe _ensureRecipeHasAuthor(Recipe originalRecipe) {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    return RecipeHelpers.ensureRecipeHasAuthor(originalRecipe, authService);
-  }
+  /// RIMOSSO - Non necessario perché author è obbligatorio in Recipe
+  // Recipe _ensureRecipeHasAuthor(Recipe originalRecipe) {
+  //   final authService = Provider.of<AuthService>(context, listen: false);
+  //   return RecipeHelpers.ensureRecipeHasAuthor(originalRecipe, authService);
+  // }
 
   void _handleRecipeTap(Recipe recipe) {
     _logNavigation('Navigazione a ${recipe.title}');
-
-    final recipeWithAuthor = _ensureRecipeHasAuthor(recipe);
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DetailRecipeScreen(
-          recipe: recipeWithAuthor,
+          recipe: recipe,
         ),
       ),
     );
@@ -145,13 +141,11 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
   }
 
   Widget _buildRecipeItem(Recipe recipe) {
-    final recipeWithAuthor = _ensureRecipeHasAuthor(recipe);
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: RecipeCard(
-        recipe: recipeWithAuthor,
-        onTap: () => _handleRecipeTap(recipeWithAuthor),
+        recipe: recipe,
+        onTap: () => _handleRecipeTap(recipe),
         showAuthor: !widget.isUserRecipes,
       ),
     );
@@ -181,19 +175,16 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FavoriteService>(
-      builder: (context, favoriteService, child) {
-        final recipesWithAuthor =
-            _loadedRecipes.map(_ensureRecipeHasAuthor).toList();
+    return FutureBuilder<List<Recipe>>(
+      future: _loadRecipesWithFavoriteStatus(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-        final updatedRecipes = recipesWithAuthor.map((recipe) {
-          return Recipe.fromJson({
-            ...recipe.toJson(),
-            'isFavorite': favoriteService.isFavorite(recipe.id),
-          });
-        }).toList();
+        final recipes = snapshot.data ?? [];
 
-        if (updatedRecipes.isEmpty) {
+        if (recipes.isEmpty) {
           return _buildEmptyState();
         }
 
@@ -202,16 +193,30 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                itemCount: updatedRecipes.length,
+                itemCount: recipes.length,
                 itemBuilder: (context, index) {
-                  return _buildRecipeItem(updatedRecipes[index]);
+                  return _buildRecipeItem(recipes[index]);
                 },
               ),
             ),
-            if (updatedRecipes.length >= 10) _buildLoadMoreIndicator(),
+            if (recipes.length >= 10) _buildLoadMoreIndicator(),
           ],
         );
       },
     );
+  }
+
+// Aggiungi questo metodo DOPO il build
+  Future<List<Recipe>> _loadRecipesWithFavoriteStatus() async {
+    final favoriteService =
+        Provider.of<FavoriteService>(context, listen: false);
+
+    final updatedRecipes = <Recipe>[];
+    for (final recipe in _loadedRecipes) {
+      final isFavorite = await favoriteService.isFavorite(recipe.id);
+      updatedRecipes.add(recipe.copyWith(isFavorite: isFavorite));
+    }
+
+    return updatedRecipes;
   }
 }

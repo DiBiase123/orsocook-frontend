@@ -9,7 +9,7 @@ class CategoryService extends ChangeNotifier {
   final Dio _dio = Dio();
   final AuthService _authService;
 
-  List<CategoryModel> _categories = []; // 👈 CAMBIATO
+  List<CategoryModel> _categories = [];
   bool _isLoading = false;
   String? _lastError;
 
@@ -20,7 +20,7 @@ class CategoryService extends ChangeNotifier {
   }
 
   // Getters
-  List<CategoryModel> get categories => _categories; // 👈 CAMBIATO
+  List<CategoryModel> get categories => _categories;
   bool get isLoading => _isLoading;
   String? get lastError => _lastError;
 
@@ -48,8 +48,8 @@ class CategoryService extends ChangeNotifier {
 
       final List<dynamic> categoriesData = response.data['data'];
       _categories = categoriesData
-          .map((json) => CategoryModel.fromJson(
-              Map<String, dynamic>.from(json))) // 👈 CAMBIATO
+          .map(
+              (json) => CategoryModel.fromJson(Map<String, dynamic>.from(json)))
           .toList();
 
       AppLogger.debug('✅ Categorie caricate: ${_categories.length}');
@@ -65,9 +65,13 @@ class CategoryService extends ChangeNotifier {
     return _categories;
   }
 
+  // NUOVO METODO: refreshCategories
+  Future<void> refreshCategories() async {
+    await fetchCategories(forceRefresh: true);
+  }
+
   // Get category by slug
   CategoryModel? getCategoryBySlug(String slug) {
-    // 👈 CAMBIATO
     try {
       return _categories.firstWhere((c) => c.slug == slug);
     } catch (_) {
@@ -77,7 +81,6 @@ class CategoryService extends ChangeNotifier {
 
   // Get category by id
   CategoryModel? getCategoryById(String id) {
-    // 👈 CAMBIATO
     try {
       return _categories.firstWhere((c) => c.id == id);
     } catch (_) {
@@ -105,9 +108,8 @@ class CategoryService extends ChangeNotifier {
   }
 }
 
-// Modello Category RINOMINATO in CategoryModel
+// Modello Category
 class CategoryModel {
-  // 👈 RINOMINATO
   final String id;
   final String name;
   final String slug;
@@ -118,7 +120,6 @@ class CategoryModel {
   final DateTime updatedAt;
 
   CategoryModel({
-    // 👈 RINOMINATO
     required this.id,
     required this.name,
     required this.slug,
@@ -130,7 +131,6 @@ class CategoryModel {
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    // 👈 RINOMINATO
     return CategoryModel(
       id: json['id'] as String,
       name: json['name'] as String,

@@ -29,19 +29,35 @@ class FavoriteButton extends StatefulWidget {
 
 class _FavoriteButtonState extends State<FavoriteButton> {
   bool _isProcessing = false;
-  bool _hasCheckedInitialState = false;
+  bool _isFavorite = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // NON facciamo chiamate API qui, usiamo solo la cache
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    _loadInitialState();
+  }
+
+  Future<void> _loadInitialState() async {
+    final favoriteService =
+        Provider.of<FavoriteService>(context, listen: false);
+
+    try {
+      final isFavorite = await favoriteService.isFavorite(widget.recipeId);
       if (mounted) {
         setState(() {
-          _hasCheckedInitialState = true;
+          _isFavorite = isFavorite;
+          _isLoading = false;
         });
       }
-    });
+    } catch (e) {
+      AppLogger.error('Error loading favorite state', e);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _toggleFavorite(FavoriteService favoriteService) async {
@@ -57,33 +73,37 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     setState(() => _isProcessing = true);
 
     try {
-      final success = await favoriteService.toggleFavorite(
-        widget.recipeId,
-        widget.recipe,
-      );
+      final success = await favoriteService.toggleFavorite(widget.recipeId);
 
-      if (!success) {
-        _showErrorSnackbar('Errore durante l\'operazione');
-      } else {
+      if (success && mounted) {
+        // Ricarica lo stato dopo il toggle
+        final newState = await favoriteService.isFavorite(widget.recipeId);
+
+        setState(() {
+          _isFavorite = newState;
+          _isProcessing = false;
+        });
+
         // Notifica callback se fornito
         widget.onToggle?.call();
 
         // Mostra feedback
-        final isNowFavorite = favoriteService.isFavorite(widget.recipeId);
         _showSuccessSnackbar(
-            isNowFavorite ? 'Aggiunto ai preferiti' : 'Rimosso dai preferiti');
+            newState ? 'Aggiunto ai preferiti' : 'Rimosso dai preferiti');
 
-        AppLogger.success(isNowFavorite
+        AppLogger.success(newState
             ? 'Recipe ${widget.recipeId} added to favorites'
             : 'Recipe ${widget.recipeId} removed from favorites');
+      } else {
+        setState(() => _isProcessing = false);
+        _showErrorSnackbar('Errore durante l\'operazione');
       }
     } catch (e) {
       AppLogger.error('Error toggling favorite', e);
-      _showErrorSnackbar('Errore: ${e.toString()}');
-    } finally {
       if (mounted) {
         setState(() => _isProcessing = false);
       }
+      _showErrorSnackbar('Errore: ${e.toString()}');
     }
   }
 
@@ -98,8 +118,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
           label: 'ACCEDI',
           textColor: Colors.white,
           onPressed: () {
-            // Qui potresti navigare alla login screen
-            AppLogger.navigation('Navigate to login from favorite button');
+            Navigator.pushNamed(context, '/login');
           },
         ),
       ),
@@ -128,67 +147,58 @@ class _FavoriteButtonState extends State<FavoriteButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FavoriteService>(
-      builder: (context, favoriteService, child) {
-        final isFavorite = favoriteService.isFavorite(widget.recipeId);
-        final authService = Provider.of<AuthService>(context);
-        final isLoggedIn = authService.isLoggedIn;
+    final authService = Provider.of<AuthService>(context);
+    final isLoggedIn = authService.isLoggedIn;
 
-        // Se non abbiamo ancora inizializzato, mostra loading
-        if (!_hasCheckedInitialState && widget.showLoading) {
-          return SizedBox(
-            width: widget.size,
-            height: widget.size,
-            child: const Center(
-              child: SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
-        }
+    if (!isLoggedIn) {
+      return IconButton(
+        iconSize: widget.size,
+        icon: Icon(
+          Icons.favorite_border,
+          color: widget.color ?? Colors.grey,
+        ),
+        onPressed: _showLoginPrompt,
+        tooltip: 'Accedi per aggiungere ai preferiti',
+      );
+    }
 
-        // Se non loggato, bottone disabilitato
-        if (!isLoggedIn) {
-          return IconButton(
-            iconSize: widget.size,
-            icon: Icon(
-              Icons.favorite_border,
-              color: widget.color ?? Colors.grey,
-            ),
-            onPressed: _showLoginPrompt,
-            tooltip: 'Accedi per aggiungere ai preferiti',
-          );
-        }
-
-        // Se in processing, mostra loading
-        if (_isProcessing && widget.showLoading) {
-          return SizedBox(
-            width: widget.size,
-            height: widget.size,
-            child: const Center(
-              child: SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
-        }
-
-        // Bottone normale
-        return IconButton(
-          iconSize: widget.size,
-          icon: Icon(
-            isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: isFavorite ? Colors.red : widget.color ?? Colors.grey[700],
+    if (_isLoading && widget.showLoading) {
+      return SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: const Center(
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
-          onPressed: () => _toggleFavorite(favoriteService),
-          tooltip:
-              isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti',
-        );
-      },
+        ),
+      );
+    }
+
+    if (_isProcessing && widget.showLoading) {
+      return SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: const Center(
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    return IconButton(
+      iconSize: widget.size,
+      icon: Icon(
+        _isFavorite ? Icons.favorite : Icons.favorite_border,
+        color: _isFavorite ? Colors.red : widget.color ?? Colors.grey[700],
+      ),
+      onPressed: () =>
+          _toggleFavorite(Provider.of<FavoriteService>(context, listen: false)),
+      tooltip: _isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti',
     );
   }
 }

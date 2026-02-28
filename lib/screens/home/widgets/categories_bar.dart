@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/category_service.dart';
-import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/screens/home/widgets/categories_skeleton.dart';
 
 class CategoriesBar extends StatefulWidget {
@@ -92,7 +91,9 @@ class _CategoriesBarState extends State<CategoriesBar> {
             itemBuilder: (context) {
               return allCategories.map((category) {
                 return PopupMenuItem<String>(
-                  value: category.slug.isEmpty ? null : category.slug,
+                  value: category.slug.isEmpty
+                      ? ''
+                      : category.slug, // MODIFICATO: null -> ''
                   child: Row(
                     children: [
                       Expanded(
@@ -122,8 +123,9 @@ class _CategoriesBarState extends State<CategoriesBar> {
               }).toList();
             },
             onSelected: (value) {
+              // MODIFICATO: se value è stringa vuota, passiamo null
               if (value == widget.selectedCategorySlug) return;
-              widget.onCategorySelected?.call(value);
+              widget.onCategorySelected?.call(value.isEmpty ? null : value);
             },
           ),
         );
