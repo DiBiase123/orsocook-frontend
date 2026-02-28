@@ -158,9 +158,21 @@ class RecipeService extends ChangeNotifier {
   // ==================== CREATE RECIPE ====================
   Future<Recipe?> createRecipe(Recipe recipe) async {
     try {
+      // Prepara i dati per il backend
+      final Map<String, dynamic> data = recipe.toJson();
+
+      // 👈 Trasforma l'oggetto category in categoryId (STESSA COSA DELL'UPDATE)
+      if (data['category'] != null && data['category'] is Map) {
+        data['categoryId'] = data['category']['id'];
+        data.remove('category'); // Rimuovi l'oggetto category
+      }
+
+      // 👈 Log per debug
+      AppLogger.debug('📝 INVIO AL BACKEND - create data: $data');
+
       final response = await _dio.post(
         '/api/recipes',
-        data: recipe.toJson(),
+        data: data,
         options: Options(headers: await _getAuthHeaders()),
       );
 
