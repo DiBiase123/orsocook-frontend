@@ -67,6 +67,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       if (!mounted) return;
 
       if (updatedRecipe != null) {
+        // 👈 FORZA REFRESH DELLE CATEGORIE PRIMA DI TORNARE INDIETRO
+        final categoryService =
+            Provider.of<CategoryService>(context, listen: false);
+        await categoryService.fetchCategories(forceRefresh: true);
+
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Ricetta aggiornata con successo!'),

@@ -36,17 +36,20 @@ class RecipeService extends ChangeNotifier {
       _authService.getAuthHeaders();
 
   // ==================== FETCH RECIPES ====================
-  // ==================== FETCH RECIPES ====================
   Future<List<Recipe>> fetchRecipes({
     bool forceRefresh = false,
     int page = 1,
     String? category,
+    String? search,
   }) async {
     if (_isLoading && !forceRefresh) return _cachedRecipes;
 
     _setLoadingState(true);
 
     try {
+      // 👈 LOG QUI
+      print(
+          '🔍 fetchRecipes chiamato con category: $category, search: $search, page: $page');
       final Map<String, dynamic> queryParams = {
         'page': page,
         'limit': _pageLimit,
@@ -56,7 +59,10 @@ class RecipeService extends ChangeNotifier {
       if (category != null && category.isNotEmpty) {
         queryParams['category'] = category;
       }
-
+      // 👈 AGGIUNGI RICERCA
+      if (search != null && search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
       final response = await _dio.get(
         '/api/recipes',
         queryParameters: queryParams,

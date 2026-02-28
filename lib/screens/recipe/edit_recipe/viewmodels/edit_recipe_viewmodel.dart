@@ -273,7 +273,6 @@ class EditRecipeViewModel extends ChangeNotifier {
       ),
       category: selectedCategoryObj != null
           ? Category(
-              // QUESTA È Category di recipe.dart
               id: selectedCategoryObj.id,
               name: selectedCategoryObj.name,
               slug: selectedCategoryObj.slug,

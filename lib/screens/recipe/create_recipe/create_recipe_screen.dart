@@ -60,6 +60,11 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
       if (!mounted) return;
 
       if (createdRecipe != null) {
+        // 👈 FORZA REFRESH DELLE CATEGORIE
+        final categoryService =
+            Provider.of<CategoryService>(context, listen: false);
+        await categoryService.fetchCategories(forceRefresh: true);
+
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Ricetta creata con successo!'),

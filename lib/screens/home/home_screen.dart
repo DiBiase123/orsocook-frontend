@@ -24,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? _searchQuery;
   String? _selectedCategory;
+  bool _isLoadingFilters = false;
 
   static const String _prefKeySelectedCategory = 'selected_category';
   final Duration _animationDuration = const Duration(milliseconds: 300);
@@ -45,13 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final prefs = await SharedPreferences.getInstance();
       final savedCategory = prefs.getString(_prefKeySelectedCategory);
       if (savedCategory != null && savedCategory.isNotEmpty) {
-        setState(() {
-          _selectedCategory = savedCategory;
-        });
-        // Carica ricette con categoria salvata dopo che il widget è montato
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _loadRecipesWithFilters();
-        });
+        setState(() => _selectedCategory = savedCategory);
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => _loadRecipesWithFilters());
       }
     } catch (e) {
       AppLogger.error('Errore nel caricamento categoria salvata', e);
@@ -66,11 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final likeService = context.read<LikeService>();
       final categoryService = context.read<CategoryService>();
 
-      if (categoryService.categories.isEmpty) {
-        categoryService.fetchCategories();
-      }
+      await categoryService.fetchCategories(forceRefresh: true);
 
-      // Se non c'è categoria salvata, carica tutte
       if (_selectedCategory == null) {
         await recipeService.fetchRecipes(forceRefresh: true, page: 1);
       }
@@ -80,17 +74,15 @@ class _HomeScreenState extends State<HomeScreen> {
       final recipeIds = recipeService.cachedRecipes.map((r) => r.id).toList();
       likeService.preloadLikesCount(recipeIds);
     } catch (e) {
-      if (!mounted) return;
-      AppLogger.error('Errore caricamento ricette iniziali', e);
+      if (mounted) AppLogger.error('Errore caricamento ricette iniziali', e);
     }
   }
 
   void _onCategorySelected(String? categorySlug) async {
-    setState(() {
-      _selectedCategory = categorySlug;
-    });
+    if (_selectedCategory == categorySlug) return;
 
-    // Salva la preferenza
+    setState(() => _selectedCategory = categorySlug);
+
     try {
       final prefs = await SharedPreferences.getInstance();
       if (categorySlug == null) {
@@ -106,26 +98,41 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadRecipesWithFilters() async {
-    if (!mounted) return;
+    print('🔍 CHIAMATA A _loadRecipesWithFilters - inizio');
 
-    final recipeService = context.read<RecipeService>();
-    final likeService = context.read<LikeService>();
+    if (_isLoadingFilters || !mounted) return;
+    print('🔍 CHIAMATA A _loadRecipesWithFilters - procedo');
 
-    await recipeService.fetchRecipes(
-      forceRefresh: true,
-      page: 1,
-      category: _selectedCategory,
-    );
+    _isLoadingFilters = true;
 
-    if (!mounted) return;
+    try {
+      final recipeService = context.read<RecipeService>();
+      final likeService = context.read<LikeService>();
+      final categoryService = context.read<CategoryService>();
 
-    final recipeIds = recipeService.cachedRecipes.map((r) => r.id).toList();
-    likeService.preloadLikesCount(recipeIds);
+      await Future.wait([
+        categoryService.fetchCategories(forceRefresh: true),
+        recipeService.fetchRecipes(
+          forceRefresh: true,
+          page: 1,
+          category: _selectedCategory,
+          search: _searchQuery,
+        ),
+      ]);
+
+      if (!mounted) return;
+
+      final recipeIds = recipeService.cachedRecipes.map((r) => r.id).toList();
+      likeService.preloadLikesCount(recipeIds);
+    } catch (e) {
+      AppLogger.error('Errore nel caricamento filtri', e);
+    } finally {
+      _isLoadingFilters = false;
+    }
   }
 
   void _navigateToCreateRecipe() {
     final authService = context.read<AuthService>();
-
     if (!authService.isLoggedIn) {
       _showLoginRequiredDialog(
         title: 'Accesso richiesto',
@@ -133,13 +140,11 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       return;
     }
-
     Navigator.pushNamed(context, '/create-recipe');
   }
 
   void _navigateToProfile() {
     final authService = context.read<AuthService>();
-
     if (!authService.isLoggedIn) {
       _showLoginRequiredDialog(
         title: 'Accesso richiesto',
@@ -147,14 +152,11 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       return;
     }
-
     Navigator.pushNamed(context, '/profile');
   }
 
-  void _showLoginRequiredDialog({
-    required String title,
-    required String content,
-  }) {
+  void _showLoginRequiredDialog(
+      {required String title, required String content}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -162,12 +164,11 @@ class _HomeScreenState extends State<HomeScreen> {
         content: Text(content),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('ANNULLA'),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('ANNULLA')),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.pop(context);
               Navigator.pushNamed(context, '/login');
             },
             child: const Text('LOGIN'),
@@ -184,81 +185,57 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       return;
     }
-
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DetailRecipeScreen(recipeId: recipe.id),
-      ),
+          builder: (_) => DetailRecipeScreen(recipeId: recipe.id)),
     );
   }
 
   void _onSearchChanged(String query) {
-    setState(() {
-      _searchQuery = query.isEmpty ? null : query;
-    });
-  }
-
-  List<Recipe> _getFilteredRecipes(List<Recipe> recipes) {
-    if (_searchQuery == null || _searchQuery!.isEmpty) {
-      return recipes;
-    }
-
-    final query = _searchQuery!.toLowerCase();
-    final filtered = recipes.where((recipe) {
-      if (recipe.title.toLowerCase().contains(query)) return true;
-      if (recipe.description.toLowerCase().contains(query)) return true;
-      for (var ingredient in recipe.ingredients) {
-        if (ingredient.name.toLowerCase().contains(query)) return true;
-      }
-      return false;
-    }).toList();
-
-    if (filtered.isEmpty) {
-      AppLogger.debug(
-          '🔍 Nessuna ricetta trovata per: "$query" in categoria: ${_selectedCategory ?? "tutte"}');
-    }
-
-    return filtered;
+    setState(() => _searchQuery = query.isEmpty ? null : query);
+    _loadRecipesWithFilters();
   }
 
   Widget _buildAvatarButton(AuthService authService) {
     if (!authService.isLoggedIn) {
       return const _AvatarIconButton(
-        icon: Icons.account_circle,
-        tooltip: 'Accedi al profilo',
-        onTap: null,
-      );
+          icon: Icons.account_circle, tooltip: 'Accedi al profilo');
     }
 
-    final tooltipMessage = authService.username != null
-        ? 'Profilo di ${authService.username!}'
+    final tooltip = authService.username != null
+        ? 'Profilo di ${authService.username}'
         : 'Profilo';
 
-    if (authService.avatarUrl != null && authService.avatarUrl!.isNotEmpty) {
+    if (authService.avatarUrl?.isNotEmpty ?? false) {
       return _AvatarImageButton(
-        avatarUrl: authService.avatarUrl!,
-        tooltip: tooltipMessage,
-        onTap: null,
-      );
+          avatarUrl: authService.avatarUrl!, tooltip: tooltip);
     }
-
     return const _AvatarIconButton(
-      icon: Icons.account_circle,
-      tooltip: 'Profilo',
-      onTap: null,
-    );
+        icon: Icons.account_circle, tooltip: 'Profilo');
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer2<RecipeService, AuthService>(
-      builder: (context, recipeService, authService, child) {
+      builder: (context, recipeService, authService, _) {
         final recipes = recipeService.cachedRecipes;
-        final filteredRecipes = _getFilteredRecipes(recipes);
 
         return Scaffold(
-          appBar: _buildAppBar(authService),
+          appBar: AppBar(
+            title: const Text('OrsoCook',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                onPressed: _navigateToCreateRecipe,
+                tooltip: 'Crea ricetta',
+              ),
+              GestureDetector(
+                  onTap: _navigateToProfile,
+                  child: _buildAvatarButton(authService)),
+            ],
+          ),
           body: Column(
             children: [
               const WelcomeHeader(),
@@ -271,14 +248,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: AnimatedSwitcher(
                   duration: _animationDuration,
-                  transitionBuilder:
-                      (Widget child, Animation<double> animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    );
-                  },
-                  child: filteredRecipes.isNotEmpty
+                  transitionBuilder: (child, animation) =>
+                      FadeTransition(opacity: animation, child: child),
+                  child: recipes.isNotEmpty
                       ? RecipeList(
                           key: ValueKey('$_selectedCategory$_searchQuery'),
                           onRecipeTap: _onRecipeTap,
@@ -293,61 +265,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          floatingActionButton: _buildFloatingActionButton(context),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _navigateToCreateRecipe,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            child: const Icon(Icons.add, size: 28),
+          ),
         );
       },
     );
   }
-
-  AppBar _buildAppBar(AuthService authService) {
-    return AppBar(
-      title: const Text(
-        'OrsoCook',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add_circle_outline),
-          onPressed: _navigateToCreateRecipe,
-          tooltip: 'Crea ricetta',
-        ),
-        GestureDetector(
-          onTap: _navigateToProfile,
-          child: _buildAvatarButton(authService),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFloatingActionButton(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return FloatingActionButton(
-      onPressed: _navigateToCreateRecipe,
-      backgroundColor: theme.colorScheme.primary,
-      foregroundColor: theme.colorScheme.onPrimary,
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [
-              theme.colorScheme.primary,
-              Color.lerp(theme.colorScheme.primary, Colors.white, 0.2)!,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: const Icon(Icons.add, size: 28),
-      ),
-    );
-  }
 }
 
+// ==================== WIDGETS HELPER ====================
 class _AvatarIconButton extends StatelessWidget {
   final IconData icon;
   final String tooltip;
