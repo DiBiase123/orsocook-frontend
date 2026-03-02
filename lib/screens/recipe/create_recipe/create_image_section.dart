@@ -1,7 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../../utils/logger.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class CreateImageSection extends StatefulWidget {
   final Uint8List? imageBytes;
@@ -61,7 +62,7 @@ class _CreateImageSectionState extends State<CreateImageSection> {
               leading: const Icon(Icons.photo_library),
               title: const Text('Scegli dalla Galleria'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop(); // <-- MODIFICATO
                 _selectImageFromGallery();
               },
             ),
@@ -69,14 +70,14 @@ class _CreateImageSectionState extends State<CreateImageSection> {
               leading: const Icon(Icons.camera_alt),
               title: const Text('Scatta una Foto'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop(); // <-- MODIFICATO
                 _selectImageFromCamera();
               },
             ),
             ListTile(
               leading: const Icon(Icons.close),
               title: const Text('Annulla'),
-              onTap: () => Navigator.pop(context),
+              onTap: () => context.pop(), // <-- MODIFICATO
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/auth_service.dart';
@@ -43,7 +44,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             appBar: EditAppBar(
               isLoading: viewModel.isLoading || viewModel.isUploading,
               onSave: () => _saveRecipe(context, viewModel),
-              onBack: () => Navigator.pop(context),
+              onBack: () => context.pop(), // <-- MODIFICATO
             ),
             body: viewModel.isUploading
                 ? const _UploadingIndicator()
@@ -59,7 +60,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     if (!viewModel.validate(_formKey)) return;
 
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
 
     try {
       final updatedRecipe = await viewModel.saveRecipe();
@@ -78,7 +78,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        navigator.pop(true);
+
+        // MODIFICATO: usa context.pop() invece di navigator.pop(true)
+        if (mounted) {
+          context.pop();
+        }
       } else {
         scaffoldMessenger.showSnackBar(
           const SnackBar(

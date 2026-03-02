@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:orsocook/config.dart';
 import 'package:orsocook/utils/logger.dart';
@@ -120,7 +121,7 @@ class _EditImageSectionState extends State<EditImageSection> {
       title: Text(label,
           style: isCancel ? const TextStyle(color: Colors.red) : null),
       onTap: () {
-        Navigator.pop(context);
+        context.pop(); // <-- MODIFICATO
         if (source != null) _pickImage(source);
       },
     );

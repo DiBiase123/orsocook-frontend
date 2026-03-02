@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/comment_service.dart';
@@ -326,16 +327,7 @@ class CommentInputWidget extends StatelessWidget {
   }
 
   void _navigateToLogin(BuildContext context) {
-    Navigator.of(context).pushNamed(
-      '/login',
-      arguments: {
-        'returnRoute': ModalRoute.of(context)?.settings.name,
-        'recipeId': recipeId,
-      },
-    ).then((_) {
-      if (context.mounted) {
-        (context as Element).markNeedsBuild();
-      }
-    });
+    // MODIFICATO: usa context.go invece di pushNamed
+    context.go('/login');
   }
 }

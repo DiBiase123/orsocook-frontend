@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/profile_controller.dart';
 import 'package:orsocook/services/auth_service.dart';
 
@@ -17,14 +18,14 @@ class AvatarPickerWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              context.pop(); // <-- MODIFICATO
               controller.clearSelectedAvatar();
             },
             child: const Text('Annulla'),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              context.pop(); // <-- MODIFICATO
               final result = await controller.uploadAvatar();
 
               if (context.mounted) {

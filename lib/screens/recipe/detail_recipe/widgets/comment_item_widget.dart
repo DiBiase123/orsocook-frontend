@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/models/comment.dart';
 
@@ -158,12 +159,12 @@ class CommentItemWidget extends StatelessWidget {
         content: const Text('Sei sicuro di voler eliminare questo commento?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(), // <-- MODIFICATO
             child: const Text('ANNULLA'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              context.pop(); // <-- MODIFICATO
               onDeleteComment(comment.id);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
