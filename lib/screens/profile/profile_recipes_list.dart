@@ -36,69 +36,95 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
   @override
   void initState() {
     super.initState();
+    AppLogger.debug(
+        '📋 [INIT] ProfileRecipesList - isUserRecipes: ${widget.isUserRecipes}');
     _loadedRecipes = List.from(widget.recipes);
     _favoriteService = Provider.of<FavoriteService>(context, listen: false);
-
-    // Ascoltiamo i cambiamenti dei preferiti
     _favoriteService.addListener(_onFavoriteChanged);
+    _preloadFavoriteStatus();
+  }
+
+  Future<void> _preloadFavoriteStatus() async {
+    AppLogger.debug(
+        '📦 [PRELOAD] Inizio precaricamento ${_loadedRecipes.length} ricette');
+    for (final recipe in _loadedRecipes) {
+      await _favoriteService.isFavorite(recipe.id);
+    }
+    AppLogger.debug('✅ [PRELOAD] Completato');
   }
 
   @override
   void didUpdateWidget(ProfileRecipesList oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.recipes != widget.recipes) {
+      AppLogger.debug(
+          '🔄 [UPDATE] Widget aggiornato - nuove ricette: ${widget.recipes.length}');
       setState(() {
         _loadedRecipes = List.from(widget.recipes);
       });
+      _preloadFavoriteStatus();
     }
   }
 
   @override
   void dispose() {
+    AppLogger.debug(
+        '🗑️ [DISPOSE] ProfileRecipesList - isUserRecipes: ${widget.isUserRecipes}');
     _favoriteService.removeListener(_onFavoriteChanged);
     super.dispose();
   }
 
   void _onFavoriteChanged() {
     AppLogger.debug(
-        '🔔 _onFavoriteChanged chiamato - isUserRecipes: ${widget.isUserRecipes}');
+        '🔔 [LISTENER] _onFavoriteChanged - isUserRecipes: ${widget.isUserRecipes}');
+
+    if (!mounted) return;
 
     if (widget.isUserRecipes) {
-      AppLogger.debug('🔄 Aggiorno solo stato cuoricini');
+      AppLogger.debug(
+          '🔄 [LISTENER] Caso "Le Mie Ricette" - aggiorno solo colori');
       _refreshFavoriteStatus();
     } else {
-      AppLogger.debug('🔄 Ricarico lista preferiti');
+      AppLogger.debug(
+          '🔄 [LISTENER] Caso "Preferiti" - ricarico lista completa');
       _refreshList();
     }
   }
 
   Future<void> _refreshFavoriteStatus() async {
+    AppLogger.debug('🎨 [REFRESH] Aggiornamento stati preferiti');
     try {
       final updatedRecipes = <Recipe>[];
       for (final recipe in _loadedRecipes) {
         final isFavorite = await _favoriteService.isFavorite(recipe.id);
-        updatedRecipes.add(recipe.copyWith(isFavorite: isFavorite));
+        if (recipe.isFavorite != isFavorite) {
+          AppLogger.debug(
+              '   📌 ${recipe.title}: ${recipe.isFavorite} -> $isFavorite');
+          updatedRecipes.add(recipe.copyWith(isFavorite: isFavorite));
+        } else {
+          updatedRecipes.add(recipe);
+        }
       }
 
       if (mounted) {
         setState(() {
           _loadedRecipes = updatedRecipes;
         });
+        AppLogger.debug('✅ [REFRESH] Completato');
       }
     } catch (e) {
-      AppLogger.error('Errore aggiornamento stato preferiti: $e');
+      AppLogger.error('❌ [REFRESH] Errore: $e');
     }
   }
 
   Future<void> _refreshList() async {
+    AppLogger.debug('🔄 [REFRESH] Ricarico lista preferiti');
     try {
       final profileService =
           Provider.of<ProfileService>(context, listen: false);
 
-      // Reset alla prima pagina
       _currentPage = 1;
 
-      // Ricarica i dati dal servizio profilo
       final freshRecipes = widget.isUserRecipes
           ? await profileService.fetchUserRecipes(
               widget.userId,
@@ -111,15 +137,20 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
               limit: 10,
             );
 
+      AppLogger.debug('📥 [REFRESH] Caricate ${freshRecipes.length} ricette');
+
       if (mounted) {
         setState(() {
           _loadedRecipes = freshRecipes;
         });
-        AppLogger.success(
-            'Lista preferiti aggiornata: ${freshRecipes.length} ricette');
+
+        for (final recipe in freshRecipes) {
+          _favoriteService.isFavorite(recipe.id);
+        }
+        AppLogger.debug('✅ [REFRESH] Lista aggiornata');
       }
     } catch (e) {
-      AppLogger.error('Errore aggiornamento lista: $e');
+      AppLogger.error('❌ [REFRESH] Errore: $e');
     }
   }
 
@@ -127,9 +158,8 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
     if (_isLoadingMore) return;
 
     try {
-      setState(() {
-        _isLoadingMore = true;
-      });
+      setState(() => _isLoadingMore = true);
+      AppLogger.debug('📦 [LOAD MORE] Caricamento pagina $_currentPage + 1');
 
       final profileService =
           Provider.of<ProfileService>(context, listen: false);
@@ -152,20 +182,23 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
           _loadedRecipes.addAll(newRecipes);
           _currentPage = nextPage;
         });
-        AppLogger.success('Caricate ${newRecipes.length} ricette aggiuntive');
+
+        for (final recipe in newRecipes) {
+          _favoriteService.isFavorite(recipe.id);
+        }
+        AppLogger.debug('✅ [LOAD MORE] Caricate ${newRecipes.length} ricette');
       }
     } catch (e) {
-      AppLogger.error('Errore caricamento ricette aggiuntive: $e');
+      AppLogger.error('❌ [LOAD MORE] Errore: $e');
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoadingMore = false;
-        });
+        setState(() => _isLoadingMore = false);
       }
     }
   }
 
   void _handleRecipeTap(Recipe recipe) {
+    AppLogger.debug('👆 [TAP] Apertura ricetta ${recipe.id}');
     context.push('/recipe/detail/${recipe.id}', extra: recipe);
   }
 

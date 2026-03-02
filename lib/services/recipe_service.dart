@@ -283,9 +283,11 @@ class RecipeService extends ChangeNotifier {
   }
 
   void _updateRecipeField(String recipeId, Recipe Function(Recipe) update) {
+    AppLogger.debug('📝 [RECIPE] _updateRecipeField per $recipeId');
     final index = _cachedRecipes.indexWhere((r) => r.id == recipeId);
     if (index != -1) {
       _cachedRecipes[index] = update(_cachedRecipes[index]);
+      AppLogger.debug('✅ [RECIPE] Ricetta aggiornata, notifico');
       _notify();
     }
   }

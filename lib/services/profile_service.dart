@@ -152,10 +152,11 @@ class ProfileService extends ChangeNotifier {
         'ricette');
   }
 
+  // 👈 CORREZIONE QUI - rimosso /user/$userId dall'URL
   Future<List<Recipe>> fetchUserFavorites(String userId,
       {int page = 1, int limit = 10}) async {
     return _fetchList(
-        '${Config.apiBaseUrl}/api/favorites/user/$userId?page=$page&limit=$limit',
+        '${Config.apiBaseUrl}/api/favorites?page=$page&limit=$limit', // <-- CORRETTO
         'preferiti');
   }
 
@@ -175,11 +176,50 @@ class ProfileService extends ChangeNotifier {
       ).timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List<dynamic> items =
-            data['success'] == true ? data['data'] : (data is List ? data : []);
-        final recipes = items.map((r) => Recipe.fromJson(r)).toList();
-        _log('Caricate ${recipes.length} $type');
+        final dynamic data = json.decode(response.body);
+
+        // LOG DETTAGLIATO
+        AppLogger.debug('📦 Risposta $type - Status 200');
+        AppLogger.debug('📦 Raw data: $data');
+
+        List<dynamic> items = [];
+
+        if (data is Map) {
+          AppLogger.debug('📦 Data è un Map con chiavi: ${data.keys}');
+          if (data['success'] == true && data['data'] != null) {
+            items = data['data'] is List ? data['data'] : [];
+            AppLogger.debug('📦 Items da data[\'data\']: ${items.length}');
+          } else if (data['data'] is List) {
+            items = data['data'];
+          }
+        } else if (data is List) {
+          items = data;
+          AppLogger.debug('📦 Data è una List di ${items.length} elementi');
+        }
+
+        AppLogger.debug('📦 Totale items da processare: ${items.length}');
+
+        final recipes = <Recipe>[];
+        for (var i = 0; i < items.length; i++) {
+          try {
+            final item = items[i];
+            // LOG per vedere struttura completa
+            AppLogger.debug('🔍 Item $i structure: ${item.runtimeType}');
+            AppLogger.debug(
+                '🔍 Item $i keys: ${item is Map ? item.keys : 'not a map'}');
+
+            final recipe = Recipe.fromJson(Map<String, dynamic>.from(item));
+            recipes.add(recipe);
+            AppLogger.debug('✅ Ricetta convertita: ${recipe.title}');
+          } catch (e, stack) {
+            AppLogger.error('❌ Errore conversione ricetta $i', e);
+            AppLogger.error('Stack: $stack');
+            // Log dell'item che causa errore - CORRETTO
+            AppLogger.error('Item che ha causato errore: ${items[i]}');
+          }
+        }
+
+        _log('Caricate ${recipes.length} $type su ${items.length} totali');
         return recipes;
       } else if (response.statusCode == 404) {
         return [];

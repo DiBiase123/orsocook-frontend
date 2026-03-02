@@ -17,12 +17,25 @@ class Config {
     'prod': 'https://orsocook-api.onrender.com', // Produzione
   };
 
+  static String? _cachedApiBaseUrl; // 👈 CACHE
+
   static String get apiBaseUrl {
+    // Usa la cache se disponibile
+    if (_cachedApiBaseUrl != null) {
+      return _cachedApiBaseUrl!;
+    }
+
     final url = apiUrls[environment];
     if (url == null) {
       throw Exception('Ambiente "$environment" non configurato');
     }
-    print('🔧 Config: usando ambiente "$environment" -> $url'); // 👈 LOG
+
+    // Log UNA SOLA VOLTA
+    if (kDebugMode) {
+      debugPrint('🔧 Config: ambiente "$environment" -> $url');
+    }
+
+    _cachedApiBaseUrl = url; // 👈 SALVA IN CACHE
     return url;
   }
 

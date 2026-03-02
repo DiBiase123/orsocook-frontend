@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/favorite_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/models/recipe.dart'; // <-- AGGIUNTO
+import 'package:orsocook/models/recipe.dart';
 
 class FavoriteButton extends StatefulWidget {
   final String recipeId;
@@ -56,14 +56,21 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     super.dispose();
   }
 
-  void _onFavoriteChanged() => _refreshState();
+  void _onFavoriteChanged() {
+    if (mounted) {
+      _refreshState();
+    }
+  }
 
   Future<void> _refreshState() => _updateFavoriteState();
 
   Future<void> _loadInitialState() => _updateFavoriteState();
 
   Future<void> _updateFavoriteState() async {
+    if (!mounted) return;
+
     try {
+      // Ora isFavorite è immediato grazie alla cache!
       final isFavorite = await _favoriteService.isFavorite(widget.recipeId);
       if (mounted) {
         setState(() {
@@ -73,7 +80,9 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       }
     } catch (e) {
       AppLogger.error('Error updating favorite state', e);
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -86,25 +95,41 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       return;
     }
 
-    setState(() => _isProcessing = true);
+    // Optimistic update IMMEDIATO
+    setState(() {
+      _isProcessing = true;
+      _isFavorite = !_isFavorite;
+    });
 
     try {
       final success = await _favoriteService.toggleFavorite(widget.recipeId);
 
-      if (success && mounted) {
+      if (!success && mounted) {
+        // Rollback se fallisce
+        setState(() {
+          _isFavorite = !_isFavorite;
+          _isProcessing = false;
+        });
+        _showSnackbar('Errore durante l\'operazione', isError: true);
+      } else if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
         widget.onToggle?.call();
+        // Non mostriamo snackbar per essere più veloci?
+        // Se vuoi mantenerlo, lascia questa riga
         _showSnackbar(
-          _isFavorite ? 'Rimosso dai preferiti' : 'Aggiunto ai preferiti',
+          _isFavorite ? 'Aggiunto ai preferiti' : 'Rimosso dai preferiti',
           isError: false,
         );
-      } else if (mounted) {
-        setState(() => _isProcessing = false);
-        _showSnackbar('Errore durante l\'operazione', isError: true);
       }
     } catch (e) {
       AppLogger.error('Error toggling favorite', e);
       if (mounted) {
-        setState(() => _isProcessing = false);
+        setState(() {
+          _isFavorite = !_isFavorite; // Rollback
+          _isProcessing = false;
+        });
         _showSnackbar('Errore: ${e.toString()}', isError: true);
       }
     }
@@ -133,12 +158,14 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       SnackBar(
         content: Text(message),
         backgroundColor: isError ? Colors.red : Colors.green,
-        duration: Duration(seconds: isError ? 3 : 2),
+        duration:
+            Duration(seconds: isError ? 3 : 1), // Ridotto a 1 sec per successo
       ),
     );
   }
 
-  bool get _showLoader => (widget.showLoading && (_isLoading || _isProcessing));
+  bool get _showLoader =>
+      widget.showLoading && _isLoading; // Rimosso _isProcessing
 
   @override
   Widget build(BuildContext context) {

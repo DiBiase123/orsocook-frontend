@@ -5,8 +5,10 @@ import 'package:orsocook/services/avatar_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/profile_service.dart';
 import 'package:orsocook/services/comment_service.dart';
+import 'package:orsocook/services/favorite_service.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/models/user_profile.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class ProfileController extends ChangeNotifier {
   // Dependencies
@@ -14,19 +16,21 @@ class ProfileController extends ChangeNotifier {
   final ProfileService _profileService;
   final AvatarService _avatarService;
   final CommentService _commentService;
+  final FavoriteService _favoriteService;
 
   // State
-  XFile? _selectedAvatarXFile; // ← MODIFICATO: da File a XFile
-  Uint8List? _selectedAvatarBytes; // ← NUOVO: per i bytes
+  XFile? _selectedAvatarXFile;
+  Uint8List? _selectedAvatarBytes;
   bool _isChangingAvatar = false;
   bool _isPickingAvatar = false;
   int _selectedTabIndex = 0;
   String? _lastSuccessMessage;
   bool _isDisposed = false;
+  bool _isRefreshing = false; // 👈 AGGIUNTO per evitare doppi refresh
 
   // Getters
-  XFile? get selectedAvatar => _selectedAvatarXFile; // ← MODIFICATO
-  Uint8List? get selectedAvatarBytes => _selectedAvatarBytes; // ← NUOVO
+  XFile? get selectedAvatar => _selectedAvatarXFile;
+  Uint8List? get selectedAvatarBytes => _selectedAvatarBytes;
   bool get isChangingAvatar => _isChangingAvatar;
   bool get isPickingAvatar => _isPickingAvatar;
   int get selectedTabIndex => _selectedTabIndex;
@@ -43,12 +47,12 @@ class ProfileController extends ChangeNotifier {
   List<Recipe>? get recentFavorites =>
       _profileService.currentProfile?.recentFavorites;
 
-  bool get isShowingTempAvatar => _selectedAvatarXFile != null; // ← MODIFICATO
+  bool get isShowingTempAvatar => _selectedAvatarXFile != null;
   bool get isBusy =>
       _isChangingAvatar || _isPickingAvatar || _profileService.isLoading;
 
   String? get displayAvatarUrl {
-    if (_selectedAvatarXFile != null) return null; // ← MODIFICATO
+    if (_selectedAvatarXFile != null) return null;
     final profileAvatar = _profileService.currentProfile?.user.avatarUrl;
     final authAvatar = _authService.avatarUrl;
     return profileAvatar ?? authAvatar;
@@ -59,17 +63,51 @@ class ProfileController extends ChangeNotifier {
     required ProfileService profileService,
     required AvatarService avatarService,
     required CommentService commentService,
+    required FavoriteService favoriteService,
   })  : _authService = authService,
         _profileService = profileService,
         _avatarService = avatarService,
-        _commentService = commentService {
+        _commentService = commentService,
+        _favoriteService = favoriteService {
     _isDisposed = false;
+    _favoriteService.addListener(_onFavoritesChanged);
   }
 
   @override
   void dispose() {
+    _favoriteService.removeListener(_onFavoritesChanged);
     _isDisposed = true;
     super.dispose();
+  }
+
+  // ================ FAVORITES SYNC ================
+  void _onFavoritesChanged() {
+    if (!_isDisposed && !_isRefreshing) {
+      _isRefreshing = true;
+      AppLogger.debug(
+          '🔄 [PROFILE] Preferiti cambiati, ricarico profilo completo');
+      _refreshFullProfile().whenComplete(() {
+        _isRefreshing = false;
+      });
+    }
+  }
+
+  // 👈 NUOVO: Ricarica TUTTO il profilo
+  Future<void> _refreshFullProfile() async {
+    try {
+      final userId = _authService.userId;
+      if (userId != null) {
+        AppLogger.debug(
+            '📦 [PROFILE] Ricarico profilo completo per user $userId');
+
+        // Forza il refresh COMPLETO del profilo
+        await _profileService.fetchUserProfile(userId, force: true);
+
+        AppLogger.debug('✅ [PROFILE] Profilo aggiornato completamente');
+      }
+    } catch (e) {
+      AppLogger.error('❌ [PROFILE] Errore refresh profilo', e);
+    }
   }
 
   // ================ AVATAR MANAGEMENT ================
@@ -90,7 +128,6 @@ class ProfileController extends ChangeNotifier {
       );
 
       if (pickedFile != null) {
-        // Leggi i bytes dall'XFile
         final bytes = await pickedFile.readAsBytes();
         final sizeInMB = bytes.length / (1024 * 1024);
 
@@ -224,6 +261,9 @@ class ProfileController extends ChangeNotifier {
     if (_isDisposed) return;
 
     try {
+      // Svuota cache preferiti PRIMA del logout
+      _favoriteService.clearCache();
+
       await _authService.logout();
       _profileService.clearProfile();
       _selectedAvatarXFile = null;

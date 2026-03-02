@@ -15,11 +15,8 @@ import 'package:orsocook/utils/logger.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Configura logger
   AppLogger.setProductionMode();
 
-  // Inizializza Auth Service
   final authService = AuthService();
   await authService.initialize();
 
@@ -28,25 +25,16 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   final AuthService authService;
-
   const MyApp({super.key, required this.authService});
 
   @override
   Widget build(BuildContext context) {
-    // 🔍 DEBUG VISIBILE SU PAGINA BIANCA
-    debugPrint('🚀 MAIN DART: build iniziato');
-    debugPrint('📍 Path corrente: ${Uri.base.path}');
-    debugPrint('📍 Query: ${Uri.base.query}');
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthService>.value(value: authService),
-
-        // 👇 NUOVO PROVIDER
         ChangeNotifierProvider<CategoryService>(
           create: (context) => CategoryService(context.read<AuthService>()),
         ),
-
         ChangeNotifierProvider<LikeService>(
           create: (context) => LikeService(context.read<AuthService>()),
         ),
@@ -56,7 +44,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<RecipeService>(
           create: (context) => RecipeService(
             context.read<AuthService>(),
-            context.read<CategoryService>(), // 👈 AGGIUNTO
+            context.read<CategoryService>(),
           ),
         ),
         ChangeNotifierProvider<ProfileService>(
@@ -68,21 +56,57 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<CommentService>(
           create: (context) => CommentService(context.read<AuthService>()),
         ),
+        // 👇 MODIFICATO - aggiunto favoriteService
         ChangeNotifierProvider<ProfileController>(
           create: (context) => ProfileController(
             authService: context.read<AuthService>(),
             profileService: context.read<ProfileService>(),
             avatarService: context.read<AvatarService>(),
             commentService: context.read<CommentService>(),
+            favoriteService: context.read<FavoriteService>(),
           ),
         ),
       ],
-      child: MaterialApp.router(
-        title: 'OrsoCook',
-        theme: AppTheme.lightTheme,
-        routerConfig: goRouter,
-        debugShowCheckedModeBanner: false,
+      child: _CacheInitializer(
+        child: MaterialApp.router(
+          title: 'OrsoCook',
+          theme: AppTheme.lightTheme,
+          routerConfig: goRouter,
+          debugShowCheckedModeBanner: false,
+        ),
       ),
     );
   }
+}
+
+class _CacheInitializer extends StatefulWidget {
+  final Widget child;
+  const _CacheInitializer({required this.child});
+
+  @override
+  State<_CacheInitializer> createState() => __CacheInitializerState();
+}
+
+class __CacheInitializerState extends State<_CacheInitializer> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _preloadFavorites());
+  }
+
+  void _preloadFavorites() {
+    try {
+      final favoriteService = context.read<FavoriteService>();
+      final recipeService = context.read<RecipeService>();
+
+      for (final recipe in recipeService.cachedRecipes.take(20)) {
+        favoriteService.isFavorite(recipe.id);
+      }
+    } catch (_) {
+      // Ignora errori - non critico
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

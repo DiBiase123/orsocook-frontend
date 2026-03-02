@@ -44,6 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onViewModelUpdate() {
+    AppLogger.debug('🏠 [HOME] ViewModel aggiornato');
+
     if (mounted) setState(() {});
   }
 

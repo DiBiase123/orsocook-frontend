@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
@@ -9,8 +9,8 @@ import 'package:orsocook/config.dart';
 class FavoriteService extends ChangeNotifier {
   final AuthService _authService;
 
-  // 👇 ELIMINIAMO LA CACHE
-  // final Map<String, Recipe> _favoritesCache = {};
+  // Cache locale per risposte immediate
+  final Map<String, bool> _favoriteCache = {};
 
   bool _isLoading = false;
   String? _error;
@@ -20,21 +20,24 @@ class FavoriteService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // 👇 OGNI VOLTA CHE CHIEDIAMO I FAVORITI, ANDIAMO AL BACKEND
-  List<Recipe> get favorites => []; // Vuoto, non usiamo cache
-
-  // Verifica se una ricetta è nei preferiti - SEMPRE DAL BACKEND
+  // Verifica se una ricetta è nei preferiti - USA CACHE
   Future<bool> isFavorite(String recipeId) async {
+    if (_favoriteCache.containsKey(recipeId)) {
+      return _favoriteCache[recipeId]!;
+    }
+
     try {
       final result = await checkFavorite(recipeId);
-      return result['isFavorite'] ?? false;
+      final isFavorite = result['isFavorite'] ?? false;
+      _favoriteCache[recipeId] = isFavorite;
+      return isFavorite;
     } catch (e) {
       AppLogger.error('Error checking favorite status', e);
       return false;
     }
   }
 
-  // Ottieni i preferiti dell'utente - SEMPRE DAL BACKEND
+  // Ottieni i preferiti dell'utente
   Future<List<Recipe>> getFavorites() async {
     _isLoading = true;
     _error = null;
@@ -45,7 +48,6 @@ class FavoriteService extends ChangeNotifier {
         throw Exception('Utente non autenticato');
       }
 
-      AppLogger.api('GET /api/favorites');
       final authHeaders = await _authService.getAuthHeaders();
 
       final response = await http.get(
@@ -57,8 +59,12 @@ class FavoriteService extends ChangeNotifier {
         final List<dynamic> data = json.decode(response.body);
         final favorites = data.map((item) => Recipe.fromJson(item)).toList();
 
+        // Aggiorna cache
+        for (final recipe in favorites) {
+          _favoriteCache[recipe.id] = true;
+        }
+
         _isLoading = false;
-        AppLogger.success('Loaded ${favorites.length} favorites from API');
         notifyListeners();
 
         return favorites;
@@ -76,12 +82,14 @@ class FavoriteService extends ChangeNotifier {
 
   // Aggiungi ai preferiti
   Future<bool> addFavorite(String recipeId) async {
-    AppLogger.api('POST /api/favorites/$recipeId');
-
     try {
       if (!_authService.isLoggedIn) {
         throw Exception('Utente non autenticato');
       }
+
+      // Optimistic update
+      _favoriteCache[recipeId] = true;
+      notifyListeners();
 
       final authHeaders = await _authService.getAuthHeaders();
 
@@ -91,16 +99,16 @@ class FavoriteService extends ChangeNotifier {
       );
 
       if (response.statusCode == 201) {
-        AppLogger.success('Added recipe $recipeId to favorites');
-        notifyListeners(); // Notifica che qualcosa è cambiato
         return true;
       } else {
-        final errorMsg = response.body.isNotEmpty
-            ? json.decode(response.body)['error']
-            : 'Failed to add favorite';
-        throw Exception(errorMsg);
+        // Rollback
+        _favoriteCache[recipeId] = false;
+        notifyListeners();
+        throw Exception('Failed to add favorite');
       }
     } catch (e) {
+      _favoriteCache[recipeId] = false;
+      notifyListeners();
       AppLogger.error('Error adding favorite', e);
       rethrow;
     }
@@ -108,12 +116,14 @@ class FavoriteService extends ChangeNotifier {
 
   // Rimuovi dai preferiti
   Future<bool> removeFavorite(String recipeId) async {
-    AppLogger.api('DELETE /api/favorites/$recipeId');
-
     try {
       if (!_authService.isLoggedIn) {
         throw Exception('Utente non autenticato');
       }
+
+      // Optimistic update
+      _favoriteCache[recipeId] = false;
+      notifyListeners();
 
       final authHeaders = await _authService.getAuthHeaders();
 
@@ -123,16 +133,16 @@ class FavoriteService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        AppLogger.success('Removed recipe $recipeId from favorites');
-        notifyListeners(); // Notifica che qualcosa è cambiato
         return true;
       } else {
-        final errorMsg = response.body.isNotEmpty
-            ? json.decode(response.body)['error']
-            : 'Failed to remove favorite';
-        throw Exception(errorMsg);
+        // Rollback
+        _favoriteCache[recipeId] = true;
+        notifyListeners();
+        throw Exception('Failed to remove favorite');
       }
     } catch (e) {
+      _favoriteCache[recipeId] = true;
+      notifyListeners();
       AppLogger.error('Error removing favorite', e);
       rethrow;
     }
@@ -144,8 +154,6 @@ class FavoriteService extends ChangeNotifier {
       if (!_authService.isLoggedIn) {
         return {'isFavorite': false, 'favoritedAt': null};
       }
-
-      AppLogger.api('GET /api/favorites/check/$recipeId');
 
       final authHeaders = await _authService.getAuthHeaders();
 
@@ -168,11 +176,7 @@ class FavoriteService extends ChangeNotifier {
   // Toggle preferito
   Future<bool> toggleFavorite(String recipeId) async {
     try {
-      // 👈 VERIFICA SEMPRE LO STATO ATTUALE DAL BACKEND
-      final checkResult = await checkFavorite(recipeId);
-      final isCurrentlyFavorite = checkResult['isFavorite'] ?? false;
-
-      AppLogger.debug('🔄 Toggle favorite - Stato reale: $isCurrentlyFavorite');
+      final isCurrentlyFavorite = _favoriteCache[recipeId] ?? false;
 
       if (isCurrentlyFavorite) {
         return await removeFavorite(recipeId);
@@ -185,9 +189,17 @@ class FavoriteService extends ChangeNotifier {
     }
   }
 
-  // Svuota stato (utile per logout)
+  // 👇 NUOVO: Svuota cache (da chiamare al logout)
+  void clearCache() {
+    _favoriteCache.clear();
+    notifyListeners();
+    AppLogger.debug('🧹 Cache preferiti svuotata');
+  }
+
+  // Svuota stato
   void reset() {
     _error = null;
+    _favoriteCache.clear();
     notifyListeners();
   }
 }
