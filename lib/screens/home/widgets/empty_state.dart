@@ -1,8 +1,6 @@
-// lib/screens/home/widgets/empty_state.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/recipe_service.dart';
-import 'package:orsocook/utils/logger.dart';
 
 class EmptyState extends StatelessWidget {
   final String? searchQuery;
@@ -18,82 +16,118 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppLogger.debug('🏜️ Building EmptyState');
-
     final recipeService = Provider.of<RecipeService>(context);
 
-    // Se sta caricando, mostra loading
     if (recipeService.isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Caricamento ricette...'),
-          ],
-        ),
-      );
+      return const _LoadingState();
     }
 
-    // Se c'è un errore, mostra errore (usa lastError != null)
     if (recipeService.lastError != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text(
-              'Errore nel caricamento',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              recipeService.lastError!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: const Text('RIPROVA'),
-            ),
-          ],
-        ),
+      return _ErrorState(
+        error: recipeService.lastError!,
+        onRetry: onRetry,
       );
     }
 
-    // Se c'è una ricerca ma nessun risultato
-    if (searchQuery != null && searchQuery!.isNotEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text(
-              'Nessuna ricetta trovata',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Nessun risultato per "$searchQuery"',
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {
-                // Questa logica sarà gestita dal parent
-              },
-              child: const Text('Cancella ricerca'),
-            ),
-          ],
-        ),
-      );
+    if (searchQuery?.isNotEmpty == true) {
+      return _EmptySearchState(searchQuery: searchQuery!);
     }
 
-    // Stato vuoto normale
+    return _EmptyDefaultState(onCreateRecipe: onCreateRecipe);
+  }
+}
+
+class _LoadingState extends StatelessWidget {
+  const _LoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Caricamento ricette...'),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+
+  const _ErrorState({
+    required this.error,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text(
+            'Errore nel caricamento',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            error,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: onRetry,
+            child: const Text('RIPROVA'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptySearchState extends StatelessWidget {
+  final String searchQuery;
+
+  const _EmptySearchState({required this.searchQuery});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.search_off, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text(
+            'Nessuna ricetta trovata',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Nessun risultato per "$searchQuery"',
+            style: const TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyDefaultState extends StatelessWidget {
+  final VoidCallback onCreateRecipe;
+
+  const _EmptyDefaultState({required this.onCreateRecipe});
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

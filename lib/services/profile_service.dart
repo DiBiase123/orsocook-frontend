@@ -6,6 +6,7 @@ import 'package:orsocook/config.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/models/user_profile.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class ProfileResponse {
   final UserProfile user;
@@ -25,10 +26,10 @@ class ProfileResponse {
       user: UserProfile.fromJson(json['user']),
       stats: UserStats.fromJson(json['stats']),
       recentRecipes: (json['recentRecipes'] as List)
-          .map((recipe) => Recipe.fromJson(recipe))
+          .map((r) => Recipe.fromJson(r))
           .toList(),
       recentFavorites: (json['recentFavorites'] as List)
-          .map((recipe) => Recipe.fromJson(recipe))
+          .map((r) => Recipe.fromJson(r))
           .toList(),
     );
   }
@@ -49,8 +50,9 @@ class ProfileService extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   bool _isDisposed = false;
+  static const _timeout = Duration(seconds: 15);
 
-  ProfileService(AuthService authService) : _authService = authService;
+  ProfileService(this._authService);
 
   ProfileResponse? get currentProfile => _currentProfile;
   bool get isLoading => _isLoading;
@@ -66,46 +68,40 @@ class ProfileService extends ChangeNotifier {
     }
   }
 
+  void _log(String msg, [bool isError = false]) {
+    if (kDebugMode) {
+      debugPrint('${isError ? '❌' : '✅'} ProfileService: $msg');
+    }
+    if (isError) {
+      AppLogger.error('ProfileService: $msg');
+    } else {
+      AppLogger.success('ProfileService: $msg');
+    }
+  }
+
   void updateAvatarLocally(String newAvatarUrl) {
     if (_currentProfile != null) {
-      final updatedUser =
-          _currentProfile!.user.copyWith(avatarUrl: newAvatarUrl);
-      _currentProfile = _currentProfile!.copyWith(user: updatedUser);
+      _currentProfile = _currentProfile!.copyWith(
+        user: _currentProfile!.user.copyWith(avatarUrl: newAvatarUrl),
+      );
       _safeNotify();
-      if (kDebugMode) {
-        print(
-            '✅ ProfileService: Avatar aggiornato localmente a: $newAvatarUrl');
-      }
-    } else {
-      if (kDebugMode) {
-        print(
-            '⚠️ ProfileService: Nessun profilo corrente per aggiornare l\'avatar');
-      }
+      _log('Avatar aggiornato localmente');
     }
   }
 
   void updateProfile(ProfileResponse newProfile) {
-    if (_isDisposed) return;
-
-    _currentProfile = newProfile;
-    _error = null;
-    _safeNotify();
-
-    if (kDebugMode) {
-      print('🔄 ProfileService: Profile updated via updateProfile()');
-      print('🔄 ProfileService: New avatar URL: ${newProfile.user.avatarUrl}');
+    if (!_isDisposed) {
+      _currentProfile = newProfile;
+      _error = null;
+      _safeNotify();
     }
   }
 
-  Future<ProfileResponse?> fetchUserProfile(String userId) async {
+  Future<ProfileResponse?> fetchUserProfile(String userId,
+      {bool force = false}) async {
     if (_isDisposed) return _currentProfile;
-
-    if (_isLoading) {
-      if (kDebugMode) {
-        print('⏳ ProfileService: Already loading, returning current profile');
-      }
-      return _currentProfile;
-    }
+    if (!force && _currentProfile?.user.id == userId) return _currentProfile;
+    if (_isLoading) return _currentProfile;
 
     _isLoading = true;
     _error = null;
@@ -114,149 +110,129 @@ class ProfileService extends ChangeNotifier {
     try {
       final token = _authService.token;
       if (token == null) {
-        _error = 'Utente non autenticato';
-        _isLoading = false;
-        _safeNotify();
-        return null;
+        throw 'Utente non autenticato';
       }
 
-      final url = '${Config.apiBaseUrl}/api/auth/profile/$userId';
-      if (kDebugMode) {
-        print('🔄 ProfileService: Fetching profile from: $url');
-        print('🔄 ProfileService: User ID: $userId');
-        print('🔄 ProfileService: Has listeners: $hasListeners');
+      final response = await http.get(
+        Uri.parse('${Config.apiBaseUrl}/api/auth/profile/$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json'
+        },
+      ).timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          _currentProfile = ProfileResponse.fromJson(data['data']);
+          _error = null;
+          _log('Profilo caricato');
+        } else {
+          throw data['message'] ?? 'Errore profilo';
+        }
+      } else {
+        throw _handleHttpError(response.statusCode);
+      }
+    } catch (e) {
+      _error = e.toString();
+      _log('Errore: $e', true);
+    } finally {
+      if (!_isDisposed) {
+        _isLoading = false;
+        _safeNotify();
+      }
+    }
+    return _currentProfile;
+  }
+
+  Future<List<Recipe>> fetchUserRecipes(String userId,
+      {int page = 1, int limit = 10}) async {
+    return _fetchList(
+        '${Config.apiBaseUrl}/api/recipes/user/$userId?page=$page&limit=$limit',
+        'ricette');
+  }
+
+  Future<List<Recipe>> fetchUserFavorites(String userId,
+      {int page = 1, int limit = 10}) async {
+    return _fetchList(
+        '${Config.apiBaseUrl}/api/favorites/user/$userId?page=$page&limit=$limit',
+        'preferiti');
+  }
+
+  Future<List<Recipe>> _fetchList(String url, String type) async {
+    try {
+      final token = _authService.token;
+      if (token == null) {
+        throw 'Utente non autenticato';
       }
 
       final response = await http.get(
         Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-      );
-
-      if (kDebugMode) {
-        print('📥 ProfileService: Response status: ${response.statusCode}');
-      }
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-
-        if (data['success'] == true) {
-          final avatarUrl = data['data']['user']['avatarUrl'];
-          if (kDebugMode) {
-            print('✅ ProfileService: Avatar URL in response: $avatarUrl');
-          }
-
-          _currentProfile = ProfileResponse.fromJson(data['data']);
-          _error = null;
-
-          if (kDebugMode) {
-            print('✅ ProfileService: Profile loaded successfully');
-            print(
-                '✅ ProfileService: Current avatar URL: ${_currentProfile!.user.avatarUrl}');
-          }
-
-          _safeNotify();
-        } else {
-          _error = data['message'] ?? 'Errore nel recupero del profilo';
-          if (kDebugMode) {
-            print('❌ ProfileService: API error: $_error');
-          }
-        }
-      } else if (response.statusCode == 401) {
-        _error = 'Sessione scaduta. Effettua nuovamente il login.';
-      } else if (response.statusCode == 403) {
-        _error = 'Non autorizzato ad accedere a questo profilo';
+        final data = json.decode(response.body);
+        final List<dynamic> items =
+            data['success'] == true ? data['data'] : (data is List ? data : []);
+        final recipes = items.map((r) => Recipe.fromJson(r)).toList();
+        _log('Caricate ${recipes.length} $type');
+        return recipes;
       } else if (response.statusCode == 404) {
-        _error = 'Profilo utente non trovato';
+        return [];
       } else {
-        _error = 'Errore server: ${response.statusCode}';
-        if (kDebugMode) {
-          print('❌ ProfileService: HTTP error ${response.statusCode}');
-        }
+        throw _handleHttpError(response.statusCode);
       }
     } catch (e) {
-      _error = 'Errore di connessione: $e';
-      if (kDebugMode) {
-        print('❌ ProfileService: Exception: $e');
-      }
-    } finally {
-      if (!_isDisposed) {
-        _isLoading = false;
-        _safeNotify();
-      }
-
-      if (kDebugMode) {
-        print(
-            '🏁 ProfileService: Fetch completed. Has profile: ${_currentProfile != null}');
-      }
-    }
-
-    return _currentProfile;
-  }
-
-  Future<List<Recipe>> fetchUserRecipes(String userId,
-      {int page = 1, int limit = 10}) async {
-    try {
-      final token = _authService.token;
-
-      if (token == null) {
-        throw Exception('Utente non autenticato');
-      }
-
-      final response = await http.get(
-        Uri.parse(
-            '${Config.apiBaseUrl}/api/recipes/user/$userId?page=$page&limit=$limit'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-
-        if (data['success'] == true) {
-          final recipesData = data['data']['recipes'] as List;
-          return recipesData.map((recipe) => Recipe.fromJson(recipe)).toList();
-        } else {
-          throw Exception(
-              data['message'] ?? 'Errore nel recupero delle ricette');
-        }
-      } else {
-        throw Exception('Errore server: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Fetch user recipes error: $e');
-      }
+      _log('Errore caricamento $type: $e', true);
       rethrow;
     }
   }
 
-  void clearProfile() {
-    if (_isDisposed) return;
+  String _handleHttpError(int code) {
+    switch (code) {
+      case 401:
+        return 'Sessione scaduta';
+      case 403:
+        return 'Non autorizzato';
+      case 404:
+        return 'Non trovato';
+      default:
+        return 'Errore server: $code';
+    }
+  }
 
-    _currentProfile = null;
-    _error = null;
-    _isLoading = false;
-    _safeNotify();
+  Future<ProfileResponse?> refreshProfile() {
+    if (_currentProfile != null) {
+      return fetchUserProfile(_currentProfile!.user.id, force: true);
+    } else if (_authService.userId != null) {
+      return fetchUserProfile(_authService.userId!, force: true);
+    }
+    return Future.value(null);
+  }
+
+  void clearProfile() {
+    if (!_isDisposed) {
+      _currentProfile = null;
+      _error = null;
+      _isLoading = false;
+      _safeNotify();
+    }
   }
 
   void retry() {
-    if (_isDisposed) return;
-
-    if (_currentProfile != null) {
-      fetchUserProfile(_currentProfile!.user.id);
-    } else if (_authService.userId != null) {
-      fetchUserProfile(_authService.userId!);
-    }
+    refreshProfile();
   }
 
   @override
   void dispose() {
-    super.dispose(); // ← CHIAMA PRIMA super.dispose()
-    _isDisposed = true; // ← POI il tuo codice
+    _isDisposed = true;
+    _currentProfile = null;
+    _error = null;
+    _isLoading = false;
+    super.dispose();
   }
 }

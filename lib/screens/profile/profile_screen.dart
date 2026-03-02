@@ -37,10 +37,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
-    // ✅ PULIZIA SICURA: nessun accesso a context
     _lastShownMessage = null;
     _profileController?.clearSuccessMessage();
-
     super.dispose();
   }
 
@@ -96,7 +94,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await _profileController?.logout();
 
       if (mounted) {
-        // SOSTITUISCI con go_router
         context.go('/login');
       }
     } catch (e) {
@@ -177,7 +174,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileBody(ProfileController controller) {
-    // Controlla se c'è un nuovo messaggio di successo
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final currentMessage = controller.lastSuccessMessage;
       if (currentMessage != null &&
@@ -219,24 +215,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Il Mio Profilo',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _handleLogout,
-            tooltip: 'Logout',
+    return PopScope(
+      canPop: false, // Disabilita il back nativo
+      onPopInvokedWithResult: (didPop, result) {
+        // Naviga sempre alla home quando si tenta il back
+        context.go('/home');
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              context.go('/home');
+            },
+            tooltip: 'Home',
           ),
-        ],
-      ),
-      body: Consumer<ProfileController>(
-        builder: (context, controller, child) {
-          return _buildProfileBody(controller);
-        },
+          title: const Text(
+            'Il Mio Profilo',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: _handleLogout,
+              tooltip: 'Logout',
+            ),
+          ],
+        ),
+        body: Consumer<ProfileController>(
+          builder: (context, controller, child) {
+            return _buildProfileBody(controller);
+          },
+        ),
       ),
     );
   }

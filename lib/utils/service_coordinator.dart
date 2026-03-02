@@ -1,8 +1,7 @@
-// lib/utils/service_coordinator.dart
 import 'package:flutter/foundation.dart';
-import '../services/recipe_service.dart';
-import '../services/like_service.dart';
-import '../services/comment_service.dart';
+import 'package:orsocook/services/recipe_service.dart';
+import 'package:orsocook/services/like_service.dart';
+import 'package:orsocook/services/comment_service.dart';
 
 class ServiceCoordinator {
   // Singleton pattern

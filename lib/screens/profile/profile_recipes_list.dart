@@ -31,11 +31,96 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
   bool _isLoadingMore = false;
   int _currentPage = 1;
   late List<Recipe> _loadedRecipes;
+  late FavoriteService _favoriteService;
 
   @override
   void initState() {
     super.initState();
     _loadedRecipes = List.from(widget.recipes);
+    _favoriteService = Provider.of<FavoriteService>(context, listen: false);
+
+    // Ascoltiamo i cambiamenti dei preferiti
+    _favoriteService.addListener(_onFavoriteChanged);
+  }
+
+  @override
+  void didUpdateWidget(ProfileRecipesList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.recipes != widget.recipes) {
+      setState(() {
+        _loadedRecipes = List.from(widget.recipes);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _favoriteService.removeListener(_onFavoriteChanged);
+    super.dispose();
+  }
+
+  void _onFavoriteChanged() {
+    AppLogger.debug(
+        '🔔 _onFavoriteChanged chiamato - isUserRecipes: ${widget.isUserRecipes}');
+
+    if (widget.isUserRecipes) {
+      AppLogger.debug('🔄 Aggiorno solo stato cuoricini');
+      _refreshFavoriteStatus();
+    } else {
+      AppLogger.debug('🔄 Ricarico lista preferiti');
+      _refreshList();
+    }
+  }
+
+  Future<void> _refreshFavoriteStatus() async {
+    try {
+      final updatedRecipes = <Recipe>[];
+      for (final recipe in _loadedRecipes) {
+        final isFavorite = await _favoriteService.isFavorite(recipe.id);
+        updatedRecipes.add(recipe.copyWith(isFavorite: isFavorite));
+      }
+
+      if (mounted) {
+        setState(() {
+          _loadedRecipes = updatedRecipes;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('Errore aggiornamento stato preferiti: $e');
+    }
+  }
+
+  Future<void> _refreshList() async {
+    try {
+      final profileService =
+          Provider.of<ProfileService>(context, listen: false);
+
+      // Reset alla prima pagina
+      _currentPage = 1;
+
+      // Ricarica i dati dal servizio profilo
+      final freshRecipes = widget.isUserRecipes
+          ? await profileService.fetchUserRecipes(
+              widget.userId,
+              page: 1,
+              limit: 10,
+            )
+          : await profileService.fetchUserFavorites(
+              widget.userId,
+              page: 1,
+              limit: 10,
+            );
+
+      if (mounted) {
+        setState(() {
+          _loadedRecipes = freshRecipes;
+        });
+        AppLogger.success(
+            'Lista preferiti aggiornata: ${freshRecipes.length} ricette');
+      }
+    } catch (e) {
+      AppLogger.error('Errore aggiornamento lista: $e');
+    }
   }
 
   Future<void> _loadMoreRecipes() async {
@@ -50,43 +135,37 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
           Provider.of<ProfileService>(context, listen: false);
       final nextPage = _currentPage + 1;
 
-      final newRecipes = await profileService.fetchUserRecipes(
-        widget.userId,
-        page: nextPage,
-        limit: 10,
-      );
+      final newRecipes = widget.isUserRecipes
+          ? await profileService.fetchUserRecipes(
+              widget.userId,
+              page: nextPage,
+              limit: 10,
+            )
+          : await profileService.fetchUserFavorites(
+              widget.userId,
+              page: nextPage,
+              limit: 10,
+            );
 
-      if (newRecipes.isNotEmpty) {
+      if (newRecipes.isNotEmpty && mounted) {
         setState(() {
           _loadedRecipes.addAll(newRecipes);
           _currentPage = nextPage;
         });
-        _logSuccess('Caricate ${newRecipes.length} ricette aggiuntive');
+        AppLogger.success('Caricate ${newRecipes.length} ricette aggiuntive');
       }
     } catch (e) {
-      _logError('Errore caricamento ricette aggiuntive: $e');
+      AppLogger.error('Errore caricamento ricette aggiuntive: $e');
     } finally {
-      setState(() {
-        _isLoadingMore = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
     }
   }
 
-  void _logSuccess(String message) {
-    AppLogger.success('Profile: $message');
-  }
-
-  void _logError(String message) {
-    AppLogger.error('Profile: $message');
-  }
-
-  void _logNavigation(String text) {
-    AppLogger.navigation('Profile: $text');
-  }
-
   void _handleRecipeTap(Recipe recipe) {
-    _logNavigation('Navigazione a ${recipe.title}');
-
     context.push('/recipe/detail/${recipe.id}', extra: recipe);
   }
 
@@ -97,11 +176,7 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              widget.emptyIcon,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(widget.emptyIcon, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               widget.emptyMessage,
@@ -115,10 +190,7 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
             const SizedBox(height: 8),
             if (widget.isUserRecipes)
               ElevatedButton(
-                onPressed: () {
-                  _logNavigation('Navigazione a crea ricetta');
-                  context.go('/create-recipe');
-                },
+                onPressed: () => context.go('/create-recipe'),
                 child: const Text('Crea la tua prima ricetta'),
               ),
           ],
@@ -142,9 +214,7 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
     if (_isLoadingMore) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -162,47 +232,26 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Recipe>>(
-      future: _loadRecipesWithFavoriteStatus(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final recipes = snapshot.data ?? [];
-
-        if (recipes.isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                itemCount: recipes.length,
-                itemBuilder: (context, index) {
-                  return _buildRecipeItem(recipes[index]);
-                },
-              ),
-            ),
-            if (recipes.length >= 10) _buildLoadMoreIndicator(),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<List<Recipe>> _loadRecipesWithFavoriteStatus() async {
-    final favoriteService =
-        Provider.of<FavoriteService>(context, listen: false);
-
-    final updatedRecipes = <Recipe>[];
-    for (final recipe in _loadedRecipes) {
-      final isFavorite = await favoriteService.isFavorite(recipe.id);
-      updatedRecipes.add(recipe.copyWith(isFavorite: isFavorite));
+    if (_loadedRecipes.isEmpty) {
+      return _buildEmptyState();
     }
 
-    return updatedRecipes;
+    return Column(
+      children: [
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _refreshList,
+            child: ListView.builder(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              itemCount: _loadedRecipes.length,
+              itemBuilder: (context, index) {
+                return _buildRecipeItem(_loadedRecipes[index]);
+              },
+            ),
+          ),
+        ),
+        if (_loadedRecipes.length >= 10) _buildLoadMoreIndicator(),
+      ],
+    );
   }
 }
