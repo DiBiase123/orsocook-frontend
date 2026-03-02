@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'login_screen.dart';
+import 'package:universal_html/html.dart' as html;
 
 class VerifyEmailScreen extends StatefulWidget {
   final String? token;
@@ -18,51 +21,127 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   bool _isSuccess = false;
   String? _errorMessage;
   String? _message;
+  String _debugMessage = 'In attesa...';
 
   @override
   void initState() {
     super.initState();
-    AppLogger.debug('🔐 VerifyEmailScreen inizializzata');
+    _initTokenAndVerify();
+  }
 
-    // Se c'è un token nell'URL, verifica automaticamente
-    if (widget.token != null && widget.token!.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _verifyEmail(widget.token!);
+  Future<void> _initTokenAndVerify() async {
+    debugPrint(
+        '🔍 VerifyEmailScreen initState - token da widget: ${widget.token}');
+
+    String? tokenFromStorage;
+
+    // Usa html SOLO se siamo sul web
+    if (kIsWeb) {
+      try {
+        // localStorage
+        if (html.window.localStorage.containsKey('pendingVerificationToken')) {
+          tokenFromStorage =
+              html.window.localStorage['pendingVerificationToken'];
+          if (tokenFromStorage != null) {
+            debugPrint(
+                '🔍 Token recuperato da localStorage: $tokenFromStorage');
+            html.window.localStorage.remove('pendingVerificationToken');
+          }
+        }
+      } catch (e) {
+        debugPrint('❌ Errore lettura localStorage: $e');
+      }
+
+      // Se non c'è, prova sessionStorage
+      if (tokenFromStorage == null) {
+        try {
+          if (html.window.sessionStorage
+              .containsKey('pendingVerificationToken')) {
+            tokenFromStorage =
+                html.window.sessionStorage['pendingVerificationToken'];
+            if (tokenFromStorage != null) {
+              debugPrint(
+                  '🔍 Token recuperato da sessionStorage: $tokenFromStorage');
+              html.window.sessionStorage.remove('pendingVerificationToken');
+            }
+          }
+        } catch (e) {
+          debugPrint('❌ Errore lettura sessionStorage: $e');
+        }
+      }
+    }
+
+    // Per tutte le piattaforme (incluso web come fallback) usa SharedPreferences
+    if (tokenFromStorage == null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        tokenFromStorage = prefs.getString('pendingVerificationToken');
+        if (tokenFromStorage != null) {
+          await prefs.remove('pendingVerificationToken');
+          debugPrint(
+              '🔍 Token recuperato da SharedPreferences: $tokenFromStorage');
+        }
+      } catch (e) {
+        debugPrint('❌ Errore lettura SharedPreferences: $e');
+      }
+    }
+
+    // Usa il token dai parametri o dallo storage
+    final effectiveToken = widget.token ?? tokenFromStorage;
+
+    debugPrint('🔍 VerifyEmailScreen - token finale: $effectiveToken');
+
+    if (mounted) {
+      setState(() {
+        _debugMessage = 'initState - Token: ${effectiveToken ?? "NESSUNO"}';
       });
+    }
+
+    if (effectiveToken != null && effectiveToken.isNotEmpty) {
+      _verifyEmail(effectiveToken);
+    } else {
+      if (mounted) {
+        setState(() {
+          _debugMessage = 'Token mancante o nullo';
+        });
+      }
     }
   }
 
   Future<void> _verifyEmail(String token) async {
     if (_isLoading) return;
 
-    AppLogger.debug(
-        '🔐 Verifica email con token: ${token.substring(0, 10)}...');
+    if (mounted) {
+      setState(() {
+        _debugMessage =
+            'Avvio verifica per token: ${token.substring(0, 10)}...';
+        _isLoading = true;
+        _errorMessage = null;
+        _message = null;
+      });
+    }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-      _message = null;
-    });
+    AppLogger.debug(
+        '🔐 Verifica email con token: ${token.length > 10 ? token.substring(0, 10) : token}...');
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
       final result = await authService.verifyEmail(token);
 
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
 
       if (result.success) {
         AppLogger.success('✅ Email verificata con successo');
-
         setState(() {
           _isSuccess = true;
           _message = result.message;
+          _debugMessage = 'Verifica riuscita!';
         });
 
-        // Mostra successo per 3 secondi, poi naviga alla home
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) {
             Navigator.of(context).pushReplacement(
@@ -72,22 +151,21 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         });
       } else {
         AppLogger.error('❌ Verifica email fallita: ${result.message}');
-
-        if (mounted) {
-          setState(() {
-            _isSuccess = false;
-            _errorMessage = result.message;
-          });
-        }
-      }
-    } catch (e) {
-      if (mounted) {
         setState(() {
-          _isLoading = false;
           _isSuccess = false;
-          _errorMessage = 'Errore di connessione';
+          _errorMessage = result.message;
+          _debugMessage = 'Fallimento: ${result.message}';
         });
       }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+        _isSuccess = false;
+        _errorMessage = 'Errore di connessione';
+        _debugMessage = 'Errore: ${e.toString()}';
+      });
 
       AppLogger.error('❌ Errore durante la verifica email', e);
     }
@@ -233,6 +311,16 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               );
             },
             child: const Text('Torna al Login'),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            padding: const EdgeInsets.all(10),
+            color: Colors.yellow.shade100,
+            child: Text(
+              '🔍 DEBUG: $_debugMessage',
+              style: const TextStyle(fontSize: 12, color: Colors.black),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),

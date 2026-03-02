@@ -9,7 +9,7 @@ import 'package:orsocook/services/profile_controller.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
 import 'package:orsocook/services/category_service.dart';
-import 'package:orsocook/navigation/app_router.dart';
+import 'package:orsocook/navigation/go_router.dart';
 import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/utils/logger.dart';
 
@@ -33,6 +33,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🔍 DEBUG VISIBILE SU PAGINA BIANCA
+    debugPrint('🚀 MAIN DART: build iniziato');
+    debugPrint('📍 Path corrente: ${Uri.base.path}');
+    debugPrint('📍 Query: ${Uri.base.query}');
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthService>.value(value: authService),
@@ -72,11 +77,10 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'OrsoCook',
         theme: AppTheme.lightTheme,
-        onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: '/',
+        routerConfig: goRouter,
         debugShowCheckedModeBanner: false,
       ),
     );

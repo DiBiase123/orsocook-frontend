@@ -11,6 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   
+  # Routing
+  go_router: ^14.0.0
+  
   # Networking
   http: ^1.2.2
   dio: ^5.0.0
@@ -26,6 +29,9 @@ dependencies:
   # File & Images
   image_picker: ^1.0.4
   path: ^1.9.0
+
+  # Web utilities (cross-platform)
+  universal_html: ^2.2.4
 
 dev_dependencies:
   flutter_test:

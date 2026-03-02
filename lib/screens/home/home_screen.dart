@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/screens/home/viewmodels/home_viewmodel.dart';
 import 'package:orsocook/screens/home/widgets/home_app_bar.dart';
@@ -9,7 +10,6 @@ import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/screens/recipe/detail_recipe/detail_recipe_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       return;
     }
-    Navigator.pushNamed(context, '/create-recipe');
+    context.go('/create-recipe');
   }
 
   void _navigateToProfile() {
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       return;
     }
-    Navigator.pushNamed(context, '/profile');
+    context.go('/profile');
   }
 
   void _navigateToRecipeDetail(Recipe recipe) {
@@ -78,14 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       return;
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DetailRecipeScreen(
-          recipe: recipe, // <-- PASSA LA RICETTA INTERA, non solo l'ID
-        ),
-      ),
-    );
+    context.push('/recipe/detail/${recipe.id}', extra: recipe);
   }
 
   void _showLoginRequiredDialog({
@@ -105,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/login');
+              context.go('/login');
             },
             child: const Text('LOGIN'),
           ),

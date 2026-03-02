@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/profile_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/screens/recipe/detail_recipe/detail_recipe_screen.dart';
 
 class ProfileRecipesList extends StatefulWidget {
   final List<Recipe> recipes;
@@ -84,23 +84,10 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
     AppLogger.navigation('Profile: $text');
   }
 
-  /// RIMOSSO - Non necessario perché author è obbligatorio in Recipe
-  // Recipe _ensureRecipeHasAuthor(Recipe originalRecipe) {
-  //   final authService = Provider.of<AuthService>(context, listen: false);
-  //   return RecipeHelpers.ensureRecipeHasAuthor(originalRecipe, authService);
-  // }
-
   void _handleRecipeTap(Recipe recipe) {
     _logNavigation('Navigazione a ${recipe.title}');
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DetailRecipeScreen(
-          recipe: recipe,
-        ),
-      ),
-    );
+    context.push('/recipe/detail/${recipe.id}', extra: recipe);
   }
 
   Widget _buildEmptyState() {
@@ -130,7 +117,7 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
               ElevatedButton(
                 onPressed: () {
                   _logNavigation('Navigazione a crea ricetta');
-                  Navigator.pushNamed(context, '/create-recipe');
+                  context.go('/create-recipe');
                 },
                 child: const Text('Crea la tua prima ricetta'),
               ),
@@ -206,7 +193,6 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
     );
   }
 
-// Aggiungi questo metodo DOPO il build
   Future<List<Recipe>> _loadRecipesWithFavoriteStatus() async {
     final favoriteService =
         Provider.of<FavoriteService>(context, listen: false);

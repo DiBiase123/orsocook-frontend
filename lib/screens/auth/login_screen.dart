@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/screens/home/home_screen.dart';
-import 'package:orsocook/navigation/app_router.dart';
 import 'package:orsocook/screens/auth/widgets/login_logo.dart';
 import 'package:orsocook/screens/auth/widgets/login_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/login_actions.dart';
@@ -65,9 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-          );
+          context.go('/home');
         }
       } else {
         if (result.requiresVerification) {
@@ -270,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _navigateToForgotPassword() {
     if (!mounted) return;
-    AppRouter.goToForgotPassword(context);
+    context.go('/forgot-password');
   }
 
   void _navigateToHomeWithoutAuth() {
@@ -281,14 +278,12 @@ class _LoginScreenState extends State<LoginScreen> {
       authService.logout();
     }
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    context.go('/home');
   }
 
   void _navigateToRegister() {
     if (!mounted) return;
-    Navigator.pushNamed(context, '/register');
+    context.go('/register');
   }
 
   void _handleEmailChanged(String? value) {

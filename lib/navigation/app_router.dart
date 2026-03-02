@@ -34,7 +34,8 @@ class AppRouter {
     String? token,
     BuildContext context,
   ) {
-    switch (settings.name?.split('?')[0]) {
+    final routePath = settings.name?.split('?')[0] ?? '';
+    switch (routePath) {
       case '/':
         return const LoginScreen();
 
@@ -45,6 +46,8 @@ class AppRouter {
         return const RegisterScreen();
 
       case '/verify-email':
+        print('🔍 DEBUG - Token ricevuto in router: $token');
+
         return VerifyEmailScreen(token: token);
 
       case '/forgot-password':

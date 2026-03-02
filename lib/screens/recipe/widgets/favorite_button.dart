@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/favorite_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
@@ -118,7 +119,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
           label: 'ACCEDI',
           textColor: Colors.white,
           onPressed: () {
-            Navigator.pushNamed(context, '/login');
+            context.go('/login');
           },
         ),
       ),

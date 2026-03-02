@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/screens/auth/widgets/register_logo.dart';
@@ -44,8 +45,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submitRegistration() async {
-    if (!_formKey.currentState!.validate()) {
-      AppLogger.debug('❌ Form registrazione non valido');
+    final currentState = _formKey.currentState;
+    if (currentState == null || !currentState.validate()) {
+      AppLogger.debug('❌ Form non valido o currentState null');
       return;
     }
 
@@ -221,8 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // Chiude il dialog
-              Navigator.of(context)
-                  .pop(true); // Torna alla schermata precedente
+              context.go('/login'); // Vai al login
             },
             child: const Text('HO CAPITO',
                 style: TextStyle(fontWeight: FontWeight.bold)),
@@ -255,8 +256,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // Chiude il dialog
-              Navigator.of(context)
-                  .pop(true); // Torna alla schermata precedente
+              context.go('/login'); // Vai al login
             },
             child: const Text('ACCEDI'),
           ),
@@ -320,9 +320,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _navigateToLogin() {
     AppLogger.navigation('⬅️ Torna a LoginScreen');
-    final currentContext = context;
-    if (currentContext.mounted) {
-      Navigator.of(currentContext).pop();
+    if (mounted) {
+      context.go('/login');
     }
   }
 
@@ -341,9 +340,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             AppLogger.navigation('⬅️ Torna indietro da RegisterScreen');
-            final currentContext = context;
-            if (currentContext.mounted) {
-              Navigator.of(currentContext).pop();
+            if (mounted) {
+              context.go('/login');
             }
           },
         ),

@@ -5,6 +5,7 @@ import 'package:orsocook/services/profile_controller.dart';
 import 'package:orsocook/screens/profile/widgets/profile_header.dart';
 import 'package:orsocook/screens/profile/widgets/profile_tabs.dart';
 import 'package:orsocook/screens/profile/profile_stats_widget.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -47,8 +48,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted || _profileController == null) return;
 
     try {
-      await _profileController!.loadProfile();
-
+      final controller = _profileController;
+      if (controller != null) {
+        await controller.loadProfile();
+      } else {
+        if (kDebugMode) {
+          debugPrint('❌ ProfileController null in loadProfile');
+        }
+      }
       if (mounted) {
         setState(() {
           _isInitialLoad = false;
@@ -89,7 +96,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await _profileController?.logout();
 
       if (mounted) {
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+        // SOSTITUISCI con go_router
+        context.go('/login');
       }
     } catch (e) {
       if (mounted) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/screens/legal/privacy_policy_screen.dart';
-import 'package:orsocook/screens/legal/cookie_policy_screen.dart';
 
 class TermsCheckbox extends StatefulWidget {
   final bool value;
@@ -115,21 +114,11 @@ class _TermsCheckboxState extends State<TermsCheckbox> {
   }
 
   void _openPrivacyPolicy(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const PrivacyPolicyScreen(),
-      ),
-    );
+    context.go('/privacy-policy');
   }
 
   void _openCookiePolicy(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CookiePolicyScreen(),
-      ),
-    );
+    context.go('/cookie-policy');
   }
 
   @override

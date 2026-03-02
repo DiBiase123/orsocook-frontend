@@ -1,4 +1,3 @@
-import 'package:orsocook/navigation/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/recipe_service.dart';
@@ -6,6 +5,7 @@ import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/utils/recipe_helpers.dart';
+import 'package:go_router/go_router.dart';
 
 class DetailRecipeViewModel extends ChangeNotifier {
   final RecipeService _recipeService;
@@ -197,6 +197,10 @@ class DetailRecipeViewModel extends ChangeNotifier {
   void navigateToEditScreen(BuildContext context) {
     if (_recipe == null) return;
     AppLogger.debug('✏️ Navigazione a EditRecipeScreen per: ${_recipe!.title}');
-    AppRouter.goToEditRecipe(context, _recipe!).then((_) => refreshRecipe());
+
+    // Usa go_router direttamente
+    GoRouter.of(context)
+        .push('/recipe/edit', extra: _recipe!)
+        .then((_) => refreshRecipe());
   }
 }
