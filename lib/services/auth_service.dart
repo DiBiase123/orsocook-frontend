@@ -194,6 +194,8 @@ class AuthService extends ChangeNotifier {
     }
 
     await _tokenManager.clearAuthData();
+
+    // NOTIFICA TUTTI I SERVICE (saranno chiamati da chi ascolta)
     notifyListeners();
 
     if (kDebugMode) {

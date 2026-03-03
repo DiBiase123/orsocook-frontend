@@ -6,6 +6,7 @@ import 'package:orsocook/screens/profile/widgets/profile_header.dart';
 import 'package:orsocook/screens/profile/widgets/profile_tabs.dart';
 import 'package:orsocook/screens/profile/profile_stats_widget.dart';
 import 'package:go_router/go_router.dart';
+import 'package:orsocook/services/logout_manager.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -80,32 +81,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _performLogout();
+              LogoutManager.performLogout(context); // 👈 ORA FUNZIONA
             },
             child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _performLogout() async {
-    try {
-      await _profileController?.logout();
-
-      if (mounted) {
-        context.go('/login');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Errore durante il logout'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 
   void _showSuccessMessage(String message) {

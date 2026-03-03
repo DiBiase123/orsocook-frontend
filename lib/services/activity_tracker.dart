@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/services/logout_manager.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/navigation/go_router.dart'; // 👈 IMPORT PER NAVIGARE
+import 'package:orsocook/navigation/go_router.dart';
 
 class ActivityTracker extends ChangeNotifier {
   static const _inactivityTimeout = Duration(minutes: 15);
@@ -11,8 +12,9 @@ class ActivityTracker extends ChangeNotifier {
   Timer? _inactivityTimer;
   Timer? _refreshTimer;
   final AuthService _authService;
+  final GlobalKey<NavigatorState> _navigatorKey;
 
-  ActivityTracker(this._authService) {
+  ActivityTracker(this._authService, this._navigatorKey) {
     _startTimers();
   }
 
@@ -45,15 +47,19 @@ class ActivityTracker extends ChangeNotifier {
 
     AppLogger.warning('🚪 Logout per inattività (15 min)');
 
-    await _authService.logout();
+    final context = _navigatorKey.currentContext;
 
-    // 👇 NAVIGA DIRETTAMENTE AL LOGIN USANDO goRouter
-    goRouter.go('/login');
+    if (context != null && context.mounted) {
+      LogoutManager.performLogout(context);
+    } else {
+      await _authService.logout();
+      goRouter.go('/login');
+    }
 
     notifyListeners();
   }
 
-  @override // 👈 AGGIUNTO
+  @override
   void dispose() {
     _inactivityTimer?.cancel();
     _refreshTimer?.cancel();

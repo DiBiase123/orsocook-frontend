@@ -15,6 +15,9 @@ import 'package:orsocook/navigation/go_router.dart';
 import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/utils/logger.dart';
 
+// 👈 DICHIARAZIONE GLOBALE DELLA KEY
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -43,10 +46,11 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AuthService>.value(value: authService),
 
-        // Activity Tracker
+        // Activity Tracker con navigatorKey
         ChangeNotifierProvider<ActivityTracker>(
           create: (context) => ActivityTracker(
             context.read<AuthService>(),
+            _navigatorKey, // 👈 PASSA LA KEY
           ),
         ),
 
