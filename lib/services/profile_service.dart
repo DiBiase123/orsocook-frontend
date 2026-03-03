@@ -22,15 +22,44 @@ class ProfileResponse {
   });
 
   factory ProfileResponse.fromJson(Map<String, dynamic> json) {
+    AppLogger.debug('📦 [PROFILE_SERVICE] Parsing ProfileResponse');
+
+    final user = UserProfile.fromJson(json['user']);
+    final stats = UserStats.fromJson(json['stats']);
+
+    final recentRecipes = (json['recentRecipes'] as List)
+        .map((r) {
+          try {
+            return Recipe.fromJson(r);
+          } catch (e) {
+            AppLogger.error(
+                '❌ [PROFILE_SERVICE] Errore parsing ricetta recente', e);
+            return null;
+          }
+        })
+        .whereType<Recipe>()
+        .toList();
+
+    final recentFavorites = (json['recentFavorites'] as List)
+        .map((r) {
+          try {
+            return Recipe.fromJson(r);
+          } catch (e) {
+            AppLogger.error('❌ [PROFILE_SERVICE] Errore parsing preferito', e);
+            return null;
+          }
+        })
+        .whereType<Recipe>()
+        .toList();
+
+    // A (CORRETTO):
+    AppLogger.debug(
+        '✅ [PROFILE_SERVICE] Parsed: user=${user.username}, stats=${stats.recipesCount} ricette, ${recentFavorites.length} preferiti');
     return ProfileResponse(
-      user: UserProfile.fromJson(json['user']),
-      stats: UserStats.fromJson(json['stats']),
-      recentRecipes: (json['recentRecipes'] as List)
-          .map((r) => Recipe.fromJson(r))
-          .toList(),
-      recentFavorites: (json['recentFavorites'] as List)
-          .map((r) => Recipe.fromJson(r))
-          .toList(),
+      user: user,
+      stats: stats,
+      recentRecipes: recentRecipes,
+      recentFavorites: recentFavorites,
     );
   }
 
@@ -80,6 +109,7 @@ class ProfileService extends ChangeNotifier {
   }
 
   void updateAvatarLocally(String newAvatarUrl) {
+    AppLogger.debug('🖼️ [PROFILE_SERVICE] updateAvatarLocally: $newAvatarUrl');
     if (_currentProfile != null) {
       _currentProfile = _currentProfile!.copyWith(
         user: _currentProfile!.user.copyWith(avatarUrl: newAvatarUrl),
@@ -90,6 +120,7 @@ class ProfileService extends ChangeNotifier {
   }
 
   void updateProfile(ProfileResponse newProfile) {
+    AppLogger.debug('📝 [PROFILE_SERVICE] updateProfile');
     if (!_isDisposed) {
       _currentProfile = newProfile;
       _error = null;
@@ -99,9 +130,23 @@ class ProfileService extends ChangeNotifier {
 
   Future<ProfileResponse?> fetchUserProfile(String userId,
       {bool force = false}) async {
-    if (_isDisposed) return _currentProfile;
-    if (!force && _currentProfile?.user.id == userId) return _currentProfile;
-    if (_isLoading) return _currentProfile;
+    AppLogger.debug(
+        '📥 [PROFILE_SERVICE] fetchUserProfile chiamato - userId: $userId, force: $force');
+
+    if (_isDisposed) {
+      AppLogger.debug('⚠️ [PROFILE_SERVICE] Service dismesso');
+      return _currentProfile;
+    }
+
+    if (!force && _currentProfile?.user.id == userId) {
+      AppLogger.debug('📦 [PROFILE_SERVICE] Usando profilo in cache');
+      return _currentProfile;
+    }
+
+    if (_isLoading) {
+      AppLogger.debug('⏳ [PROFILE_SERVICE] Già in caricamento');
+      return _currentProfile;
+    }
 
     _isLoading = true;
     _error = null;
@@ -113,20 +158,27 @@ class ProfileService extends ChangeNotifier {
         throw 'Utente non autenticato';
       }
 
+      final url = '${Config.apiBaseUrl}/api/auth/profile/$userId';
+      AppLogger.api('GET /api/auth/profile/$userId');
+
       final response = await http.get(
-        Uri.parse('${Config.apiBaseUrl}/api/auth/profile/$userId'),
+        Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json'
         },
       ).timeout(_timeout);
 
+      AppLogger.debug(
+          '📥 [PROFILE_SERVICE] Response status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+
         if (data['success'] == true) {
           _currentProfile = ProfileResponse.fromJson(data['data']);
           _error = null;
-          _log('Profilo caricato');
+          _log('Profilo caricato - ${_currentProfile?.user.username}');
         } else {
           throw data['message'] ?? 'Errore profilo';
         }
@@ -147,16 +199,20 @@ class ProfileService extends ChangeNotifier {
 
   Future<List<Recipe>> fetchUserRecipes(String userId,
       {int page = 1, int limit = 10}) async {
+    AppLogger.debug(
+        '📦 [PROFILE_SERVICE] fetchUserRecipes - page: $page, limit: $limit');
     return _fetchList(
         '${Config.apiBaseUrl}/api/recipes/user/$userId?page=$page&limit=$limit',
         'ricette');
   }
 
-  // 👈 CORREZIONE QUI - rimosso /user/$userId dall'URL
   Future<List<Recipe>> fetchUserFavorites(String userId,
       {int page = 1, int limit = 10}) async {
+    AppLogger.debug(
+        '📦 [PROFILE_SERVICE] fetchUserFavorites - page: $page, limit: $limit');
+    // URL corretto senza /user/$userId
     return _fetchList(
-        '${Config.apiBaseUrl}/api/favorites?page=$page&limit=$limit', // <-- CORRETTO
+        '${Config.apiBaseUrl}/api/favorites?page=$page&limit=$limit',
         'preferiti');
   }
 
@@ -167,6 +223,8 @@ class ProfileService extends ChangeNotifier {
         throw 'Utente non autenticato';
       }
 
+      AppLogger.api('GET ${url.replaceAll(Config.apiBaseUrl, '')}');
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -175,53 +233,40 @@ class ProfileService extends ChangeNotifier {
         },
       ).timeout(_timeout);
 
+      AppLogger.debug(
+          '📥 [PROFILE_SERVICE] Response status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
 
-        // LOG DETTAGLIATO
-        AppLogger.debug('📦 Risposta $type - Status 200');
-        AppLogger.debug('📦 Raw data: $data');
-
         List<dynamic> items = [];
-
         if (data is Map) {
-          AppLogger.debug('📦 Data è un Map con chiavi: ${data.keys}');
           if (data['success'] == true && data['data'] != null) {
             items = data['data'] is List ? data['data'] : [];
-            AppLogger.debug('📦 Items da data[\'data\']: ${items.length}');
           } else if (data['data'] is List) {
             items = data['data'];
           }
         } else if (data is List) {
           items = data;
-          AppLogger.debug('📦 Data è una List di ${items.length} elementi');
         }
 
-        AppLogger.debug('📦 Totale items da processare: ${items.length}');
+        AppLogger.debug('📦 [PROFILE_SERVICE] Ricevuti ${items.length} items');
 
         final recipes = <Recipe>[];
         for (var i = 0; i < items.length; i++) {
           try {
-            final item = items[i];
-            // LOG per vedere struttura completa
-            AppLogger.debug('🔍 Item $i structure: ${item.runtimeType}');
-            AppLogger.debug(
-                '🔍 Item $i keys: ${item is Map ? item.keys : 'not a map'}');
-
-            final recipe = Recipe.fromJson(Map<String, dynamic>.from(item));
+            final recipe = Recipe.fromJson(items[i]);
             recipes.add(recipe);
-            AppLogger.debug('✅ Ricetta convertita: ${recipe.title}');
-          } catch (e, stack) {
-            AppLogger.error('❌ Errore conversione ricetta $i', e);
-            AppLogger.error('Stack: $stack');
-            // Log dell'item che causa errore - CORRETTO
-            AppLogger.error('Item che ha causato errore: ${items[i]}');
+            AppLogger.debug('   ✅ ${i + 1}. ${recipe.title} (${recipe.id})');
+          } catch (e) {
+            AppLogger.error('❌ [PROFILE_SERVICE] Errore parsing item $i', e);
           }
         }
 
         _log('Caricate ${recipes.length} $type su ${items.length} totali');
         return recipes;
       } else if (response.statusCode == 404) {
+        AppLogger.debug('📭 [PROFILE_SERVICE] Nessun $type trovato (404)');
         return [];
       } else {
         throw _handleHttpError(response.statusCode);
@@ -246,6 +291,7 @@ class ProfileService extends ChangeNotifier {
   }
 
   Future<ProfileResponse?> refreshProfile() {
+    AppLogger.debug('🔄 [PROFILE_SERVICE] refreshProfile');
     if (_currentProfile != null) {
       return fetchUserProfile(_currentProfile!.user.id, force: true);
     } else if (_authService.userId != null) {
@@ -255,6 +301,7 @@ class ProfileService extends ChangeNotifier {
   }
 
   void clearProfile() {
+    AppLogger.debug('🧹 [PROFILE_SERVICE] clearProfile');
     if (!_isDisposed) {
       _currentProfile = null;
       _error = null;
@@ -264,11 +311,13 @@ class ProfileService extends ChangeNotifier {
   }
 
   void retry() {
+    AppLogger.debug('🔄 [PROFILE_SERVICE] retry');
     refreshProfile();
   }
 
   @override
   void dispose() {
+    AppLogger.debug('🗑️ [PROFILE_SERVICE] dispose');
     _isDisposed = true;
     _currentProfile = null;
     _error = null;

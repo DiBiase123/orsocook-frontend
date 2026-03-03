@@ -26,7 +26,6 @@ class ProfileController extends ChangeNotifier {
   int _selectedTabIndex = 0;
   String? _lastSuccessMessage;
   bool _isDisposed = false;
-  bool _isRefreshing = false; // 👈 AGGIUNTO per evitare doppi refresh
 
   // Getters
   XFile? get selectedAvatar => _selectedAvatarXFile;
@@ -39,7 +38,6 @@ class ProfileController extends ChangeNotifier {
   String? get error => _profileService.error;
   bool get hasProfile => _profileService.currentProfile != null;
 
-  // TIPI CORRETTI
   UserProfile? get userProfile => _profileService.currentProfile?.user;
   UserStats? get userStats => _profileService.currentProfile?.stats;
   List<Recipe>? get recentRecipes =>
@@ -71,39 +69,34 @@ class ProfileController extends ChangeNotifier {
         _favoriteService = favoriteService {
     _isDisposed = false;
     _favoriteService.addListener(_onFavoritesChanged);
+    AppLogger.debug('📱 [PROFILE] ProfileController inizializzato');
   }
 
   @override
   void dispose() {
     _favoriteService.removeListener(_onFavoritesChanged);
     _isDisposed = true;
+    AppLogger.debug('🗑️ [PROFILE] ProfileController disposto');
     super.dispose();
   }
 
   // ================ FAVORITES SYNC ================
   void _onFavoritesChanged() {
-    if (!_isDisposed && !_isRefreshing) {
-      _isRefreshing = true;
-      AppLogger.debug(
-          '🔄 [PROFILE] Preferiti cambiati, ricarico profilo completo');
-      _refreshFullProfile().whenComplete(() {
-        _isRefreshing = false;
-      });
+    AppLogger.debug('🔔 [PROFILE] _onFavoritesChanged - preferiti cambiati!');
+    if (!_isDisposed) {
+      AppLogger.debug('🔄 [PROFILE] Ricarico profilo completo');
+      _refreshFullProfile();
     }
   }
 
-  // 👈 NUOVO: Ricarica TUTTO il profilo
   Future<void> _refreshFullProfile() async {
     try {
       final userId = _authService.userId;
       if (userId != null) {
-        AppLogger.debug(
-            '📦 [PROFILE] Ricarico profilo completo per user $userId');
-
-        // Forza il refresh COMPLETO del profilo
+        AppLogger.debug('📦 [PROFILE] Ricarico profilo per user $userId');
         await _profileService.fetchUserProfile(userId, force: true);
-
-        AppLogger.debug('✅ [PROFILE] Profilo aggiornato completamente');
+        AppLogger.success(
+            '✅ [PROFILE] Profilo aggiornato dopo cambio preferiti');
       }
     } catch (e) {
       AppLogger.error('❌ [PROFILE] Errore refresh profilo', e);
@@ -133,14 +126,17 @@ class ProfileController extends ChangeNotifier {
 
         if (sizeInMB > 5.0) {
           throw Exception(
-              'L\'immagine è troppo grande (${sizeInMB.toStringAsFixed(1)}MB). Massimo 5MB');
+              'Immagine troppo grande (${sizeInMB.toStringAsFixed(1)}MB). Max 5MB');
         }
 
         _selectedAvatarXFile = pickedFile;
         _selectedAvatarBytes = bytes;
+        AppLogger.debug(
+            '🖼️ [PROFILE] Immagine selezionata: ${pickedFile.name}');
         _safeNotify();
       }
     } catch (e) {
+      AppLogger.error('❌ [PROFILE] Errore selezione avatar', e);
       if (!_isDisposed) rethrow;
     } finally {
       _isPickingAvatar = false;
@@ -152,10 +148,7 @@ class ProfileController extends ChangeNotifier {
     if (_isDisposed ||
         _selectedAvatarXFile == null ||
         _selectedAvatarBytes == null) {
-      return {
-        'success': false,
-        'message': 'Controller dismesso o nessuna immagine'
-      };
+      return {'success': false, 'message': 'Nessuna immagine'};
     }
 
     _isChangingAvatar = true;
@@ -163,6 +156,7 @@ class ProfileController extends ChangeNotifier {
     _safeNotify();
 
     try {
+      AppLogger.debug('📤 [PROFILE] Upload avatar iniziato');
       final result = await _avatarService.uploadAvatar(
         imageBytes: _selectedAvatarBytes!,
         fileName: _selectedAvatarXFile!.name,
@@ -185,7 +179,7 @@ class ProfileController extends ChangeNotifier {
           try {
             _commentService.updateAvatarInComments(userId, newAvatarUrl);
           } catch (e) {
-            // Ignora errori secondari
+            AppLogger.error('❌ [PROFILE] Errore aggiornamento commenti', e);
           }
         }
 
@@ -194,31 +188,20 @@ class ProfileController extends ChangeNotifier {
         _selectedAvatarXFile = null;
         _selectedAvatarBytes = null;
 
+        AppLogger.success('✅ [PROFILE] Avatar aggiornato: $newAvatarUrl');
         return {
           'success': true,
           'message': _lastSuccessMessage,
-          'avatarUrl': newAvatarUrl,
+          'avatarUrl': newAvatarUrl
         };
       } else {
-        _lastSuccessMessage = result['message'] ?? 'Errore durante l\'upload';
-        _safeNotify();
-
-        return {
-          'success': false,
-          'message': _lastSuccessMessage,
-        };
+        _lastSuccessMessage = result['message'] ?? 'Errore upload';
+        AppLogger.error('❌ [PROFILE] Upload fallito: $_lastSuccessMessage');
+        return {'success': false, 'message': _lastSuccessMessage};
       }
     } catch (e) {
-      if (!_isDisposed) {
-        _isChangingAvatar = false;
-        _lastSuccessMessage = 'Errore durante l\'upload: $e';
-        _safeNotify();
-      }
-
-      return {
-        'success': false,
-        'message': _lastSuccessMessage,
-      };
+      AppLogger.error('❌ [PROFILE] Errore upload', e);
+      return {'success': false, 'message': 'Errore: $e'};
     } finally {
       if (!_isDisposed) {
         _isChangingAvatar = false;
@@ -232,6 +215,7 @@ class ProfileController extends ChangeNotifier {
     _selectedAvatarXFile = null;
     _selectedAvatarBytes = null;
     _safeNotify();
+    AppLogger.debug('🧹 [PROFILE] Avatar selezionato cancellato');
   }
 
   void clearSuccessMessage() {
@@ -247,12 +231,15 @@ class ProfileController extends ChangeNotifier {
 
     final userId = _authService.userId;
     if (userId != null) {
+      AppLogger.debug('📥 [PROFILE] Caricamento profilo per user $userId');
       await _profileService.fetchUserProfile(userId);
       _safeNotify();
+      AppLogger.success('✅ [PROFILE] Profilo caricato');
     }
   }
 
   Future<void> refreshProfile() async {
+    AppLogger.debug('🔄 [PROFILE] Refresh profilo');
     if (_isDisposed) return;
     await loadProfile();
   }
@@ -261,22 +248,23 @@ class ProfileController extends ChangeNotifier {
     if (_isDisposed) return;
 
     try {
-      // Svuota cache preferiti PRIMA del logout
-      _favoriteService.clearCache();
-
+      AppLogger.debug('🚪 [PROFILE] Logout');
       await _authService.logout();
       _profileService.clearProfile();
       _selectedAvatarXFile = null;
       _selectedAvatarBytes = null;
       _lastSuccessMessage = null;
       _safeNotify();
+      AppLogger.success('✅ [PROFILE] Logout completato');
     } catch (e) {
+      AppLogger.error('❌ [PROFILE] Errore logout', e);
       if (!_isDisposed) rethrow;
     }
   }
 
   void retry() {
     if (_isDisposed) return;
+    AppLogger.debug('🔄 [PROFILE] Retry');
     _profileService.retry();
     _safeNotify();
   }
@@ -285,6 +273,8 @@ class ProfileController extends ChangeNotifier {
 
   void selectTab(int index) {
     if (_isDisposed) return;
+    AppLogger.debug(
+        '📌 [PROFILE] Tab selezionato: $index (${index == 0 ? "Le Mie Ricette" : "Preferiti"})');
     _selectedTabIndex = index;
     _safeNotify();
   }
@@ -294,8 +284,6 @@ class ProfileController extends ChangeNotifier {
   String formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
-
-  // ================ SAFE NOTIFY ================
 
   void _safeNotify() {
     if (!_isDisposed && hasListeners) {

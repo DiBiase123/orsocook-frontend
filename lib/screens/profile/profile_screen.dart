@@ -199,7 +199,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               key: ValueKey(controller.userProfile?.avatarUrl ?? 'no-avatar'),
             ),
             if (controller.hasProfile && controller.userStats != null)
-              ProfileStatsWidget(stats: controller.userStats!),
+              ProfileStatsWidget(
+                key: ValueKey(
+                    'stats-${controller.userStats?.favoritesCount}-${controller.userStats?.recipesCount}-${DateTime.now().millisecondsSinceEpoch}'),
+                stats: controller.userStats!,
+              ),
             SizedBox(
               height: 400,
               child: _isInitialLoad

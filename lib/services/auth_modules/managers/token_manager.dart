@@ -3,6 +3,7 @@ import 'package:orsocook/services/auth_modules/models/auth_data.dart';
 import 'package:orsocook/services/auth_modules/models/token_pair.dart';
 import 'package:orsocook/services/auth_modules/api/auth_api_client.dart';
 import 'package:orsocook/services/auth_modules/storage/auth_storage.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class TokenManager {
   final AuthStorage _storage;
@@ -27,8 +28,10 @@ class TokenManager {
 
     // Se il token è scaduto, prova a refresharlo
     if (_currentAuthData != null && _currentAuthData!.isTokenExpired) {
+      AppLogger.debug('🔄 [TOKEN] Token scaduto, tentativo refresh');
       final refreshed = await refreshToken();
       if (!refreshed) {
+        AppLogger.error('❌ [TOKEN] Refresh fallito, utente disconnesso');
         return null;
       }
     }
@@ -38,10 +41,12 @@ class TokenManager {
 
   Future<bool> refreshToken() async {
     if (_currentAuthData == null || !_currentAuthData!.canRefresh) {
+      AppLogger.debug('⏭️ [TOKEN] Impossibile refresh: no refresh token');
       return false;
     }
 
     try {
+      AppLogger.debug('🔄 [TOKEN] Tentativo refresh token');
       final response =
           await _apiClient.refreshToken(_currentAuthData!.refreshToken);
 
@@ -61,12 +66,33 @@ class TokenManager {
         );
 
         await saveAuthData(updatedAuthData);
+        AppLogger.success('✅ [TOKEN] Token refreshato con successo');
         return true;
       }
 
+      AppLogger.error('❌ [TOKEN] Refresh fallito: ${response.message}');
       return false;
     } catch (e) {
+      AppLogger.error('❌ [TOKEN] Errore refresh', e);
       return false;
+    }
+  }
+
+  // 👈 NUOVO METODO
+  Future<void> updateTokens(
+      String newAccessToken, String newRefreshToken) async {
+    if (_currentAuthData != null) {
+      final updated = AuthData(
+        token: newAccessToken,
+        refreshToken: newRefreshToken,
+        userId: _currentAuthData!.userId,
+        username: _currentAuthData!.username,
+        avatarUrl: _currentAuthData!.avatarUrl,
+        isVerified: _currentAuthData!.isVerified,
+        tokenExpiry: DateTime.now().add(const Duration(minutes: 14)),
+      );
+      await saveAuthData(updated);
+      AppLogger.success('✅ [TOKEN] Token aggiornati manualmente');
     }
   }
 
@@ -80,6 +106,7 @@ class TokenManager {
     await _storage.clearAuthData();
     _currentAuthData = null;
     _cancelTokenRefreshTimer();
+    AppLogger.debug('🧹 [TOKEN] Auth data cancellati');
   }
 
   Future<void> updateAvatar(String avatarUrl) async {

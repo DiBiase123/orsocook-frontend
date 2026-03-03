@@ -171,6 +171,18 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  // ==================== REFRESH TOKEN ====================
+  /// Metodo per refresh periodico (chiamato da ActivityTracker)
+  Future<bool> refreshToken() async {
+    if (!isLoggedIn) {
+      AppLogger.debug('⏭️ [AUTH] Refresh saltato: utente non loggato');
+      return false;
+    }
+
+    AppLogger.debug('🔄 [AUTH] Refresh token periodico');
+    return await _tokenManager.refreshToken();
+  }
+
   // ==================== LOGOUT ====================
   Future<void> logout() async {
     try {

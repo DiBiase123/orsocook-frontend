@@ -28,11 +28,15 @@ class FavoriteButton extends StatefulWidget {
   State<FavoriteButton> createState() => _FavoriteButtonState();
 }
 
-class _FavoriteButtonState extends State<FavoriteButton> {
+class _FavoriteButtonState extends State<FavoriteButton>
+    with SingleTickerProviderStateMixin {
   bool _isProcessing = false;
   bool _isFavorite = false;
   bool _isLoading = true;
   late FavoriteService _favoriteService;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  OverlayEntry? _balloonEntry;
 
   @override
   void initState() {
@@ -40,6 +44,15 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     _favoriteService = Provider.of<FavoriteService>(context, listen: false);
     _loadInitialState();
     _favoriteService.addListener(_onFavoriteChanged);
+
+    // Animazione
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticInOut),
+    );
   }
 
   @override
@@ -53,6 +66,8 @@ class _FavoriteButtonState extends State<FavoriteButton> {
   @override
   void dispose() {
     _favoriteService.removeListener(_onFavoriteChanged);
+    _animationController.dispose();
+    _hideBalloon();
     super.dispose();
   }
 
@@ -70,7 +85,6 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     if (!mounted) return;
 
     try {
-      // Ora isFavorite è immediato grazie alla cache!
       final isFavorite = await _favoriteService.isFavorite(widget.recipeId);
       if (mounted) {
         setState(() {
@@ -86,8 +100,91 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     }
   }
 
+  // 🎈 BALLOON SOPRA IL BOTTONE
+  void _showBalloon(String message, {required bool isRemoving}) {
+    _hideBalloon();
+
+    if (!mounted) return;
+
+    final RenderBox buttonBox = context.findRenderObject() as RenderBox;
+    final Offset buttonPosition = buttonBox.localToGlobal(Offset.zero);
+    final Size buttonSize = buttonBox.size;
+
+    _balloonEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        left: buttonPosition.dx + buttonSize.width / 2 - 80,
+        top: buttonPosition.dy - 65,
+        child: Material(
+          color: Colors.transparent,
+          child: TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 200),
+            tween: Tween(begin: 0.0, end: 1.0),
+            curve: Curves.elasticOut,
+            builder: (context, scale, child) {
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isRemoving
+                        ? Colors.amber.shade400 // Giallo per rimozione
+                        : Colors.green.shade600, // Verde per aggiunta
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: Colors.black54,
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(50),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isRemoving ? Icons.heart_broken : Icons.favorite,
+                        color: Colors.white, // Icona bianca
+                        size: 22,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        message,
+                        style: const TextStyle(
+                          color: Colors.white, // TESTO BIANCO
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_balloonEntry!);
+
+    Future.delayed(const Duration(milliseconds: 1800), _hideBalloon);
+  }
+
+  void _hideBalloon() {
+    _balloonEntry?.remove();
+    _balloonEntry = null;
+  }
+
   Future<void> _toggleFavorite() async {
-    if (_isProcessing) return;
+    if (_isProcessing) {
+      AppLogger.debug('⏳ Click bloccato - operazione in corso');
+      return;
+    }
 
     final authService = Provider.of<AuthService>(context, listen: false);
     if (!authService.isLoggedIn) {
@@ -95,42 +192,48 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       return;
     }
 
-    // Optimistic update IMMEDIATO
+    final previousState = _isFavorite;
+
     setState(() {
       _isProcessing = true;
       _isFavorite = !_isFavorite;
     });
 
+    _animationController.forward().then((_) => _animationController.reverse());
+
     try {
       final success = await _favoriteService.toggleFavorite(widget.recipeId);
 
       if (!success && mounted) {
-        // Rollback se fallisce
         setState(() {
-          _isFavorite = !_isFavorite;
+          _isFavorite = previousState;
           _isProcessing = false;
         });
-        _showSnackbar('Errore durante l\'operazione', isError: true);
+        _showBalloon('Errore', isRemoving: true);
       } else if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-        widget.onToggle?.call();
-        // Non mostriamo snackbar per essere più veloci?
-        // Se vuoi mantenerlo, lascia questa riga
-        _showSnackbar(
-          _isFavorite ? 'Aggiunto ai preferiti' : 'Rimosso dai preferiti',
-          isError: false,
+        _showBalloon(
+          _isFavorite ? 'Aggiunto!' : 'Rimosso!',
+          isRemoving: !_isFavorite,
         );
+
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (mounted) {
+            setState(() {
+              _isProcessing = false;
+            });
+          }
+        });
+
+        widget.onToggle?.call();
       }
     } catch (e) {
       AppLogger.error('Error toggling favorite', e);
       if (mounted) {
         setState(() {
-          _isFavorite = !_isFavorite; // Rollback
+          _isFavorite = previousState;
           _isProcessing = false;
         });
-        _showSnackbar('Errore: ${e.toString()}', isError: true);
+        _showBalloon('Errore', isRemoving: true);
       }
     }
   }
@@ -151,21 +254,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     );
   }
 
-  void _showSnackbar(String message, {required bool isError}) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-        duration:
-            Duration(seconds: isError ? 3 : 1), // Ridotto a 1 sec per successo
-      ),
-    );
-  }
-
-  bool get _showLoader =>
-      widget.showLoading && _isLoading; // Rimosso _isProcessing
+  bool get _showLoader => widget.showLoading && _isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +265,6 @@ class _FavoriteButtonState extends State<FavoriteButton> {
         iconSize: widget.size,
         icon: Icon(Icons.favorite_border, color: widget.color ?? Colors.grey),
         onPressed: _showLoginPrompt,
-        tooltip: 'Accedi per aggiungere ai preferiti',
       );
     }
 
@@ -194,14 +282,22 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       );
     }
 
-    return IconButton(
-      iconSize: widget.size,
-      icon: Icon(
-        _isFavorite ? Icons.favorite : Icons.favorite_border,
-        color: _isFavorite ? Colors.red : widget.color ?? Colors.grey[700],
-      ),
-      onPressed: _toggleFavorite,
-      tooltip: _isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti',
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: IconButton(
+            iconSize: widget.size,
+            icon: Icon(
+              _isFavorite ? Icons.favorite : Icons.favorite_border,
+              color:
+                  _isFavorite ? Colors.red : widget.color ?? Colors.grey[700],
+            ),
+            onPressed: _toggleFavorite,
+          ),
+        );
+      },
     );
   }
 }

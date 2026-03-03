@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/screens/recipe/widgets/favorite_button.dart';
 import 'package:orsocook/screens/recipe/widgets/like_button.dart';
+import 'package:provider/provider.dart';
+import 'package:orsocook/services/favorite_service.dart';
 
 @immutable
 class RecipeCard extends StatelessWidget {
@@ -18,6 +20,9 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final favoriteService =
+        Provider.of<FavoriteService>(context, listen: false);
+    favoriteService.registerRecipeTitle(recipe.id, recipe.title);
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(

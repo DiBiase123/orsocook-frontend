@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/profile_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
+import 'package:orsocook/services/profile_controller.dart'; // 👈 IMPORT AGGIUNTO
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/utils/logger.dart';
 
@@ -75,10 +76,22 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
   }
 
   void _onFavoriteChanged() {
+    if (!mounted) return;
+
+    // Se non siamo nella tab corrente, ignora
+    final profileController =
+        Provider.of<ProfileController>(context, listen: false);
+    final currentTab = profileController.selectedTabIndex;
+    final expectedTab = widget.isUserRecipes ? 0 : 1;
+
+    if (currentTab != expectedTab) {
+      AppLogger.debug(
+          '⏭️ [LISTENER] Ignoro notifica - tab corrente: $currentTab, attesa: $expectedTab');
+      return;
+    }
+
     AppLogger.debug(
         '🔔 [LISTENER] _onFavoriteChanged - isUserRecipes: ${widget.isUserRecipes}');
-
-    if (!mounted) return;
 
     if (widget.isUserRecipes) {
       AppLogger.debug(
