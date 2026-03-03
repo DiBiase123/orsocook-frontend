@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/profile_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
-import 'package:orsocook/services/profile_controller.dart'; // 👈 IMPORT AGGIUNTO
+import 'package:orsocook/services/profile_controller.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/utils/logger.dart';
 
@@ -33,6 +33,7 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
   int _currentPage = 1;
   late List<Recipe> _loadedRecipes;
   late FavoriteService _favoriteService;
+  String? _refreshError; // 👈 AGGIUNTO
 
   @override
   void initState() {
@@ -78,7 +79,6 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
   void _onFavoriteChanged() {
     if (!mounted) return;
 
-    // Se non siamo nella tab corrente, ignora
     final profileController =
         Provider.of<ProfileController>(context, listen: false);
     final currentTab = profileController.selectedTabIndex;
@@ -131,12 +131,12 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
   }
 
   Future<void> _refreshList() async {
-    AppLogger.debug('🔄 [REFRESH] Ricarico lista preferiti');
+    AppLogger.debug('🔄 [REFRESH] Ricarico lista');
+    _refreshError = null; // Reset errore
+
     try {
       final profileService =
           Provider.of<ProfileService>(context, listen: false);
-
-      _currentPage = 1;
 
       final freshRecipes = widget.isUserRecipes
           ? await profileService.fetchUserRecipes(
@@ -155,6 +155,7 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
       if (mounted) {
         setState(() {
           _loadedRecipes = freshRecipes;
+          _currentPage = 1;
         });
 
         for (final recipe in freshRecipes) {
@@ -164,6 +165,20 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
       }
     } catch (e) {
       AppLogger.error('❌ [REFRESH] Errore: $e');
+      if (mounted) {
+        setState(() {
+          _refreshError = 'Errore durante l\'aggiornamento';
+        });
+
+        // Mostra Snackbar con errore
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Impossibile aggiornare: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -203,6 +218,15 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
       }
     } catch (e) {
       AppLogger.error('❌ [LOAD MORE] Errore: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Errore caricamento: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoadingMore = false);
@@ -216,6 +240,36 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
   }
 
   Widget _buildEmptyState() {
+    // Se c'è un errore di refresh, mostra un messaggio diverso
+    if (_refreshError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.wifi_off, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text(
+                'Errore di connessione',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _refreshError!,
+                style: const TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _refreshList,
+                child: const Text('Riprova'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40.0),
@@ -278,7 +332,7 @@ class _ProfileRecipesListState extends State<ProfileRecipesList> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loadedRecipes.isEmpty) {
+    if (_loadedRecipes.isEmpty && _refreshError == null) {
       return _buildEmptyState();
     }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
@@ -18,7 +19,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Configura logger
-  AppLogger.setVerboseMode(); // Per vedere TUTTO
+  if (kDebugMode) {
+    AppLogger.setVerboseMode(); // Log dettagliati in sviluppo
+  } else {
+    AppLogger.setProductionMode(); // Nessun log in produzione
+  }
 
   // Inizializza Auth Service
   final authService = AuthService();
@@ -34,16 +39,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔍 DEBUG
-    debugPrint('🚀 MAIN DART: build iniziato');
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthService>.value(value: authService),
 
-        // Activity Tracker Provider
+        // Activity Tracker
         ChangeNotifierProvider<ActivityTracker>(
-          create: (context) => ActivityTracker(context.read<AuthService>()),
+          create: (context) => ActivityTracker(
+            context.read<AuthService>(),
+          ),
         ),
 
         ChangeNotifierProvider<CategoryService>(
@@ -80,7 +84,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ],
-      // 👇 LISTENER PER ATTIVITÀ UTENTE
       child: Consumer<ActivityTracker>(
         builder: (context, activityTracker, child) {
           return Listener(

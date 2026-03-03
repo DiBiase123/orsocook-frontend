@@ -14,7 +14,11 @@ import 'package:orsocook/screens/legal/privacy_policy_screen.dart';
 import 'package:orsocook/screens/legal/cookie_policy_screen.dart';
 import 'package:orsocook/models/recipe.dart';
 
+// 👇 CHIAVE GLOBALE PER LA NAVIGAZIONE
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final goRouter = GoRouter(
+  navigatorKey: _rootNavigatorKey, // 👈 AGGIUNTO
   initialLocation: '/',
   routes: [
     // Root redirects to login

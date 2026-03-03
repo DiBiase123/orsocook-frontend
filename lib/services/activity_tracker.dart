@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/navigation/go_router.dart'; // 👈 IMPORT PER NAVIGARE
 
 class ActivityTracker extends ChangeNotifier {
   static const _inactivityTimeout = Duration(minutes: 15);
@@ -13,18 +14,8 @@ class ActivityTracker extends ChangeNotifier {
 
   ActivityTracker(this._authService) {
     _startTimers();
-    _setupListeners();
   }
 
-  void _setupListeners() {
-    // Listener per tocchi usando Listener widget
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Non possiamo usare GestureBinding direttamente,
-      // useremo un approccio diverso
-    });
-  }
-
-  // Metodo pubblico da chiamare quando c'è attività utente
   void reportUserActivity() {
     _resetInactivityTimer();
   }
@@ -38,7 +29,6 @@ class ActivityTracker extends ChangeNotifier {
   void _startTimers() {
     _resetInactivityTimer();
 
-    // Refresh timer
     _refreshTimer = Timer.periodic(_refreshInterval, (_) {
       _refreshToken();
     });
@@ -46,7 +36,6 @@ class ActivityTracker extends ChangeNotifier {
 
   Future<void> _refreshToken() async {
     if (!_authService.isLoggedIn) return;
-
     AppLogger.debug('🔄 Refresh automatico token');
     await _authService.refreshToken();
   }
@@ -55,10 +44,16 @@ class ActivityTracker extends ChangeNotifier {
     if (!_authService.isLoggedIn) return;
 
     AppLogger.warning('🚪 Logout per inattività (15 min)');
+
     await _authService.logout();
+
+    // 👇 NAVIGA DIRETTAMENTE AL LOGIN USANDO goRouter
+    goRouter.go('/login');
+
     notifyListeners();
   }
 
+  @override // 👈 AGGIUNTO
   void dispose() {
     _inactivityTimer?.cancel();
     _refreshTimer?.cancel();
