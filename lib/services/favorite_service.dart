@@ -32,12 +32,9 @@ class FavoriteService extends ChangeNotifier {
   // Verifica se una ricetta è nei preferiti
   Future<bool> isFavorite(String recipeId) async {
     final title = _getRecipeTitle(recipeId);
-    AppLogger.debug(
-        '🔍 [FAVORITE] isFavorite chiamato per "$title" ($recipeId)');
     try {
       final result = await checkFavorite(recipeId);
       final isFavorite = result['isFavorite'] ?? false;
-      AppLogger.debug('📊 [FAVORITE] "$title" è preferita: $isFavorite');
       return isFavorite;
     } catch (e) {
       AppLogger.error(
@@ -66,12 +63,8 @@ class FavoriteService extends ChangeNotifier {
         headers: authHeaders,
       );
 
-      AppLogger.debug('📥 [FAVORITE] Response status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        AppLogger.debug(
-            '📦 [FAVORITE] Ricevuti ${data.length} preferiti dal server');
 
         final favorites = <Recipe>[];
         for (var i = 0; i < data.length; i++) {
@@ -80,12 +73,8 @@ class FavoriteService extends ChangeNotifier {
             favorites.add(recipe);
             // Registra il titolo nella cache locale
             _recipeTitles[recipe.id] = recipe.title;
-            AppLogger.debug(
-                '   📌 Preferito ${i + 1}: "${recipe.title}" (${recipe.id})');
-          } catch (e, stack) {
+          } catch (e) {
             AppLogger.error('❌ [FAVORITE] Errore parsing ricetta $i', e);
-            AppLogger.error('Stack: $stack');
-            AppLogger.error('Item problematico: ${data[i]}');
           }
         }
 
@@ -110,8 +99,6 @@ class FavoriteService extends ChangeNotifier {
   // Aggiungi ai preferiti
   Future<bool> addFavorite(String recipeId) async {
     final title = _getRecipeTitle(recipeId);
-    AppLogger.debug(
-        '➕ [FAVORITE] addFavorite chiamato per "$title" ($recipeId)');
     AppLogger.api('POST /api/favorites/$recipeId');
 
     try {
@@ -125,8 +112,6 @@ class FavoriteService extends ChangeNotifier {
         Uri.parse('${Config.apiBaseUrl}/api/favorites/$recipeId'),
         headers: authHeaders,
       );
-
-      AppLogger.debug('📥 [FAVORITE] Response status: ${response.statusCode}');
 
       if (response.statusCode == 201) {
         AppLogger.success('✅ [FAVORITE] Aggiunta "$title" ai preferiti');
@@ -148,8 +133,6 @@ class FavoriteService extends ChangeNotifier {
   // Rimuovi dai preferiti
   Future<bool> removeFavorite(String recipeId) async {
     final title = _getRecipeTitle(recipeId);
-    AppLogger.debug(
-        '➖ [FAVORITE] removeFavorite chiamato per "$title" ($recipeId)');
     AppLogger.api('DELETE /api/favorites/$recipeId');
 
     try {
@@ -163,8 +146,6 @@ class FavoriteService extends ChangeNotifier {
         Uri.parse('${Config.apiBaseUrl}/api/favorites/$recipeId'),
         headers: authHeaders,
       );
-
-      AppLogger.debug('📥 [FAVORITE] Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         AppLogger.success('✅ [FAVORITE] Rimossa "$title" dai preferiti');
@@ -186,12 +167,8 @@ class FavoriteService extends ChangeNotifier {
   // Controlla se una ricetta è preferita
   Future<Map<String, dynamic>> checkFavorite(String recipeId) async {
     final title = _getRecipeTitle(recipeId);
-    AppLogger.debug(
-        '🔎 [FAVORITE] checkFavorite chiamato per "$title" ($recipeId)');
     try {
       if (!_authService.isLoggedIn) {
-        AppLogger.debug(
-            '👤 [FAVORITE] Utente non loggato, ritorno false per "$title"');
         return {'isFavorite': false, 'favoritedAt': null};
       }
 
@@ -204,13 +181,8 @@ class FavoriteService extends ChangeNotifier {
         headers: authHeaders,
       );
 
-      AppLogger.debug('📥 [FAVORITE] Response status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final isFavorite = data['isFavorite'] ?? false;
-        AppLogger.debug('📊 [FAVORITE] "$title" è preferita: $isFavorite');
-        return data;
+        return json.decode(response.body);
       } else {
         throw Exception('Failed to check favorite: ${response.statusCode}');
       }
@@ -230,14 +202,9 @@ class FavoriteService extends ChangeNotifier {
       final checkResult = await checkFavorite(recipeId);
       final isCurrentlyFavorite = checkResult['isFavorite'] ?? false;
 
-      AppLogger.debug(
-          '📊 [FAVORITE] "$title" - stato attuale: ${isCurrentlyFavorite ? "preferita" : "non preferita"}');
-
       if (isCurrentlyFavorite) {
-        AppLogger.debug('➡️ [FAVORITE] Rimuovo "$title" dai preferiti');
         return await removeFavorite(recipeId);
       } else {
-        AppLogger.debug('➡️ [FAVORITE] Aggiungo "$title" ai preferiti');
         return await addFavorite(recipeId);
       }
     } catch (e) {
