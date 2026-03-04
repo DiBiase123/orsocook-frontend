@@ -25,6 +25,7 @@ dependencies:
   
   # UI & Icons
   cupertino_icons: ^1.0.8
+  responsive_adaptive_ui: ^0.0.2 
   
   # File & Images
   image_picker: ^1.0.4

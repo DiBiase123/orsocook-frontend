@@ -18,14 +18,14 @@ class AvatarPickerWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              context.pop(); // <-- MODIFICATO
+              context.pop();
               controller.clearSelectedAvatar();
             },
             child: const Text('Annulla'),
           ),
           TextButton(
             onPressed: () async {
-              context.pop(); // <-- MODIFICATO
+              context.pop();
               final result = await controller.uploadAvatar();
 
               if (context.mounted) {
@@ -72,12 +72,18 @@ class AvatarPickerWidget extends StatelessWidget {
     final controller = Provider.of<ProfileController>(context);
     final authService = Provider.of<AuthService>(context, listen: false);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isLargeScreen = screenWidth > 600;
+    final avatarSize = isLargeScreen ? 100.0 : 80.0;
+    final iconSize = isLargeScreen ? 24.0 : 18.0;
+    final buttonSize = isLargeScreen ? 44.0 : 36.0;
+
     return Stack(
       children: [
         // Avatar container
         Container(
-          width: 90,
-          height: 90,
+          width: avatarSize,
+          height: avatarSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Theme.of(context).colorScheme.primary.withAlpha(51),
@@ -89,7 +95,7 @@ class AvatarPickerWidget extends StatelessWidget {
           child: controller.isChangingAvatar
               ? const Center(child: CircularProgressIndicator())
               : ClipRRect(
-                  borderRadius: BorderRadius.circular(45),
+                  borderRadius: BorderRadius.circular(avatarSize / 2),
                   child: _buildAvatarImage(controller, authService, context),
                 ),
         ),
@@ -105,16 +111,19 @@ class AvatarPickerWidget extends StatelessWidget {
               border: Border.all(color: Colors.white, width: 2),
             ),
             child: IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.camera_alt,
-                size: 18,
+                size: iconSize,
                 color: Colors.white,
               ),
               onPressed:
                   controller.isBusy ? null : () => _pickAvatarImage(context),
               tooltip: 'Cambia avatar',
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              constraints: BoxConstraints(
+                minWidth: buttonSize,
+                minHeight: buttonSize,
+              ),
             ),
           ),
         ),
@@ -139,7 +148,6 @@ class AvatarPickerWidget extends StatelessWidget {
               fit: BoxFit.cover,
             );
           }
-          // Mostra un placeholder durante il caricamento
           return _buildPlaceholderIcon(context);
         },
       );
@@ -172,9 +180,13 @@ class AvatarPickerWidget extends StatelessWidget {
   }
 
   Widget _buildPlaceholderIcon(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isLargeScreen = screenWidth > 600;
+    final iconSize = isLargeScreen ? 50.0 : 40.0;
+
     return Icon(
       Icons.person,
-      size: 40,
+      size: iconSize,
       color: Theme.of(context).colorScheme.primary,
     );
   }

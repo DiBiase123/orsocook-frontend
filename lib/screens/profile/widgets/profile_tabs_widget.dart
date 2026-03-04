@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/profile_controller.dart';
-import 'package:orsocook/screens/profile/profile_recipes_list.dart';
+import 'package:orsocook/screens/profile/widgets/profile_recipes_list_widget.dart';
 
 class ProfileTabs extends StatefulWidget {
   const ProfileTabs({super.key});
@@ -46,7 +46,12 @@ class _ProfileTabsState extends State<ProfileTabs>
             onTap: controller.selectTab,
           ),
         ),
-        Expanded(
+        // 👇 Sostituito Expanded con Container senza vincoli
+        Container(
+          constraints: BoxConstraints(
+            minHeight: 200,
+            maxHeight: MediaQuery.of(context).size.height * 0.6,
+          ),
           child: TabBarView(
             controller: _tabController,
             children: [
