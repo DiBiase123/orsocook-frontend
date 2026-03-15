@@ -130,40 +130,44 @@ class DetailRecipeViewModel extends ChangeNotifier {
 
     AppLogger.api('🗑️ Eliminazione ricetta: ${_recipe!.title}');
 
+    // Salva le reference necessarie PRIMA dell'async gap
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final goRouter = GoRouter.of(context);
+    final recipeTitle = _recipe!.title;
+
     try {
       final success = await _recipeService.deleteRecipe(_recipe!.id);
 
       if (success) {
-        AppLogger.success('✅ Ricetta eliminata: ${_recipe!.title}');
+        AppLogger.success('✅ Ricetta eliminata: $recipeTitle');
 
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('"${_recipe!.title}" eliminata con successo'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          Navigator.of(context).pop();
-        }
+        // Usa le reference salvate
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text('"$recipeTitle" eliminata con successo'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        goRouter.pop();
       } else {
-        _showErrorSnackbar(context, 'Errore durante l\'eliminazione');
+        _showErrorSnackbar(scaffoldMessenger, 'Errore durante l\'eliminazione');
       }
     } catch (e) {
       AppLogger.error('❌ Errore eliminazione', e);
-      _showErrorSnackbar(context, e.toString());
+      _showErrorSnackbar(scaffoldMessenger, e.toString());
     }
   }
 
-  void _showErrorSnackbar(BuildContext context, String message) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+  void _showErrorSnackbar(
+      ScaffoldMessengerState scaffoldMessenger, String message) {
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   void showDeleteConfirmationDialog(BuildContext context) {

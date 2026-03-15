@@ -69,26 +69,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         setState(() {
           _isLoading = false;
         });
-      }
 
-      if (result.success) {
-        AppLogger.success('✅ Richiesta reset password inviata');
-
-        if (currentContext.mounted) {
-          setState(() {
-            _isSuccess = true;
-            _successMessage = result.message;
-          });
-        }
-      } else {
-        AppLogger.error(
-            '❌ Richiesta reset password fallita: ${result.message}');
-
-        if (currentContext.mounted) {
-          setState(() {
-            _isSuccess = false;
-            _errorMessage = result.message;
-          });
+        if (result.success) {
+          AppLogger.success('✅ Richiesta reset password inviata');
+          _isSuccess = true;
+          _successMessage = result.message;
+        } else {
+          AppLogger.error(
+              '❌ Richiesta reset password fallita: ${result.message}');
+          _isSuccess = false;
+          _errorMessage = result.message;
         }
       }
     } catch (e) {
@@ -99,7 +89,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _errorMessage = 'Errore di connessione';
         });
       }
-
       AppLogger.error('❌ Errore durante la richiesta reset password', e);
     }
   }

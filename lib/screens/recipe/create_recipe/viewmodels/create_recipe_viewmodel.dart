@@ -222,8 +222,7 @@ class CreateRecipeViewModel extends ChangeNotifier {
         AppLogger.error('Errore nel trovare categoria', e);
       }
     }
-    print('🔍 SALVATAGGIO - selectedCategory: $selectedCategory');
-    print('🔍 SALVATAGGIO - selectedCategoryObj: $selectedCategoryObj');
+    // RIMOSSI I PRINT
     return Recipe(
       id: '',
       title: titleController.text.trim(),

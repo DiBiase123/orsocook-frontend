@@ -15,17 +15,14 @@ import 'package:orsocook/navigation/go_router.dart';
 import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/utils/logger.dart';
 
-// 👈 DICHIARAZIONE GLOBALE DELLA KEY
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Configura logger
-  if (kDebugMode) {
-    AppLogger.setVerboseMode(); // Log dettagliati in sviluppo
-  } else {
-    AppLogger.setProductionMode(); // Nessun log in produzione
+  // Configura logger in base all'ambiente
+  if (kReleaseMode) {
+    AppLogger.setProductionMode();
   }
 
   // Inizializza Auth Service
@@ -45,15 +42,12 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthService>.value(value: authService),
-
-        // Activity Tracker con navigatorKey
         ChangeNotifierProvider<ActivityTracker>(
           create: (context) => ActivityTracker(
             context.read<AuthService>(),
-            _navigatorKey, // 👈 PASSA LA KEY
+            _navigatorKey,
           ),
         ),
-
         ChangeNotifierProvider<CategoryService>(
           create: (context) => CategoryService(context.read<AuthService>()),
         ),

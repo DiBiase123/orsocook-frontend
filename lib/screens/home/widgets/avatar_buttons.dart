@@ -24,8 +24,8 @@ class AvatarIconButton extends StatelessWidget {
         tooltip: tooltip,
         padding: const EdgeInsets.all(8),
         constraints: const BoxConstraints(
-          minWidth: 52, // Larghezza minima aumentata
-          minHeight: 52, // Altezza minima aumentata
+          minWidth: 52,
+          minHeight: 52,
         ),
       ),
     );
@@ -67,8 +67,9 @@ class _AvatarImageButtonState extends State<AvatarImageButton>
     );
   }
 
-  void _handleTapDown(_) => _controller.forward();
-  void _handleTapUp(_) {
+  void _handleTapDown(TapDownDetails details) => _controller.forward();
+
+  void _handleTapUp(TapUpDetails details) {
     _controller.reverse();
     widget.onTap?.call();
   }
@@ -98,10 +99,8 @@ class _AvatarImageButtonState extends State<AvatarImageButton>
             builder: (context, child) => Transform.scale(
               scale: _scaleAnimation.value,
               child: Container(
-                margin: const EdgeInsets.symmetric(
-                    horizontal: 12), // Più spazio ai lati
-                padding:
-                    const EdgeInsets.all(2), // Padding interno per respirare
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -127,8 +126,7 @@ class _AvatarImageButtonState extends State<AvatarImageButton>
                 ),
                 child: CircleAvatar(
                   backgroundImage: NetworkImage(widget.avatarUrl),
-                  radius:
-                      30, // +10% rispetto a 28 (ora 33% più grande dell'originale)
+                  radius: 30,
                   backgroundColor: Colors.grey[200],
                 ),
               ),
@@ -145,8 +143,7 @@ class AvatarBuilder {
   static Widget buildAvatar(AuthService authService, VoidCallback onTap) {
     if (!authService.isLoggedIn) {
       return Padding(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 12), // Più spazio ai lati
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: AvatarIconButton(
           icon: Icons.account_circle,
           tooltip: 'Accedi al profilo',
@@ -155,20 +152,25 @@ class AvatarBuilder {
       );
     }
 
-    final tooltip = authService.username != null
-        ? 'Profilo di ${authService.username}'
-        : 'Profilo';
+    final String? username = authService.username;
+    final String tooltip;
+    if (username != null) {
+      tooltip = 'Profilo di $username';
+    } else {
+      tooltip = 'Profilo';
+    }
 
-    if (authService.avatarUrl?.isNotEmpty ?? false) {
+    final String? avatarUrl = authService.avatarUrl;
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
       return AvatarImageButton(
-        avatarUrl: authService.avatarUrl!,
+        avatarUrl: avatarUrl,
         tooltip: tooltip,
         onTap: onTap,
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12), // Più spazio ai lati
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: AvatarIconButton(
         icon: Icons.account_circle,
         tooltip: 'Profilo',

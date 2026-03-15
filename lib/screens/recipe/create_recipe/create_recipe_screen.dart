@@ -37,7 +37,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
             appBar: RecipeAppBar(
               isLoading: viewModel.isLoading || viewModel.isUploading,
               onSave: () => _saveRecipe(context, viewModel),
-              onBack: () => context.pop(), // <-- MODIFICATO
+              onBack: () => context.pop(),
             ),
             body: viewModel.isUploading
                 ? const _UploadingIndicator()
@@ -53,6 +53,11 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
     if (!viewModel.validate(_formKey)) return;
 
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    // Ottieni il service PRIMA dell'async gap
+    final categoryService =
+        Provider.of<CategoryService>(context, listen: false);
+    // Ottieni il router PRIMA dell'async gap
+    final goRouter = GoRouter.of(context);
 
     try {
       final createdRecipe = await viewModel.saveRecipe();
@@ -60,11 +65,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
       if (!mounted) return;
 
       if (createdRecipe != null) {
-        // 👈 FORZA REFRESH DELLE CATEGORIE
-        final categoryService =
-            Provider.of<CategoryService>(context, listen: false);
-        await categoryService.fetchCategories(forceRefresh: true);
-
+        // Mostra snackbar (usa context salvato in scaffoldMessenger)
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Ricetta creata con successo!'),
@@ -72,11 +73,15 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
           ),
         );
 
-        // MODIFICATO: usa context.pop() invece di navigator.pop(true)
-        if (mounted) {
-          context.pop();
-        }
+        // Esegui fetch (non richiede context dopo)
+        await categoryService.fetchCategories(forceRefresh: true);
+
+        if (!mounted) return;
+
+        // Naviga usando goRouter salvato prima dell'async gap
+        goRouter.pop();
       } else {
+        if (!mounted) return;
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Errore: Risposta vuota dal server'),
