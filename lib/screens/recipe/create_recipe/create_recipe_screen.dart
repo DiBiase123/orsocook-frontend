@@ -78,8 +78,8 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
 
         if (!mounted) return;
 
-        // Naviga usando goRouter salvato prima dell'async gap
-        goRouter.pop();
+        // Naviga alla home invece di fare pop()
+        goRouter.go('/');
       } else {
         if (!mounted) return;
         scaffoldMessenger.showSnackBar(
