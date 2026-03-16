@@ -79,7 +79,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
         if (!mounted) return;
 
         // Naviga alla home invece di fare pop()
-        goRouter.go('/');
+        goRouter.go('/home');
       } else {
         if (!mounted) return;
         scaffoldMessenger.showSnackBar(
