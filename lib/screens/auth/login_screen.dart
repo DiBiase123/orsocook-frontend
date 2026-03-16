@@ -31,9 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _submitLogin() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -48,258 +46,138 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
+
+      setState(() => _isLoading = false);
 
       if (result.success) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login effettuato con successo!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-
-        if (mounted) {
-          context.go('/home');
-        }
+        _showSnackBar('Login effettuato con successo!', Colors.green);
+        context.go('/home');
       } else {
-        if (result.requiresVerification) {
-          _showEmailNotVerifiedDialog(
-            context,
-            result.email ?? _emailController.text.trim(),
-          );
-          return;
-        }
-
-        if (result.isLocked) {
-          final lockTime = result.lockTime ?? 15;
-          _showAccountLockedDialog(context, lockTime);
-          return;
-        }
-
-        if (mounted) {
-          setState(() {
-            _errorMessage = result.message;
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
+        _handleLoginError(result);
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Errore di connessione';
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Errore di connessione. Verifica la rete.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      setState(() => _isLoading = false);
+      _showSnackBar('Errore di connessione', Colors.red);
     }
   }
 
-  void _showEmailNotVerifiedDialog(BuildContext context, String email) {
+  void _handleLoginError(dynamic result) {
+    if (result.requiresVerification) {
+      _showEmailNotVerifiedDialog(result.email ?? _emailController.text.trim());
+    } else if (result.isLocked) {
+      _showAccountLockedDialog(result.lockTime ?? 15);
+    } else {
+      setState(() => _errorMessage = result.message);
+      _showSnackBar(result.message, Colors.red);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(message),
+          backgroundColor: color,
+          duration: const Duration(seconds: 3)),
+    );
+  }
+
+  void _showEmailNotVerifiedDialog(String email) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('📧 Email Non Verificata'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.mark_email_unread, size: 60, color: Colors.orange),
             const SizedBox(height: 16),
-            const Text(
-              'Devi verificare la tua email prima di accedere.',
-              textAlign: TextAlign.center,
-            ),
+            const Text('Devi verificare la tua email prima di accedere.',
+                textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(
-              email,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
-              textAlign: TextAlign.center,
-            ),
+            Text(email,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.blue),
+                textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            const Text(
-              'Controlla la tua posta e clicca sul link di verifica.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14),
-            ),
+            const Text('Controlla la tua posta e clicca sul link di verifica.',
+                textAlign: TextAlign.center),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _resendVerificationEmail(email);
-            },
-            child: const Text('RINVIA EMAIL'),
-          ),
+              onPressed: () => _resendVerificationEmail(email),
+              child: const Text('RINVIA EMAIL')),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('CHIUDI'),
-          ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('CHIUDI')),
         ],
       ),
     );
   }
 
   Future<void> _resendVerificationEmail(String email) async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
+    Navigator.of(context).pop(); // Chiudi il dialog
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
       final result = await authService.resendVerificationEmail(email);
 
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (result.success) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Nuova email di verifica inviata!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 3),
-            ),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      }
+      setState(() => _isLoading = false);
+      _showSnackBar(result.message, result.success ? Colors.green : Colors.red);
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Errore di connessione'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      setState(() => _isLoading = false);
+      _showSnackBar('Errore di connessione', Colors.red);
     }
   }
 
-  void _showAccountLockedDialog(BuildContext context, int lockTime) {
+  void _showAccountLockedDialog(int lockTime) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('🔒 Account Temporaneamente Bloccato'),
+      builder: (_) => AlertDialog(
+        title: const Text('🔒 Account Bloccato'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.lock_clock, size: 60, color: Colors.red),
             const SizedBox(height: 16),
-            Text(
-              'Troppi tentativi di login falliti.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[800],
-              ),
-            ),
+            const Text('Troppi tentativi di login falliti.',
+                textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(
-              'L\'account è bloccato per $lockTime minuti.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text('Account bloccato per $lockTime minuti.',
+                style: const TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('HO CAPITO'),
-          ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('HO CAPITO')),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _navigateToForgotPassword();
-            },
-            child: const Text('PASSWORD DIMENTICATA'),
-          ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _navigateToForgotPassword();
+              },
+              child: const Text('PASSWORD DIMENTICATA')),
         ],
       ),
     );
   }
 
-  void _navigateToForgotPassword() {
-    if (!mounted) return;
-    context.go('/forgot-password');
-  }
+  void _navigateToForgotPassword() =>
+      mounted ? context.go('/forgot-password') : null;
+  void _navigateToHomeWithoutAuth() => mounted ? context.go('/home') : null;
+  void _navigateToRegister() => mounted ? context.go('/register') : null;
 
-  void _navigateToHomeWithoutAuth() {
-    if (!mounted) return;
-
-    final authService = Provider.of<AuthService>(context, listen: false);
-    if (authService.isLoggedIn) {
-      authService.logout();
-    }
-
-    context.go('/home');
-  }
-
-  void _navigateToRegister() {
-    if (!mounted) return;
-    context.go('/register');
-  }
-
-  void _handleEmailChanged(String? value) {
-    if (_errorMessage != null) {
-      setState(() {
-        _errorMessage = null;
-      });
-    }
-  }
-
-  void _handlePasswordChanged(String? value) {
-    if (_errorMessage != null) {
-      setState(() {
-        _errorMessage = null;
-      });
-    }
+  void _clearErrorOnChange() {
+    if (_errorMessage != null) setState(() => _errorMessage = null);
   }
 
   @override
@@ -308,9 +186,8 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         title: const Text('Login'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _navigateToHomeWithoutAuth,
-        ),
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _navigateToHomeWithoutAuth),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -326,8 +203,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   emailController: _emailController,
                   passwordController: _passwordController,
                   errorMessage: _errorMessage,
-                  onEmailChanged: _handleEmailChanged,
-                  onPasswordChanged: _handlePasswordChanged,
+                  onEmailChanged: (_) => _clearErrorOnChange(),
+                  onPasswordChanged: (_) => _clearErrorOnChange(),
                   onForgotPasswordPressed:
                       _isLoading ? null : _navigateToForgotPassword,
                   onSubmitted: _submitLogin,

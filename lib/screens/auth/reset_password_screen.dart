@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/utils/logger.dart';
 import 'login_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -26,13 +25,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   String? _successMessage;
 
   @override
-  void initState() {
-    super.initState();
-    AppLogger.debug(
-        '🔑 ResetPasswordScreen inizializzata con token: ${widget.token.substring(0, 10)}...');
-  }
-
-  @override
   void dispose() {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -40,38 +32,24 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'La password è obbligatoria';
-    }
-    if (value.length < 8) {
-      return 'Almeno 8 caratteri';
-    }
+    if (value == null || value.isEmpty) return 'La password è obbligatoria';
+    if (value.length < 8) return 'Almeno 8 caratteri';
     if (!RegExp(r'[A-Z]').hasMatch(value)) {
       return 'Almeno una lettera maiuscola';
     }
-    if (!RegExp(r'[0-9]').hasMatch(value)) {
-      return 'Almeno un numero';
-    }
+    if (!RegExp(r'[0-9]').hasMatch(value)) return 'Almeno un numero';
     return null;
   }
 
   String? _validateConfirmPassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Conferma la password';
-    }
-    if (value != _passwordController.text) {
-      return 'Le password non corrispondono';
-    }
-    return null;
+    if (value == null || value.isEmpty) return 'Conferma la password';
+    return value == _passwordController.text
+        ? null
+        : 'Le password non corrispondono';
   }
 
   Future<void> _submitResetPassword() async {
-    if (!_formKey.currentState!.validate()) {
-      AppLogger.debug('❌ Form reset password non valido');
-      return;
-    }
-
-    final currentContext = context;
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -79,91 +57,71 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       _successMessage = null;
     });
 
-    AppLogger.debug(
-        '🔑 Reset password con token: ${widget.token.substring(0, 10)}...');
-
     try {
-      final authService =
-          Provider.of<AuthService>(currentContext, listen: false);
+      final authService = Provider.of<AuthService>(context, listen: false);
       final result = await authService.resetPassword(
         widget.token,
         _passwordController.text,
         _confirmPasswordController.text,
       );
 
-      if (currentContext.mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
       if (result.success) {
-        AppLogger.success('✅ Password reimpostata con successo');
-
-        if (currentContext.mounted) {
-          setState(() {
-            _isSuccess = true;
-            _successMessage = result.message;
-          });
-        }
-
-        // Naviga al login dopo 3 secondi
-        Future.delayed(const Duration(seconds: 3), () {
-          if (currentContext.mounted) {
-            Navigator.of(currentContext).pushReplacement(
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            );
-          }
+        setState(() {
+          _isSuccess = true;
+          _successMessage = result.message;
         });
+        Future.delayed(const Duration(seconds: 3), _navigateToLogin);
       } else {
-        AppLogger.error('❌ Reset password fallito: ${result.message}');
-
-        if (currentContext.mounted) {
-          setState(() {
-            _isSuccess = false;
-            _errorMessage = result.message;
-          });
-        }
+        setState(() => _errorMessage = result.message);
       }
     } catch (e) {
-      if (currentContext.mounted) {
-        setState(() {
-          _isLoading = false;
-          _isSuccess = false;
-          _errorMessage = 'Errore di connessione';
-        });
-      }
-
-      AppLogger.error('❌ Errore durante il reset password', e);
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Errore di connessione';
+      });
     }
   }
+
+  void _navigateToLogin() {
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
+
+  void _clearErrorOnChange() {
+    if (_errorMessage != null || _successMessage != null) {
+      setState(() {
+        _errorMessage = null;
+        _successMessage = null;
+      });
+    }
+  }
+
+  void _togglePasswordVisibility() =>
+      setState(() => _obscurePassword = !_obscurePassword);
+  void _toggleConfirmPasswordVisibility() =>
+      setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
 
   Widget _buildLogo() {
     return Column(
       children: [
-        Icon(
-          Icons.lock_open,
-          size: 80,
-          color: Theme.of(context).primaryColor,
-        ),
+        Icon(Icons.lock_open, size: 80, color: Theme.of(context).primaryColor),
         const SizedBox(height: 16),
-        const Text(
-          'Nuova Password',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.deepOrange,
-          ),
-        ),
+        const Text('Nuova Password',
+            style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepOrange)),
         const SizedBox(height: 8),
-        const Text(
-          'Crea una nuova password per il tuo account',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
-          textAlign: TextAlign.center,
-        ),
+        const Text('Crea una nuova password per il tuo account',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+            textAlign: TextAlign.center),
       ],
     );
   }
@@ -177,14 +135,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         labelText: 'Nuova Password',
         prefixIcon: const Icon(Icons.lock),
         suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
+          icon:
+              Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+          onPressed: _togglePasswordVisibility,
         ),
         border: const OutlineInputBorder(),
         filled: true,
@@ -192,13 +145,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       ),
       validator: _validatePassword,
       onChanged: (_) {
-        if (_errorMessage != null || _successMessage != null) {
-          setState(() {
-            _errorMessage = null;
-            _successMessage = null;
-          });
-        }
-        // Valida anche la conferma password
+        _clearErrorOnChange();
         if (_confirmPasswordController.text.isNotEmpty) {
           _formKey.currentState?.validate();
         }
@@ -215,82 +162,56 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         labelText: 'Conferma Nuova Password',
         prefixIcon: const Icon(Icons.lock_outline),
         suffixIcon: IconButton(
-          icon: Icon(
-            _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscureConfirmPassword = !_obscureConfirmPassword;
-            });
-          },
+          icon: Icon(_obscureConfirmPassword
+              ? Icons.visibility
+              : Icons.visibility_off),
+          onPressed: _toggleConfirmPasswordVisibility,
         ),
         border: const OutlineInputBorder(),
         filled: true,
       ),
       validator: _validateConfirmPassword,
       onFieldSubmitted: (_) => _submitResetPassword(),
-      onChanged: (_) {
-        if (_errorMessage != null || _successMessage != null) {
-          setState(() {
-            _errorMessage = null;
-            _successMessage = null;
-          });
-        }
-      },
+      onChanged: (_) => _clearErrorOnChange(),
     );
   }
 
   Widget _buildPasswordStrength() {
     if (_passwordController.text.isEmpty) return const SizedBox.shrink();
 
-    int strength = 0;
     final password = _passwordController.text;
-
+    int strength = 0;
     if (password.length >= 8) strength++;
     if (RegExp(r'[A-Z]').hasMatch(password)) strength++;
     if (RegExp(r'[0-9]').hasMatch(password)) strength++;
     if (RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) strength++;
 
-    Color color;
-    String text;
-
-    switch (strength) {
-      case 0:
-      case 1:
-        color = Colors.red;
-        text = 'Debole';
-        break;
-      case 2:
-        color = Colors.orange;
-        text = 'Media';
-        break;
-      case 3:
-        color = Colors.lightGreen;
-        text = 'Buona';
-        break;
-      case 4:
-        color = Colors.green;
-        text = 'Forte';
-        break;
-      default:
-        color = Colors.grey;
-        text = '';
-    }
+    final color = strength <= 1
+        ? Colors.red
+        : strength == 2
+            ? Colors.orange
+            : strength == 3
+                ? Colors.lightGreen
+                : Colors.green;
+    final text = strength <= 1
+        ? 'Debole'
+        : strength == 2
+            ? 'Media'
+            : strength == 3
+                ? 'Buona'
+                : 'Forte';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
-        Text(
-          'Forza password: $text',
-          style: TextStyle(color: color, fontWeight: FontWeight.bold),
-        ),
+        Text('Forza password: $text',
+            style: TextStyle(color: color, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         LinearProgressIndicator(
-          value: strength / 4,
-          backgroundColor: Colors.grey[300],
-          color: color,
-        ),
+            value: strength / 4,
+            backgroundColor: Colors.grey[300],
+            color: color),
       ],
     );
   }
@@ -310,11 +231,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           const Icon(Icons.error_outline, color: Colors.red),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              _errorMessage!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
+              child: Text(_errorMessage!,
+                  style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -337,33 +255,23 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'Password reimpostata!',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
-              ),
+                  child: Text('Password reimpostata!',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.green))),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            _successMessage ?? '🎉 Password reimpostata con successo!',
-            style: const TextStyle(color: Colors.green),
-          ),
+          Text(_successMessage ?? 'Password reimpostata con successo!',
+              style: const TextStyle(color: Colors.green)),
           const SizedBox(height: 8),
-          const Text(
-            'Verrai reindirizzato al login...',
-            style: TextStyle(fontSize: 12, color: Colors.green),
-          ),
+          const Text('Verrai reindirizzato al login...',
+              style: TextStyle(fontSize: 12, color: Colors.green)),
           const SizedBox(height: 16),
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-          ),
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.green)),
         ],
       ),
-    ); // ← AGGIUNTA LA PARENTESI QUI
+    );
   }
 
   Widget _buildSubmitButton() {
@@ -378,14 +286,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : const Text(
-              'REIMPOSTA PASSWORD',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+                  strokeWidth: 2, color: Colors.white))
+          : const Text('REIMPOSTA PASSWORD',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
     );
   }
 
@@ -395,34 +298,47 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'Torna al ',
-          style: TextStyle(color: Colors.grey),
-        ),
+        const Text('Torna al ', style: TextStyle(color: Colors.grey)),
         TextButton(
-          onPressed: _isLoading
-              ? null
-              : () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  );
-                },
-          child: const Text(
-            'Login',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.deepOrange,
-            ),
-          ),
+          onPressed: _isLoading ? null : _navigateToLogin,
+          child: const Text('Login',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.deepOrange)),
         ),
       ],
     );
   }
 
+  Widget _buildRequirementItem(String text) {
+    final password = _passwordController.text;
+    final bool isMet = switch (text) {
+      'Almeno 8 caratteri' => password.length >= 8,
+      'Almeno una lettera maiuscola' => RegExp(r'[A-Z]').hasMatch(password),
+      'Almeno un numero' => RegExp(r'[0-9]').hasMatch(password),
+      'Caratteri speciali consigliati' =>
+        RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password),
+      _ => false,
+    };
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(
+            isMet ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: isMet ? Colors.green : Colors.grey[400],
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Text(text,
+              style: TextStyle(color: isMet ? Colors.green : Colors.grey[600])),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    AppLogger.debug('🏗️ Building ResetPasswordScreen');
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reimposta Password'),
@@ -430,9 +346,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ? null
             : IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+                onPressed: () => Navigator.of(context).pop(),
               ),
       ),
       body: SafeArea(
@@ -459,11 +373,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 const SizedBox(height: 20),
                 const Divider(),
                 const SizedBox(height: 16),
-                const Text(
-                  'Requisiti password:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
+                const Text('Requisiti password:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 12),
                 _buildRequirementItem('Almeno 8 caratteri'),
                 _buildRequirementItem('Almeno una lettera maiuscola'),
@@ -475,46 +387,5 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildRequirementItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Icon(
-            Icons.check_circle,
-            color: _isRequirementMet(text) ? Colors.green : Colors.grey[400],
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              color: _isRequirementMet(text) ? Colors.green : Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  bool _isRequirementMet(String requirement) {
-    final password = _passwordController.text;
-
-    if (requirement.contains('8 caratteri')) {
-      return password.length >= 8;
-    }
-    if (requirement.contains('maiuscola')) {
-      return RegExp(r'[A-Z]').hasMatch(password);
-    }
-    if (requirement.contains('numero')) {
-      return RegExp(r'[0-9]').hasMatch(password);
-    }
-    if (requirement.contains('speciali')) {
-      return RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
-    }
-
-    return false;
   }
 }

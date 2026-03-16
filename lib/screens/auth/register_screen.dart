@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/screens/auth/widgets/register_logo.dart';
 import 'package:orsocook/screens/auth/widgets/register_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/register_actions.dart';
@@ -29,43 +28,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _acceptTerms = false;
 
   @override
-  void initState() {
-    super.initState();
-    AppLogger.auth('🔐 RegisterScreen inizializzata');
-  }
-
-  @override
   void dispose() {
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
-    AppLogger.debug('♻️ RegisterScreen disposed');
   }
 
   Future<void> _submitRegistration() async {
-    final currentState = _formKey.currentState;
-    if (currentState == null || !currentState.validate()) {
-      AppLogger.debug('❌ Form non valido o currentState null');
-      return;
-    }
-
-    // Salva context localmente prima di operazioni async
-    final currentContext = context;
+    if (!_formKey.currentState!.validate()) return;
 
     if (!_acceptTerms) {
-      AppLogger.debug('❌ Termini non accettati');
-
-      if (currentContext.mounted) {
-        ScaffoldMessenger.of(currentContext).showSnackBar(
-          const SnackBar(
-            content: Text('Devi accettare i termini e condizioni'),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
+      _showSnackBar('Devi accettare i termini e condizioni', Colors.orange);
       return;
     }
 
@@ -74,156 +49,101 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _errorMessage = null;
     });
 
-    AppLogger.auth(
-        '🔄 Tentativo registrazione: ${_usernameController.text} (${_emailController.text})');
-
     try {
-      final authService =
-          Provider.of<AuthService>(currentContext, listen: false);
-
+      final authService = Provider.of<AuthService>(context, listen: false);
       final result = await authService.registerWithVerification(
         _usernameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      if (currentContext.mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
       if (result.success) {
-        AppLogger.success(
-            '✅ Registrazione riuscita per: ${_usernameController.text}');
-
-        final String email = _emailController.text.trim();
-
-        // 👇 MOSTRA SOLO IL DIALOG - NO SNACKBAR
-        if (result.requiresVerification && currentContext.mounted) {
-          await _showVerificationDialog(currentContext, email);
+        if (result.requiresVerification) {
+          await _showVerificationDialog(_emailController.text.trim());
         } else {
-          // Caso raro: registrazione senza verifica (dovrebbe accadere solo in test)
-          if (currentContext.mounted) {
-            await _showSuccessDialog(currentContext);
-          }
+          await _showSuccessDialog();
         }
-
-        // Callback per successo
         widget.onRegisterSuccess?.call();
       } else {
-        AppLogger.error('❌ Registrazione fallita: ${result.message}');
-
-        if (currentContext.mounted) {
-          setState(() {
-            _errorMessage = result.message;
-          });
-
-          ScaffoldMessenger.of(currentContext).showSnackBar(
-            SnackBar(
-              content: Text(result.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        }
+        setState(() => _errorMessage = result.message);
+        _showSnackBar(result.message, Colors.red);
       }
     } catch (e) {
-      if (currentContext.mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = 'Errore di connessione';
-        });
-      }
-
-      AppLogger.error('❌ Errore durante la registrazione', e);
-
-      if (currentContext.mounted) {
-        ScaffoldMessenger.of(currentContext).showSnackBar(
-          const SnackBar(
-            content: Text('Errore di connessione. Verifica la rete.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 4),
-          ),
-        );
-      }
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Errore di connessione';
+      });
+      _showSnackBar('Errore di connessione', Colors.red);
     }
   }
 
-  // 👇 DIALOG PER VERIFICA EMAIL (caso principale)
-  Future<void> _showVerificationDialog(
-      BuildContext context, String email) async {
+  void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(message),
+          backgroundColor: color,
+          duration: const Duration(seconds: 3)),
+    );
+  }
+
+  Future<void> _showVerificationDialog(String email) async {
     await showDialog(
       context: context,
-      barrierDismissible: false, // L'utente DEVE cliccare
-      builder: (context) => AlertDialog(
-        title: const Text(
-          '🎉 Registrazione Completata!',
-          textAlign: TextAlign.center,
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.mark_email_unread, size: 70, color: Colors.blue),
-              const SizedBox(height: 20),
-              const Text(
-                'Abbiamo inviato un\'email di verifica a:',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text('🎉 Registrazione Completata!',
+            textAlign: TextAlign.center),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.mark_email_unread, size: 70, color: Colors.blue),
+            const SizedBox(height: 20),
+            const Text('Abbiamo inviato un\'email di verifica a:',
+                textAlign: TextAlign.center),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
                   color: Colors.blue[50],
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[100]!),
-                ),
-                child: Text(
-                  email,
+                  border: Border.all(color: Colors.blue[100]!)),
+              child: Text(email,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                    fontSize: 15,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Per attivare il tuo account:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              _buildStep('1️⃣ Controlla la tua casella email', Icons.inbox),
-              _buildStep('2️⃣ Cerca l\'email di OrsoCook', Icons.search),
-              _buildStep('3️⃣ Clicca sul link di verifica', Icons.link),
-              const SizedBox(height: 15),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
+                      fontWeight: FontWeight.bold, color: Colors.blue),
+                  textAlign: TextAlign.center),
+            ),
+            const SizedBox(height: 20),
+            const Text('Per attivare il tuo account:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            _buildStep('1️⃣ Controlla la tua casella email', Icons.inbox),
+            _buildStep('2️⃣ Cerca l\'email di OrsoCook', Icons.search),
+            _buildStep('3️⃣ Clicca sul link di verifica', Icons.link),
+            const SizedBox(height: 15),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
                   color: Colors.orange[50],
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange[100]!),
-                ),
-                child: const Text(
-                  '⚠️ Se non trovi l\'email, controlla la cartella SPAM/Posta indesiderata',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.orange,
-                  ),
-                ),
+                  border: Border.all(color: Colors.orange[100]!)),
+              child: const Text(
+                '⚠️ Controlla la cartella SPAM',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: Colors.orange),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Chiude il dialog
-              context.go('/login'); // Vai al login
+              Navigator.of(context).pop();
+              context.go('/login');
             },
             child: const Text('HO CAPITO',
                 style: TextStyle(fontWeight: FontWeight.bold)),
@@ -233,30 +153,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // 👇 DIALOG PER SUCCESSO SENZA VERIFICA (solo per test/backup)
-  Future<void> _showSuccessDialog(BuildContext context) async {
+  Future<void> _showSuccessDialog() async {
     await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('✅ Registrazione Completata!'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.check_circle, size: 70, color: Colors.green),
             SizedBox(height: 20),
-            Text(
-              'Il tuo account è stato creato con successo!\n\n'
-              'Ora puoi accedere con le tue credenziali.',
-              textAlign: TextAlign.center,
-            ),
+            Text('Account creato con successo!\n\nOra puoi accedere.',
+                textAlign: TextAlign.center),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Chiude il dialog
-              context.go('/login'); // Vai al login
+              Navigator.of(context).pop();
+              context.go('/login');
             },
             child: const Text('ACCEDI'),
           ),
@@ -265,7 +181,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // 👇 Widget per i passaggi nel dialog
   Widget _buildStep(String text, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -273,78 +188,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
         children: [
           Icon(icon, color: Colors.blue, size: 20),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
+          Expanded(child: Text(text)),
         ],
       ),
     );
   }
 
-  void _handleUsernameChanged(String? value) {
-    if (_errorMessage != null) {
-      setState(() {
-        _errorMessage = null;
-      });
-    }
+  void _clearErrorOnChange() {
+    if (_errorMessage != null) setState(() => _errorMessage = null);
   }
 
-  void _handleEmailChanged(String? value) {
-    if (_errorMessage != null) {
-      setState(() {
-        _errorMessage = null;
-      });
-    }
-  }
-
-  void _handlePasswordChanged(String? value) {
-    if (_errorMessage != null) {
-      setState(() {
-        _errorMessage = null;
-      });
-    }
-  }
-
-  void _handleConfirmPasswordChanged(String? value) {
-    if (_errorMessage != null) {
-      setState(() {
-        _errorMessage = null;
-      });
-    }
-  }
-
-  void _handleTermsChanged(bool value) {
-    AppLogger.debug('📝 Termini accettati: $value');
-    setState(() {
-      _acceptTerms = value;
-    });
-  }
-
-  void _navigateToLogin() {
-    AppLogger.navigation('⬅️ Torna a LoginScreen');
-    if (mounted) {
-      context.go('/login');
-    }
-  }
-
-  void _validateForm() {
-    _formKey.currentState?.validate();
-  }
+  void _navigateToLogin() => mounted ? context.go('/login') : null;
 
   @override
   Widget build(BuildContext context) {
-    AppLogger.debug('🏗️ Building RegisterScreen');
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Registrazione'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            AppLogger.navigation('⬅️ Torna indietro da RegisterScreen');
-            if (mounted) {
-              context.go('/login');
-            }
-          },
-        ),
+            icon: const Icon(Icons.arrow_back), onPressed: _navigateToLogin),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -362,17 +224,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   passwordController: _passwordController,
                   confirmPasswordController: _confirmPasswordController,
                   errorMessage: _errorMessage,
-                  onUsernameChanged: _handleUsernameChanged,
-                  onEmailChanged: _handleEmailChanged,
-                  onPasswordChanged: _handlePasswordChanged,
-                  onConfirmPasswordChanged: _handleConfirmPasswordChanged,
+                  onUsernameChanged: (_) => _clearErrorOnChange(),
+                  onEmailChanged: (_) => _clearErrorOnChange(),
+                  onPasswordChanged: (_) => _clearErrorOnChange(),
+                  onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
                   isLoading: _isLoading,
-                  validateForm: _validateForm,
+                  validateForm: () => _formKey.currentState?.validate(),
                 ),
                 const SizedBox(height: 16),
                 TermsCheckbox(
                   value: _acceptTerms,
-                  onChanged: _handleTermsChanged,
+                  onChanged: (value) => setState(() => _acceptTerms = value),
                   isLoading: _isLoading,
                 ),
                 const SizedBox(height: 24),

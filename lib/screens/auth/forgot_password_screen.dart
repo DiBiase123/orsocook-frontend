@@ -21,34 +21,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   String? _successMessage;
 
   @override
-  void initState() {
-    super.initState();
-    AppLogger.debug('🔑 ForgotPasswordScreen inizializzata');
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     super.dispose();
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'L\'email è obbligatoria';
-    }
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-      return 'Inserisci un\'email valida';
-    }
-    return null;
+    if (value == null || value.isEmpty) return 'L\'email è obbligatoria';
+
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    return emailRegex.hasMatch(value) ? null : 'Inserisci un\'email valida';
   }
 
   Future<void> _submitForgotPassword() async {
-    if (!_formKey.currentState!.validate()) {
-      AppLogger.debug('❌ Form non valido');
-      return;
-    }
-
-    final currentContext = context;
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -56,67 +42,60 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _successMessage = null;
     });
 
-    AppLogger.debug(
-        '🔑 Richiesta reset password per: ${_emailController.text}');
-
     try {
-      final authService =
-          Provider.of<AuthService>(currentContext, listen: false);
+      final authService = Provider.of<AuthService>(context, listen: false);
       final result =
           await authService.forgotPassword(_emailController.text.trim());
 
-      if (currentContext.mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+      if (!mounted) return;
 
+      setState(() {
+        _isLoading = false;
         if (result.success) {
-          AppLogger.success('✅ Richiesta reset password inviata');
           _isSuccess = true;
           _successMessage = result.message;
         } else {
-          AppLogger.error(
-              '❌ Richiesta reset password fallita: ${result.message}');
-          _isSuccess = false;
           _errorMessage = result.message;
         }
-      }
+      });
     } catch (e) {
-      if (currentContext.mounted) {
-        setState(() {
-          _isLoading = false;
-          _isSuccess = false;
-          _errorMessage = 'Errore di connessione';
-        });
-      }
-      AppLogger.error('❌ Errore durante la richiesta reset password', e);
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Errore di connessione';
+      });
+      AppLogger.error('Errore reset password', e);
     }
+  }
+
+  void _navigateToLogin() {
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
+
+  void _navigateBack() {
+    if (mounted) Navigator.of(context).pop();
   }
 
   Widget _buildLogo() {
     return Column(
       children: [
-        Icon(
-          Icons.lock_reset,
-          size: 80,
-          color: Theme.of(context).primaryColor,
-        ),
+        Icon(Icons.lock_reset, size: 80, color: Theme.of(context).primaryColor),
         const SizedBox(height: 16),
         const Text(
           'Password dimenticata?',
           style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.deepOrange,
-          ),
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.deepOrange),
         ),
         const SizedBox(height: 8),
         const Text(
           'Inserisci la tua email per reimpostare la password',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
+          style: TextStyle(fontSize: 16, color: Colors.grey),
           textAlign: TextAlign.center,
         ),
       ],
@@ -164,13 +143,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const Icon(Icons.error_outline, color: Colors.red),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              _errorMessage!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
+              child: Text(_errorMessage!,
+                  style: const TextStyle(color: Colors.red))),
         ],
-      ), // ← RIMOSSO IL PUNTO E VIRGOLA EXTRA QUI
+      ),
     );
   }
 
@@ -191,30 +167,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'Email inviata!',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
-              ),
+                  child: Text('Email inviata!',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.green))),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             _successMessage ??
-                'Se l\'email è registrata, riceverai istruzioni per reimpostare la password.',
+                'Riceverai istruzioni per reimpostare la password.',
             style: const TextStyle(color: Colors.green),
           ),
           const SizedBox(height: 16),
           const Text(
-            '⚠️ Controlla la cartella spam se non trovi l\'email nella posta in arrivo.',
+            '⚠️ Controlla la cartella spam',
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.orange,
-              fontStyle: FontStyle.italic,
-            ),
+                fontSize: 12,
+                color: Colors.orange,
+                fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -233,14 +203,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : const Text(
-              'INVIA ISTRUZIONI',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+                  strokeWidth: 2, color: Colors.white))
+          : const Text('INVIA ISTRUZIONI',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
     );
   }
 
@@ -248,51 +213,38 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'Torna al ',
-          style: TextStyle(color: Colors.grey),
-        ),
+        const Text('Torna al ', style: TextStyle(color: Colors.grey)),
         TextButton(
-          onPressed: _isLoading
-              ? null
-              : () {
-                  AppLogger.navigation('⬅️ Torna a LoginScreen');
-                  final currentContext = context;
-                  if (currentContext.mounted) {
-                    Navigator.of(currentContext).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
-                  }
-                },
-          child: const Text(
-            'Login',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.deepOrange,
-            ),
-          ),
+          onPressed: _isLoading ? null : _navigateToLogin,
+          child: const Text('Login',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.deepOrange)),
         ),
       ],
     );
   }
 
+  Widget _buildStepItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.arrow_right, color: Colors.deepOrange, size: 20),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    AppLogger.debug('🏗️ Building ForgotPasswordScreen');
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Password Dimenticata'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            AppLogger.navigation('⬅️ Torna indietro da ForgotPasswordScreen');
-            final currentContext = context;
-            if (currentContext.mounted) {
-              Navigator.of(currentContext).pop();
-            }
-          },
-        ),
+            icon: const Icon(Icons.arrow_back), onPressed: _navigateBack),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -315,11 +267,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: 20),
                 const Divider(),
                 const SizedBox(height: 16),
-                const Text(
-                  'Cosa succede dopo:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
+                const Text('Cosa succede dopo:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 12),
                 _buildStepItem('1. Riceverai un\'email con un link di reset'),
                 _buildStepItem('2. Clicca sul link (valido per 1 ora)'),
@@ -330,20 +280,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildStepItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.arrow_right, color: Colors.deepOrange, size: 20),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text)),
-        ],
-      ), // ← AGGIUNTA LA VIRGOLA QUI
     );
   }
 }
