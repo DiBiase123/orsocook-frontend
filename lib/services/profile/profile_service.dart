@@ -128,10 +128,20 @@ class ProfileService extends ChangeNotifier {
     required Uint8List imageBytes,
     required String fileName,
   }) async {
-    return await _uploadAvatarStrategy.execute(
+    final result = await _uploadAvatarStrategy.execute(
       imageBytes: imageBytes,
       fileName: fileName,
     );
+
+    if (result['success'] == true && result['avatarUrl'] != null) {
+      // Aggiorna AuthService (triggera notifica a tutti i listener)
+      _authService.updateAvatar(result['avatarUrl'] as String);
+
+      // Aggiorna anche il profilo locale
+      updateAvatarLocally(result['avatarUrl'] as String);
+    }
+
+    return result;
   }
 
   Future<ProfileResponse?> refreshProfile() {
