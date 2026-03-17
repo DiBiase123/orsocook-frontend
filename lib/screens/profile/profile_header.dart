@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:orsocook/services/profile_controller.dart';
+import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/widgets/avatar_picker_widget.dart';
 import 'package:orsocook/services/auth_service.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:orsocook/services/profile_controller.dart';
+import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/widgets/profile_recipes_list_widget.dart';
 
 class ProfileTabs extends StatefulWidget {

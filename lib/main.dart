@@ -5,9 +5,9 @@ import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/activity_tracker.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/comment_service.dart';
-import 'package:orsocook/services/profile_service.dart';
+import 'package:orsocook/services/profile/profile_service.dart';
 import 'package:orsocook/services/avatar_service.dart';
-import 'package:orsocook/services/profile_controller.dart';
+import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
 import 'package:orsocook/services/category_service.dart';
@@ -76,7 +76,6 @@ class MyApp extends StatelessWidget {
           create: (context) => ProfileController(
             authService: context.read<AuthService>(),
             profileService: context.read<ProfileService>(),
-            avatarService: context.read<AvatarService>(),
             commentService: context.read<CommentService>(),
             favoriteService: context.read<FavoriteService>(),
           ),

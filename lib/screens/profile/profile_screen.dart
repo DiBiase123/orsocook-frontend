@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:orsocook/services/profile_controller.dart';
+import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/profile_body.dart';
 import 'package:orsocook/services/logout_manager.dart';
 

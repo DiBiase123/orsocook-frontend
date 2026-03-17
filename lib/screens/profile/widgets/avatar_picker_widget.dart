@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:orsocook/services/profile_controller.dart';
+import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/services/auth_service.dart';
 
 class AvatarPickerWidget extends StatelessWidget {

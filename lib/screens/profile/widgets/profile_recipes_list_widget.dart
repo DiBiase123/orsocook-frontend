@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
-import 'package:orsocook/services/profile_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
-import 'package:orsocook/services/profile_controller.dart';
+import 'package:orsocook/services/profile/profile_service.dart';
+import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/utils/logger.dart';
 

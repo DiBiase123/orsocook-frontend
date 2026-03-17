@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/services/profile_controller.dart';
+import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/profile_header.dart';
 import 'package:orsocook/screens/profile/widgets/profile_tabs_widget.dart';
 import 'package:orsocook/screens/profile/widgets/profile_stats_widget.dart';
