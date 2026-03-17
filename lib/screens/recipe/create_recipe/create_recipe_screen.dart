@@ -37,7 +37,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
             appBar: RecipeAppBar(
               isLoading: viewModel.isLoading || viewModel.isUploading,
               onSave: () => _saveRecipe(context, viewModel),
-              onBack: () => context.pop(),
+              onBack: () => context.go('/home'),
             ),
             body: viewModel.isUploading
                 ? const _UploadingIndicator()

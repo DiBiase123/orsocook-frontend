@@ -252,8 +252,13 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> updateAvatar(String newAvatarUrl) async {
+    AppLogger.debug(
+        '🔄 AuthService.updateAvatar: $newAvatarUrl'); // <-- AGGIUNGI
+
     await _tokenManager.updateAvatar(newAvatarUrl);
     notifyListeners();
+    AppLogger.debug(
+        '✅ TokenManager updated, calling notifyListeners()'); // <-- AGGIUNGI
 
     if (kDebugMode) {
       AppLogger.success('✅ Avatar aggiornato');

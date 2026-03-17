@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart'; // <-- AGGIUNTO
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
@@ -83,7 +84,10 @@ class _LikeButtonState extends State<LikeButton> {
           label: 'ACCEDI',
           textColor: Colors.white,
           onPressed: () {
+            // Chiudi lo snackbar
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
             // Naviga al login
+            GoRouter.of(context).go('/login');
           },
         ),
       ),

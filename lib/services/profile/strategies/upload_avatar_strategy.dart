@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:orsocook/config.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
@@ -25,12 +26,17 @@ class UploadAvatarStrategy {
     final url = '${Config.apiBaseUrl}/api/auth/avatar';
     AppLogger.api('PUT /api/auth/avatar');
 
+    // Estrai l'estensione del file per il Content-Type
+    final extension = fileName.split('.').last.toLowerCase();
+
     final request = http.MultipartRequest('PUT', Uri.parse(url))
       ..headers['Authorization'] = 'Bearer $token'
       ..files.add(http.MultipartFile.fromBytes(
         'avatar',
         imageBytes,
         filename: fileName,
+        contentType:
+            MediaType('image', extension), // <-- SPECIFICA IL TIPO MIME
       ));
 
     try {
@@ -41,11 +47,16 @@ class UploadAvatarStrategy {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        AppLogger.debug('📥 Response data: $data');
+
         if (data['success'] == true) {
+          final avatarUrl = data['data']?['user']?['avatarUrl'];
+          AppLogger.debug('🎯 Avatar URL from response: $avatarUrl');
+
           return {
             'success': true,
             'message': data['message'] ?? 'Avatar aggiornato',
-            'avatarUrl': data['data']?['user']?['avatarUrl'],
+            'avatarUrl': avatarUrl,
           };
         } else {
           return {

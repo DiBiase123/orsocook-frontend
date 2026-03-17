@@ -4,10 +4,10 @@ import 'package:orsocook/models/profile_response.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'strategies/fetch_profile_strategy.dart';
-import 'strategies/fetch_user_recipes_strategy.dart';
-import 'strategies/fetch_user_favorites_strategy.dart';
-import 'strategies/upload_avatar_strategy.dart';
+import 'package:orsocook/services/profile/strategies/fetch_profile_strategy.dart';
+import 'package:orsocook/services/profile/strategies/fetch_user_recipes_strategy.dart';
+import 'package:orsocook/services/profile/strategies/fetch_user_favorites_strategy.dart';
+import 'package:orsocook/services/profile/strategies/upload_avatar_strategy.dart';
 
 class ProfileService extends ChangeNotifier {
   final AuthService _authService;
@@ -128,12 +128,19 @@ class ProfileService extends ChangeNotifier {
     required Uint8List imageBytes,
     required String fileName,
   }) async {
+    AppLogger.debug('📤 ProfileService.uploadAvatar - fileName: $fileName');
+
     final result = await _uploadAvatarStrategy.execute(
       imageBytes: imageBytes,
       fileName: fileName,
     );
 
+    AppLogger.debug('📦 Upload result: $result');
+
     if (result['success'] == true && result['avatarUrl'] != null) {
+      AppLogger.debug(
+          '🎯 Calling authService.updateAvatar with: ${result['avatarUrl']}');
+
       // Aggiorna AuthService (triggera notifica a tutti i listener)
       _authService.updateAvatar(result['avatarUrl'] as String);
 
