@@ -38,12 +38,19 @@ class RegisterLogo extends StatelessWidget {
 
     return Column(
       children: [
-        // Logo responsive
-        Image.asset(
-          'assets/images/OrsoCooK.png',
-          height: logoSize,
+        // Logo placeholder
+        Container(
           width: logoSize,
-          fit: BoxFit.contain,
+          height: logoSize,
+          decoration: BoxDecoration(
+            color: Colors.deepOrange.withAlpha(50),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.restaurant,
+            size: logoSize * 0.5,
+            color: Colors.deepOrange,
+          ),
         ),
         const SizedBox(height: 16),
         // Titolo con icona responsive
