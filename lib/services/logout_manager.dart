@@ -10,32 +10,60 @@ import 'package:orsocook/screens/auth/login.dart';
 
 class LogoutManager {
   static Future<void> performLogout(BuildContext context) async {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final profileService = Provider.of<ProfileService>(context, listen: false);
-    final recipeService = Provider.of<RecipeService>(context, listen: false);
-    final favoriteService =
-        Provider.of<FavoriteService>(context, listen: false);
-
     AppLogger.warning('🚪 Logout completo - pulizia cache service');
 
-    // 1. Prima pulisci le cache
-    profileService.clearProfile();
-    recipeService.clearCache();
-    favoriteService.reset();
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final profileService =
+          Provider.of<ProfileService>(context, listen: false);
+      final recipeService = Provider.of<RecipeService>(context, listen: false);
+      final favoriteService =
+          Provider.of<FavoriteService>(context, listen: false);
 
-    // 2. Poi fai logout vero e proprio
-    await authService.logout();
+      // 1. Pulisci le cache
+      profileService.clearProfile();
+      recipeService.clearCache();
+      favoriteService.reset();
 
-    // 3. Vai alla home (non al login)
-    if (context.mounted) {
-      context.go('/home');
+      // 2. Logout
+      await authService.logout();
 
-      // 4. Dopo un breve delay, mostra il modal login
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (context.mounted) {
-          showLoginModal(context);
-        }
-      });
+      // 3. Verifica che il contesto sia ancora valido prima di navigare
+      if (!context.mounted) return;
+
+      // 4. Chiudi eventuali dialog aperti
+      Navigator.of(context).popUntil((route) => route.isFirst);
+
+      // 5. Vai alla home
+      if (context.mounted) {
+        context.go('/home');
+
+        // 6. Mostra il modal login dopo un breve delay
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (context.mounted) {
+            showLoginModal(context);
+          }
+        });
+      }
+
+      // Snackbar dopo la navigazione
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Logout effettuato con successo'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Errore durante logout', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Errore durante il logout: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

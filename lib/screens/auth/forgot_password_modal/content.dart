@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/screens/auth/login.dart';
 
 class ForgotPasswordModalContent extends StatefulWidget {
   final VoidCallback onClose;
+  final bool showCloseButton;
 
   const ForgotPasswordModalContent({
     super.key,
     required this.onClose,
+    this.showCloseButton = true,
   });
 
   @override
@@ -35,7 +36,6 @@ class _ForgotPasswordModalContentState
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return 'L\'email è obbligatoria';
-
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
     return emailRegex.hasMatch(value) ? null : 'Inserisci un\'email valida';
   }
@@ -71,7 +71,6 @@ class _ForgotPasswordModalContentState
         _isLoading = false;
         _errorMessage = 'Errore di connessione';
       });
-      AppLogger.error('Errore reset password', e);
     }
   }
 
@@ -106,7 +105,6 @@ class _ForgotPasswordModalContentState
     return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
-      autofillHints: const [AutofillHints.email],
       textInputAction: TextInputAction.done,
       decoration: const InputDecoration(
         labelText: 'Email',
@@ -136,7 +134,6 @@ class _ForgotPasswordModalContentState
       decoration: BoxDecoration(
         color: Colors.red[50],
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red[100]!),
       ),
       child: Row(
         children: [
@@ -158,7 +155,6 @@ class _ForgotPasswordModalContentState
       decoration: BoxDecoration(
         color: Colors.green[50],
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green[100]!),
       ),
       child: Column(
         children: [
@@ -181,10 +177,7 @@ class _ForgotPasswordModalContentState
           const SizedBox(height: 16),
           const Text(
             '⚠️ Controlla la cartella spam',
-            style: TextStyle(
-                fontSize: 12,
-                color: Colors.orange,
-                fontStyle: FontStyle.italic),
+            style: TextStyle(fontSize: 12, color: Colors.orange),
           ),
         ],
       ),
@@ -228,7 +221,6 @@ class _ForgotPasswordModalContentState
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(Icons.arrow_right, color: Colors.deepOrange, size: 20),
           const SizedBox(width: 8),
@@ -248,24 +240,11 @@ class _ForgotPasswordModalContentState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Pulsante back in alto a sinistra
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, size: 28),
-                  onPressed: _navigateToLogin,
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.grey.withAlpha(50),
-                    foregroundColor: Theme.of(context).colorScheme.primary,
-                    shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(8),
-                  ),
-                  iconSize: 28,
-                ),
-                // Pulsante X in alto a destra
-                IconButton(
-                  icon: const Icon(Icons.close, size: 28),
+            if (widget.showCloseButton)
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: const Icon(Icons.close, size: 32),
                   onPressed: widget.onClose,
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.grey.withAlpha(50),
@@ -273,11 +252,8 @@ class _ForgotPasswordModalContentState
                     shape: const CircleBorder(),
                     padding: const EdgeInsets.all(8),
                   ),
-                  iconSize: 28,
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
+              ),
             _buildLogo(),
             const SizedBox(height: 24),
             _buildEmailField(),
@@ -295,10 +271,10 @@ class _ForgotPasswordModalContentState
                 style: TextStyle(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center),
             const SizedBox(height: 12),
-            _buildStepItem('1. Riceverai un\'email con un link di reset'),
-            _buildStepItem('2. Clicca sul link (valido per 1 ora)'),
-            _buildStepItem('3. Imposta una nuova password'),
-            _buildStepItem('4. Accedi con la nuova password'),
+            _buildStepItem('Riceverai un\'email con un link di reset'),
+            _buildStepItem('Clicca sul link (valido per 1 ora)'),
+            _buildStepItem('Imposta una nuova password'),
+            _buildStepItem('Accedi con la nuova password'),
           ],
         ),
       ),

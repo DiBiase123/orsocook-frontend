@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:orsocook/screens/auth/login.dart';
+import 'package:orsocook/screens/auth/login_modal/index.dart';
 import 'package:orsocook/screens/auth/register.dart';
 import 'package:orsocook/screens/auth/forgot_password.dart';
 import 'package:orsocook/screens/auth/reset_password_screen.dart';
@@ -25,12 +25,12 @@ final goRouter = GoRouter(
       path: '/',
       redirect: (context, state) => '/home',
     ),
-    // Login - modal
     GoRoute(
       path: '/login',
       name: 'login',
       builder: (context, state) => const LoginModal(),
     ),
+
     // Register - modal
     GoRoute(
       path: '/register',

@@ -9,10 +9,12 @@ import 'package:orsocook/screens/auth/widgets/terms_checkbox.dart';
 
 class RegisterModalContent extends StatefulWidget {
   final VoidCallback onClose;
+  final bool showCloseButton;
 
   const RegisterModalContent({
     super.key,
     required this.onClose,
+    this.showCloseButton = true,
   });
 
   @override
@@ -41,7 +43,6 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
 
   Future<void> _submitRegistration() async {
     if (!_formKey.currentState!.validate()) return;
-
     if (!_acceptTerms) {
       _showSnackBar('Devi accettare i termini e condizioni', Colors.orange);
       return;
@@ -99,52 +100,36 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: const Text('🎉 Registrazione Completata!',
-            textAlign: TextAlign.center),
+        title: const Text('🎉 Registrazione Completata!'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.mark_email_unread, size: 70, color: Colors.blue),
             const SizedBox(height: 20),
-            const Text('Abbiamo inviato un\'email di verifica a:',
-                textAlign: TextAlign.center),
+            const Text('Abbiamo inviato un\'email di verifica a:'),
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.blue[50],
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue[100]!),
               ),
-              child: Text(
-                email,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              child: Text(email, textAlign: TextAlign.center),
             ),
             const SizedBox(height: 20),
-            const Text('Per attivare il tuo account:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Per attivare il tuo account:'),
             const SizedBox(height: 10),
-            _buildStep('1️⃣ Controlla la tua casella email', Icons.inbox),
-            _buildStep('2️⃣ Cerca l\'email di OrsoCook', Icons.search),
-            _buildStep('3️⃣ Clicca sul link di verifica', Icons.link),
+            _buildStep('Controlla la tua casella email', Icons.inbox),
+            _buildStep('Cerca l\'email di OrsoCook', Icons.search),
+            _buildStep('Clicca sul link di verifica', Icons.link),
             const SizedBox(height: 15),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.orange[50],
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange[100]!),
               ),
-              child: const Text(
-                '⚠️ Controlla la cartella SPAM',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: Colors.orange),
-              ),
+              child: const Text('⚠️ Controlla la cartella SPAM'),
             ),
           ],
         ),
@@ -154,8 +139,7 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
               Navigator.of(context).pop();
               widget.onClose();
             },
-            child: const Text('HO CAPITO',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('HO CAPITO'),
           ),
         ],
       ),
@@ -173,8 +157,7 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
           children: [
             Icon(Icons.check_circle, size: 70, color: Colors.green),
             SizedBox(height: 20),
-            Text('Account creato con successo!\n\nOra puoi accedere.',
-                textAlign: TextAlign.center),
+            Text('Account creato con successo!\n\nOra puoi accedere.'),
           ],
         ),
         actions: [
@@ -222,23 +205,20 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                icon: const Icon(
-                  Icons.close,
-                  size: 32,
+            if (widget.showCloseButton)
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: const Icon(Icons.close, size: 32),
+                  onPressed: widget.onClose,
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.grey.withAlpha(50),
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(8),
+                  ),
                 ),
-                onPressed: widget.onClose,
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.grey.withAlpha(50),
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(8),
-                ),
-                iconSize: 32,
               ),
-            ),
             const RegisterLogo(),
             const SizedBox(height: 24),
             RegisterFormFields(
