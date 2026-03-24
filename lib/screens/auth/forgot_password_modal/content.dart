@@ -239,66 +239,68 @@ class _ForgotPasswordModalContentState
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Pulsante back in alto a sinistra
-              IconButton(
-                icon: const Icon(Icons.arrow_back, size: 28),
-                onPressed: _navigateToLogin,
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.grey.withAlpha(50),
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(8),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Pulsante back in alto a sinistra
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, size: 28),
+                  onPressed: _navigateToLogin,
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.grey.withAlpha(50),
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                  iconSize: 28,
                 ),
-                iconSize: 28,
-              ),
-              // Pulsante X in alto a destra
-              IconButton(
-                icon: const Icon(Icons.close, size: 28),
-                onPressed: widget.onClose,
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.grey.withAlpha(50),
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(8),
+                // Pulsante X in alto a destra
+                IconButton(
+                  icon: const Icon(Icons.close, size: 28),
+                  onPressed: widget.onClose,
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.grey.withAlpha(50),
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                  iconSize: 28,
                 ),
-                iconSize: 28,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildLogo(),
-          const SizedBox(height: 24),
-          _buildEmailField(),
-          const SizedBox(height: 16),
-          _buildErrorSection(),
-          _buildSuccessSection(),
-          const SizedBox(height: 24),
-          _buildSubmitButton(),
-          const SizedBox(height: 24),
-          _buildLoginLink(),
-          const SizedBox(height: 20),
-          const Divider(),
-          const SizedBox(height: 16),
-          const Text('Cosa succede dopo:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 12),
-          _buildStepItem('1. Riceverai un\'email con un link di reset'),
-          _buildStepItem('2. Clicca sul link (valido per 1 ora)'),
-          _buildStepItem('3. Imposta una nuova password'),
-          _buildStepItem('4. Accedi con la nuova password'),
-        ],
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildLogo(),
+            const SizedBox(height: 24),
+            _buildEmailField(),
+            const SizedBox(height: 16),
+            _buildErrorSection(),
+            _buildSuccessSection(),
+            const SizedBox(height: 24),
+            _buildSubmitButton(),
+            const SizedBox(height: 24),
+            _buildLoginLink(),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 16),
+            const Text('Cosa succede dopo:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            _buildStepItem('1. Riceverai un\'email con un link di reset'),
+            _buildStepItem('2. Clicca sul link (valido per 1 ora)'),
+            _buildStepItem('3. Imposta una nuova password'),
+            _buildStepItem('4. Accedi con la nuova password'),
+          ],
+        ),
       ),
     );
   }

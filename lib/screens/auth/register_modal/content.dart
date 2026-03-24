@@ -217,56 +217,59 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              icon: const Icon(
-                Icons.close,
-                size: 32,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.close,
+                  size: 32,
+                ),
+                onPressed: widget.onClose,
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.grey.withAlpha(50),
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(8),
+                ),
+                iconSize: 32,
               ),
-              onPressed: widget.onClose,
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.grey.withAlpha(50),
-                foregroundColor: Theme.of(context).colorScheme.primary,
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(8),
-              ),
-              iconSize: 32,
             ),
-          ),
-          const RegisterLogo(),
-          const SizedBox(height: 24),
-          RegisterFormFields(
-            usernameController: _usernameController,
-            emailController: _emailController,
-            passwordController: _passwordController,
-            confirmPasswordController: _confirmPasswordController,
-            errorMessage: _errorMessage,
-            onUsernameChanged: (_) => _clearErrorOnChange(),
-            onEmailChanged: (_) => _clearErrorOnChange(),
-            onPasswordChanged: (_) => _clearErrorOnChange(),
-            onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
-            isLoading: _isLoading,
-            validateForm: () => _formKey.currentState?.validate(),
-          ),
-          const SizedBox(height: 16),
-          TermsCheckbox(
-            value: _acceptTerms,
-            onChanged: (value) => setState(() => _acceptTerms = value),
-            isLoading: _isLoading,
-          ),
-          const SizedBox(height: 24),
-          RegisterActions(
-            isLoading: _isLoading,
-            onRegisterPressed: _submitRegistration,
-            onLoginPressed: _isLoading ? null : _navigateToLogin,
-            showFeatures: true,
-          ),
-          const SizedBox(height: 16),
-        ],
+            const RegisterLogo(),
+            const SizedBox(height: 24),
+            RegisterFormFields(
+              usernameController: _usernameController,
+              emailController: _emailController,
+              passwordController: _passwordController,
+              confirmPasswordController: _confirmPasswordController,
+              errorMessage: _errorMessage,
+              onUsernameChanged: (_) => _clearErrorOnChange(),
+              onEmailChanged: (_) => _clearErrorOnChange(),
+              onPasswordChanged: (_) => _clearErrorOnChange(),
+              onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
+              isLoading: _isLoading,
+              validateForm: () => _formKey.currentState?.validate(),
+            ),
+            const SizedBox(height: 16),
+            TermsCheckbox(
+              value: _acceptTerms,
+              onChanged: (value) => setState(() => _acceptTerms = value),
+              isLoading: _isLoading,
+            ),
+            const SizedBox(height: 24),
+            RegisterActions(
+              isLoading: _isLoading,
+              onRegisterPressed: _submitRegistration,
+              onLoginPressed: _isLoading ? null : _navigateToLogin,
+              showFeatures: true,
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

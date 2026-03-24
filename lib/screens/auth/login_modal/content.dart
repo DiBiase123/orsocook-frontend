@@ -35,7 +35,20 @@ class _LoginModalContentState extends State<LoginModalContent> {
   }
 
   Future<void> _submitLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    print('🔍 [LOGIN] submitLogin chiamato');
+
+    // Verifica che _formKey.currentState esista
+    if (_formKey.currentState == null) {
+      print('🔍 [LOGIN] formKey.currentState è null');
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) {
+      print('🔍 [LOGIN] form non valido');
+      return;
+    }
+
+    print('🔍 [LOGIN] form valido, procedo con login');
 
     setState(() {
       _isLoading = true;
@@ -44,10 +57,12 @@ class _LoginModalContentState extends State<LoginModalContent> {
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
+      print('🔍 [LOGIN] chiamo authService.login...');
       final result = await authService.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
+      print('🔍 [LOGIN] risultato: success=${result.success}');
 
       if (!mounted) return;
 
@@ -60,6 +75,7 @@ class _LoginModalContentState extends State<LoginModalContent> {
         _handleLoginError(result);
       }
     } catch (e) {
+      print('🔍 [LOGIN] errore: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
       _showSnackBar('Errore di connessione', Colors.red);
@@ -195,49 +211,49 @@ class _LoginModalContentState extends State<LoginModalContent> {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              icon: const Icon(
-                Icons.close,
-                size: 32, // più grande
+      child: Form(
+        key: _formKey, // ← AGGIUNGI QUESTO
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                icon: const Icon(Icons.close, size: 32),
+                onPressed: widget.onClose,
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.grey.withAlpha(50),
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(8),
+                ),
+                iconSize: 32,
               ),
-              onPressed: widget.onClose,
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.grey.withAlpha(50),
-                foregroundColor: Theme.of(context).colorScheme.primary,
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(8),
-              ),
-              iconSize: 32,
             ),
-          ),
-          const LoginLogo(),
-          const SizedBox(height: 24),
-          LoginFormFields(
-            emailController: _emailController,
-            passwordController: _passwordController,
-            errorMessage: _errorMessage,
-            onEmailChanged: (_) => _clearErrorOnChange(),
-            onPasswordChanged: (_) => _clearErrorOnChange(),
-            onForgotPasswordPressed:
-                _isLoading ? null : _navigateToForgotPassword,
-            onSubmitted: _submitLogin,
-            isLoading: _isLoading,
-          ),
-          const SizedBox(height: 24),
-          LoginActions(
-            isLoading: _isLoading,
-            onLoginPressed: _submitLogin,
-            onRegisterPressed: _isLoading ? null : _navigateToRegister,
-            onContinueWithoutAuth: widget.onClose,
-            showSocialLogin: true,
-          ),
-          const SizedBox(height: 16),
-        ],
+            const LoginLogo(),
+            const SizedBox(height: 24),
+            LoginFormFields(
+              emailController: _emailController,
+              passwordController: _passwordController,
+              errorMessage: _errorMessage,
+              onEmailChanged: (_) => _clearErrorOnChange(),
+              onPasswordChanged: (_) => _clearErrorOnChange(),
+              onForgotPasswordPressed:
+                  _isLoading ? null : _navigateToForgotPassword,
+              onSubmitted: _submitLogin,
+              isLoading: _isLoading,
+            ),
+            const SizedBox(height: 24),
+            LoginActions(
+              isLoading: _isLoading,
+              onLoginPressed: _submitLogin,
+              onRegisterPressed: _isLoading ? null : _navigateToRegister,
+              onContinueWithoutAuth: widget.onClose,
+              showSocialLogin: true,
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
