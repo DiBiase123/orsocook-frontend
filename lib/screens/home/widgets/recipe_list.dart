@@ -43,7 +43,9 @@ class _RecipeListState extends State<RecipeList> {
 
   int _calculateCrossAxisCount(double width) {
     final safeWidth = width.clamp(300.0, double.infinity);
-    if (safeWidth > 900) {
+    if (safeWidth > 1200) {
+      return 4;
+    } else if (safeWidth > 900) {
       return 3;
     } else if (safeWidth > 600) {
       return 2;
@@ -52,11 +54,19 @@ class _RecipeListState extends State<RecipeList> {
     }
   }
 
+  double _calculateMaxCardWidth(double width, int crossAxisCount) {
+    final availableWidth =
+        width - _calculatePadding(crossAxisCount).horizontal * 2;
+    final cardWidth = availableWidth / crossAxisCount;
+    return cardWidth.clamp(200.0, 280.0);
+  }
+
   Widget _buildLoadingMore() {
     return Container(
       padding: const EdgeInsets.all(32),
       child: const Center(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 12),
@@ -71,28 +81,30 @@ class _RecipeListState extends State<RecipeList> {
   }
 
   Widget _buildEndOfList() {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green.shade100, width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.check_circle, color: Colors.green.shade600, size: 16),
-          const SizedBox(width: 8),
-          Text(
-            'Tutte le ricette caricate',
-            style: TextStyle(
-              color: Colors.green.shade800,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.green.shade100, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle, color: Colors.green.shade600, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              'Tutte le ricette caricate',
+              style: TextStyle(
+                color: Colors.green.shade800,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -118,49 +130,65 @@ class _RecipeListState extends State<RecipeList> {
                 _calculateCrossAxisCount(constraints.maxWidth);
             final spacing = _calculateSpacing(crossAxisCount);
             final padding = _calculatePadding(crossAxisCount);
+            final maxCardWidth =
+                _calculateMaxCardWidth(constraints.maxWidth, crossAxisCount);
 
             final itemCount = recipeCount +
                 (recipeService.hasMore && recipeService.isLoading ? 1 : 0);
 
-            return Column(
-              children: [
-                Expanded(
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (notification) => false,
-                    child: RefreshIndicator(
-                      onRefresh: () async {
-                        await recipeService.fetchRecipes(
-                            forceRefresh: true, page: 1);
-                      },
-                      child: GridView.builder(
-                        controller: _scrollController,
-                        padding: padding,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: spacing,
-                          mainAxisSpacing: spacing,
-                          childAspectRatio: 0.75,
-                        ),
-                        itemCount: itemCount,
-                        itemBuilder: (context, index) {
-                          if (index >= recipeCount) {
-                            return _buildLoadingMore();
-                          }
+            return NotificationListener<ScrollNotification>(
+              onNotification: (notification) => false,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await recipeService.fetchRecipes(forceRefresh: true, page: 1);
+                },
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    children: [
+                      Center(
+                        child: SizedBox(
+                          width: constraints.maxWidth > 1200
+                              ? constraints.maxWidth * 0.9
+                              : constraints.maxWidth,
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: padding,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              crossAxisSpacing: spacing,
+                              mainAxisSpacing: spacing,
+                              childAspectRatio: 1.0,
+                              mainAxisExtent: maxCardWidth,
+                            ),
+                            itemCount: itemCount,
+                            itemBuilder: (context, index) {
+                              if (index >= recipeCount) {
+                                return _buildLoadingMore();
+                              }
 
-                          final recipe = recipes[index];
-                          return RecipeCard(
-                            key: ValueKey(recipe.id),
-                            recipe: recipe,
-                            onTap: () => widget.onRecipeTap(recipe),
-                          );
-                        },
+                              final recipe = recipes[index];
+                              return SizedBox(
+                                width: maxCardWidth,
+                                child: RecipeCard(
+                                  key: ValueKey(recipe.id),
+                                  recipe: recipe,
+                                  onTap: () => widget.onRecipeTap(recipe),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                    ),
+                      if (!recipeService.hasMore && recipes.isNotEmpty)
+                        _buildEndOfList(),
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 ),
-                if (!recipeService.hasMore && recipes.isNotEmpty)
-                  _buildEndOfList(),
-              ],
+              ),
             );
           },
         );
@@ -170,6 +198,7 @@ class _RecipeListState extends State<RecipeList> {
 
   EdgeInsets _calculatePadding(int crossAxisCount) {
     final horizontalPadding = switch (crossAxisCount) {
+      4 => 32.0,
       3 => 24.0,
       2 => 20.0,
       _ => 16.0,
@@ -183,6 +212,7 @@ class _RecipeListState extends State<RecipeList> {
 
   double _calculateSpacing(int crossAxisCount) {
     return switch (crossAxisCount) {
+      4 => 24.0,
       3 => 20.0,
       2 => 16.0,
       _ => 12.0,

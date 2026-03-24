@@ -16,7 +16,7 @@ enum LogLevel {
 /// 📍 Logger configurabile per l'app Ricette
 class AppLogger {
   // 🔧 LIVELLO DI LOG CONFIGURABILE
-  static LogLevel currentLevel = kDebugMode ? LogLevel.info : LogLevel.error;
+  static LogLevel currentLevel = kDebugMode ? LogLevel.verbose : LogLevel.error;
 
   // 🔧 Abilita/disabilita categorie specifiche
   static bool showApiLogs = true;

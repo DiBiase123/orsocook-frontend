@@ -23,186 +23,128 @@ class RecipeCard extends StatelessWidget {
     final favoriteService =
         Provider.of<FavoriteService>(context, listen: false);
     favoriteService.registerRecipeTitle(recipe.id, recipe.title);
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+
+    return _HoverCard(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(20),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
-              _buildRecipeImage()
-            else
-              _buildPlaceholderImage(),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    recipe.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  if (recipe.description.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Text(
-                        recipe.description,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  _buildRecipeInfo(),
-                ],
-              ),
-            ),
+            _buildImageSection(),
+            _buildContentSection(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRecipeInfo() {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 200),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: Row(
-              children: [
-                const Icon(Icons.timer, size: 12, color: Colors.grey),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    '${recipe.totalTime}',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Flexible(
-            child: Row(
-              children: [
-                const Icon(Icons.restaurant, size: 12, color: Colors.grey),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    '${recipe.servings}',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecipeImage() {
-    final imageUrl = recipe.imageUrl!;
-
+  Widget _buildImageSection() {
     return Stack(
       children: [
         ClipRRect(
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
           ),
           child: SizedBox(
-            height: 120,
+            height: 160,
             width: double.infinity,
-            child: _OptimizedRecipeImage(imageUrl: imageUrl),
+            child: recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty
+                ? Image.network(
+                    recipe.imageUrl!,
+                    headers: {'Accept': 'image/*'},
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: Colors.grey[200],
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[200],
+                        child: const Icon(
+                          Icons.restaurant,
+                          size: 48,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    color: Colors.grey[200],
+                    child: const Icon(
+                      Icons.restaurant,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
+                  ),
           ),
         ),
+        // Badge tempo
         Positioned(
-          top: 8,
-          right: 8,
-          child: Row(
-            children: [
-              _buildButtonContainer(
-                child: LikeButton(
-                  recipeId: recipe.id,
-                  size: 18,
-                ),
-                margin: const EdgeInsets.only(right: 4),
-              ),
-              _buildButtonContainer(
-                child: FavoriteButton(
-                  recipeId: recipe.id,
-                  recipe: recipe,
-                  size: 18,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPlaceholderImage() {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
-          ),
+          top: 12,
+          left: 12,
           child: Container(
-            height: 120,
-            width: double.infinity,
-            color: Colors.grey[200],
-            child: const Center(
-              child: Icon(
-                Icons.restaurant,
-                size: 40,
-                color: Colors.grey,
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withAlpha(180),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.timer,
+                  size: 12,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${recipe.totalTime} min',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
+        // Pulsanti like/favorite
         Positioned(
-          top: 8,
-          right: 8,
+          top: 12,
+          right: 12,
           child: Row(
             children: [
-              _buildButtonContainer(
+              _buildActionButton(
                 child: LikeButton(
                   recipeId: recipe.id,
                   size: 18,
                 ),
-                margin: const EdgeInsets.only(right: 4),
               ),
-              _buildButtonContainer(
+              const SizedBox(width: 8),
+              _buildActionButton(
                 child: FavoriteButton(
                   recipeId: recipe.id,
                   recipe: recipe,
@@ -216,19 +158,15 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildButtonContainer({
-    required Widget child,
-    EdgeInsetsGeometry? margin,
-  }) {
+  Widget _buildActionButton({required Widget child}) {
     return Container(
-      margin: margin,
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(230),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(26),
-            blurRadius: 3,
+            color: Colors.black.withAlpha(40),
+            blurRadius: 4,
             offset: const Offset(0, 1),
           ),
         ],
@@ -236,55 +174,166 @@ class RecipeCard extends StatelessWidget {
       child: child,
     );
   }
-}
 
-class _OptimizedRecipeImage extends StatelessWidget {
-  final String imageUrl;
-
-  const _OptimizedRecipeImage({required this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.network(
-      imageUrl,
-      headers: {'Accept': 'image/*'},
-      cacheWidth: 300,
-      cacheHeight: 180,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-
-        return Container(
-          color: Colors.grey[200],
-          child: Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
-                  : null,
+  Widget _buildContentSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            recipe.title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              height: 1.3,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          color: Colors.red[100],
-          child: const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _buildInfoChip(
+                icon: Icons.thermostat,
+                label: _getDifficultyLabel(recipe.difficulty),
+                color: _getDifficultyColor(recipe.difficulty),
+              ),
+              const SizedBox(width: 8),
+              _buildInfoChip(
+                icon: Icons.people,
+                label: '${recipe.servings}',
+                color: Colors.grey[600]!,
+              ),
+            ],
+          ),
+          if (showAuthor && recipe.author.displayName != null) ...[
+            const SizedBox(height: 10),
+            Row(
               children: [
-                Icon(Icons.error, color: Colors.red, size: 30),
-                SizedBox(height: 4),
-                Text(
-                  'Image error',
-                  style: TextStyle(color: Colors.red, fontSize: 10),
+                CircleAvatar(
+                  radius: 12,
+                  backgroundImage: recipe.author.avatarUrl != null
+                      ? NetworkImage(recipe.author.avatarUrl!)
+                      : null,
+                  child: recipe.author.avatarUrl == null
+                      ? const Icon(Icons.person, size: 12)
+                      : null,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    recipe.author.displayName ?? recipe.author.username,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
           ),
-        );
-      },
-      fit: BoxFit.cover,
-      filterQuality: FilterQuality.medium,
+        ],
+      ),
+    );
+  }
+
+  String _getDifficultyLabel(Difficulty difficulty) {
+    switch (difficulty) {
+      case Difficulty.easy:
+        return 'Facile';
+      case Difficulty.medium:
+        return 'Media';
+      case Difficulty.hard:
+        return 'Difficile';
+    }
+  }
+
+  Color _getDifficultyColor(Difficulty difficulty) {
+    switch (difficulty) {
+      case Difficulty.easy:
+        return Colors.green;
+      case Difficulty.medium:
+        return Colors.orange;
+      case Difficulty.hard:
+        return Colors.red;
+    }
+  }
+}
+
+// Widget con effetto hover leggero (solo overlay, senza scala)
+class _HoverCard extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _HoverCard({
+    required this.child,
+    required this.onTap,
+  });
+
+  @override
+  State<_HoverCard> createState() => _HoverCardState();
+}
+
+class _HoverCardState extends State<_HoverCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Stack(
+          children: [
+            widget.child,
+            // Overlay leggero all'hover
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: _isHovered ? 0.08 : 0.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

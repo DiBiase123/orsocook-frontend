@@ -2,16 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'login_screen.dart';
+import 'package:orsocook/screens/auth/login.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+class ForgotPasswordModalContent extends StatefulWidget {
+  final VoidCallback onClose;
+
+  const ForgotPasswordModalContent({
+    super.key,
+    required this.onClose,
+  });
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<ForgotPasswordModalContent> createState() =>
+      _ForgotPasswordModalContentState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordModalContentState
+    extends State<ForgotPasswordModalContent> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
@@ -69,15 +76,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _navigateToLogin() {
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-    }
-  }
-
-  void _navigateBack() {
-    if (mounted) Navigator.of(context).pop();
+    widget.onClose();
+    showLoginModal(context);
   }
 
   Widget _buildLogo() {
@@ -239,46 +239,66 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Password Dimenticata'),
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back), onPressed: _navigateBack),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildLogo(),
-                const SizedBox(height: 40),
-                _buildEmailField(),
-                const SizedBox(height: 16),
-                _buildErrorSection(),
-                _buildSuccessSection(),
-                const SizedBox(height: 24),
-                _buildSubmitButton(),
-                const SizedBox(height: 24),
-                _buildLoginLink(),
-                const SizedBox(height: 20),
-                const Divider(),
-                const SizedBox(height: 16),
-                const Text('Cosa succede dopo:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 12),
-                _buildStepItem('1. Riceverai un\'email con un link di reset'),
-                _buildStepItem('2. Clicca sul link (valido per 1 ora)'),
-                _buildStepItem('3. Imposta una nuova password'),
-                _buildStepItem('4. Accedi con la nuova password'),
-              ],
-            ),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Pulsante back in alto a sinistra
+              IconButton(
+                icon: const Icon(Icons.arrow_back, size: 28),
+                onPressed: _navigateToLogin,
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.grey.withAlpha(50),
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(8),
+                ),
+                iconSize: 28,
+              ),
+              // Pulsante X in alto a destra
+              IconButton(
+                icon: const Icon(Icons.close, size: 28),
+                onPressed: widget.onClose,
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.grey.withAlpha(50),
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(8),
+                ),
+                iconSize: 28,
+              ),
+            ],
           ),
-        ),
+          const SizedBox(height: 16),
+          _buildLogo(),
+          const SizedBox(height: 24),
+          _buildEmailField(),
+          const SizedBox(height: 16),
+          _buildErrorSection(),
+          _buildSuccessSection(),
+          const SizedBox(height: 24),
+          _buildSubmitButton(),
+          const SizedBox(height: 24),
+          _buildLoginLink(),
+          const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 16),
+          const Text('Cosa succede dopo:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          _buildStepItem('1. Riceverai un\'email con un link di reset'),
+          _buildStepItem('2. Clicca sul link (valido per 1 ora)'),
+          _buildStepItem('3. Imposta una nuova password'),
+          _buildStepItem('4. Accedi con la nuova password'),
+        ],
       ),
     );
   }

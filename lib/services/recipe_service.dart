@@ -7,6 +7,19 @@ import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/config.dart';
 import 'package:orsocook/services/category_service.dart';
 
+// ==================== CLASSE RISULTATO PER CATEGORIA ====================
+class CategoryRecipesResult {
+  final List<Recipe> recipes;
+  final bool hasMore;
+  final int total;
+
+  CategoryRecipesResult({
+    required this.recipes,
+    required this.hasMore,
+    required this.total,
+  });
+}
+
 class RecipeService extends ChangeNotifier {
   final Dio _dio = Dio();
   final AuthService _authService;
@@ -76,6 +89,44 @@ class RecipeService extends ChangeNotifier {
     }
 
     return _cachedRecipes;
+  }
+
+  // ==================== FETCH RECIPES BY CATEGORY ====================
+  Future<CategoryRecipesResult> fetchRecipesByCategory({
+    required String categorySlug,
+    int page = 1,
+    int limit = 12,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/recipes',
+        queryParameters: {
+          'category': categorySlug,
+          'page': page,
+          'limit': limit,
+        },
+        options: Options(headers: await _getAuthHeaders()),
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = response.data['data'];
+        final recipes = (data['recipes'] as List)
+            .map((json) => Recipe.fromJson(Map<String, dynamic>.from(json)))
+            .toList();
+
+        return CategoryRecipesResult(
+          recipes: recipes,
+          hasMore: data['hasMore'] ?? false,
+          total: data['total'] ?? 0,
+        );
+      } else {
+        throw Exception(response.data['message'] ??
+            'Errore caricamento ricette per categoria');
+      }
+    } catch (e) {
+      AppLogger.error('fetchRecipesByCategory error', e);
+      throw Exception('Impossibile caricare le ricette: $e');
+    }
   }
 
   List<Recipe> _parseRecipes(dynamic data) {

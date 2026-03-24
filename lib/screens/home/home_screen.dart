@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/screens/auth/login.dart';
 import 'package:orsocook/screens/home/viewmodels/home_viewmodel.dart';
-import 'package:orsocook/screens/home/widgets/home_app_bar.dart';
-import 'package:orsocook/screens/home/widgets/home_body.dart';
+import 'package:orsocook/screens/home/components/home_loading_screen.dart';
+import 'package:orsocook/screens/home/components/home_carousel_section.dart';
+import 'package:orsocook/screens/home/widgets/index.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/category_service.dart';
@@ -21,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late HomeViewModel _viewModel;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -35,18 +38,15 @@ class _HomeScreenState extends State<HomeScreen> {
       categoryService: context.read<CategoryService>(),
     );
 
-    _viewModel.addListener(_onViewModelUpdate);
+    _viewModel.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel.loadInitialRecipes().catchError((e) {
         AppLogger.error('Errore nel caricamento iniziale', e);
       });
     });
-  }
-
-  void _onViewModelUpdate() {
-    AppLogger.debug('🏠 [HOME] ViewModel aggiornato');
-
-    if (mounted) setState(() {});
   }
 
   void _navigateToCreateRecipe() {
@@ -64,10 +64,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToProfile() {
     final authService = context.read<AuthService>();
     if (!authService.isLoggedIn) {
-      _showLoginRequiredDialog(
-        title: 'Accesso richiesto',
-        content: 'Devi effettuare il login per accedere al profilo.',
-      );
+      AppLogger.debug('🔍 [HOME] Chiamo showLoginModal');
+
+      showLoginModal(context);
       return;
     }
     context.go('/profile');
@@ -100,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.go('/login');
+              showLoginModal(context); // ← usa showLoginModal
             },
             child: const Text('LOGIN'),
           ),
@@ -109,30 +108,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildLoadingScreen(AuthService authService) {
-    return Scaffold(
-      appBar: HomeAppBar(
-        onProfileTap: _navigateToProfile,
-        onCreateRecipeTap: _navigateToCreateRecipe,
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Caricamento ricette...'),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   void dispose() {
     _viewModel.disposeViewModel();
-    _viewModel.removeListener(_onViewModelUpdate);
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -143,24 +123,105 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Consumer2<HomeViewModel, AuthService>(
         builder: (context, viewModel, authService, child) {
           if (viewModel.shouldShowLoading(viewModel.recipes.isEmpty)) {
-            return _buildLoadingScreen(authService);
+            return HomeLoadingScreen(
+              authService: authService,
+              searchController: _searchController,
+              onCreateRecipe: _navigateToCreateRecipe,
+              onProfileTap: _navigateToProfile,
+              onSearchChanged: viewModel.onSearchChanged,
+            );
           }
 
+          final carouselRecipes = viewModel.recipes.take(6).toList();
+          final screenWidth = MediaQuery.of(context).size.width;
+          final isDesktop = screenWidth > 768;
+
           return Scaffold(
-            appBar: HomeAppBar(
-              onProfileTap: _navigateToProfile,
-              onCreateRecipeTap: _navigateToCreateRecipe,
+            appBar: AppBar(
+              titleSpacing: 0,
+              toolbarHeight: 64,
+              flexibleSpace: SafeArea(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/images/OrsoCooK.png',
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'OrsoCook',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 32),
+                      Expanded(
+                        child: RecipeSearchBar(
+                          controller: _searchController,
+                          onSearchChanged: viewModel.onSearchChanged,
+                          compact: true,
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline),
+                        onPressed: _navigateToCreateRecipe,
+                        tooltip: 'Crea ricetta',
+                        padding: const EdgeInsets.all(8),
+                      ),
+                      GestureDetector(
+                        onTap: _navigateToProfile,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8, right: 4),
+                          child: AvatarBuilder.buildAvatar(
+                              authService, _navigateToProfile),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            body: HomeBody(
-              onCreateRecipeTap: _navigateToCreateRecipe,
-              searchController: _searchController,
-              onRecipeTap: _navigateToRecipeDetail,
-            ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: _navigateToCreateRecipe,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              child: const Icon(Icons.add, size: 28),
+            body: ListView(
+              controller: _scrollController,
+              children: [
+                if (isDesktop) const SizedBox(height: 32),
+                isDesktop
+                    ? SizedBox(
+                        height: MediaQuery.of(context).size.height - 64,
+                        child: HomeCarouselSection(
+                          recipes: carouselRecipes,
+                          onRecipeTap: _navigateToRecipeDetail,
+                        ),
+                      )
+                    : SizedBox(
+                        height: 400,
+                        child: HomeCarouselSection(
+                          recipes: carouselRecipes,
+                          onRecipeTap: _navigateToRecipeDetail,
+                        ),
+                      ),
+                CategoriesScrollBar(
+                  onCategorySelected: (slug) {
+                    if (slug != null) context.push('/category/$slug');
+                  },
+                  selectedCategorySlug: null,
+                ),
+                HomeBody(
+                  onCreateRecipeTap: _navigateToCreateRecipe,
+                  searchController: _searchController,
+                  onRecipeTap: _navigateToRecipeDetail,
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
           );
         },

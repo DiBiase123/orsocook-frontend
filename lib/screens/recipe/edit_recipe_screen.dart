@@ -60,10 +60,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     if (!viewModel.validate(_formKey)) return;
 
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    // Ottieni il service PRIMA dell'async gap
     final categoryService =
         Provider.of<CategoryService>(context, listen: false);
-    // Ottieni il router PRIMA dell'async gap
+    final recipeService = Provider.of<RecipeService>(context, listen: false);
     final goRouter = GoRouter.of(context);
 
     try {
@@ -72,7 +71,12 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       if (!mounted) return;
 
       if (updatedRecipe != null) {
-        // Mostra snackbar (usa context salvato in scaffoldMessenger)
+        // Forza il refresh delle ricette
+        await recipeService.fetchRecipes(forceRefresh: true, page: 1);
+
+        // Aggiorna le categorie
+        await categoryService.fetchCategories(forceRefresh: true);
+
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Ricetta aggiornata con successo!'),
@@ -80,12 +84,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           ),
         );
 
-        // Esegui fetch (non richiede context dopo)
-        await categoryService.fetchCategories(forceRefresh: true);
-
         if (!mounted) return;
-
-        // Naviga usando goRouter salvato prima dell'async gap
         goRouter.pop();
       } else {
         if (!mounted) return;

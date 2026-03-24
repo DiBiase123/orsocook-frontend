@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/widgets/login_logo.dart';
 import 'package:orsocook/screens/auth/widgets/login_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/login_actions.dart';
+import 'package:orsocook/screens/auth/register.dart';
+import 'package:orsocook/screens/auth/forgot_password.dart';
 
-class LoginScreen extends StatefulWidget {
-  final VoidCallback? onLoginSuccess;
+class LoginModalContent extends StatefulWidget {
+  final VoidCallback onClose;
 
-  const LoginScreen({super.key, this.onLoginSuccess});
+  const LoginModalContent({
+    super.key,
+    required this.onClose,
+  });
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginModalContent> createState() => _LoginModalContentState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginModalContentState extends State<LoginModalContent> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -51,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result.success) {
         _showSnackBar('Login effettuato con successo!', Colors.green);
-        context.go('/home');
+        widget.onClose();
       } else {
         _handleLoginError(result);
       }
@@ -77,9 +81,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text(message),
-          backgroundColor: color,
-          duration: const Duration(seconds: 3)),
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 
@@ -120,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _resendVerificationEmail(String email) async {
     setState(() => _isLoading = true);
-    Navigator.of(context).pop(); // Chiudi il dialog
+    Navigator.of(context).pop();
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
@@ -171,10 +176,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _navigateToForgotPassword() =>
-      mounted ? context.go('/forgot-password') : null;
-  void _navigateToHomeWithoutAuth() => mounted ? context.go('/home') : null;
-  void _navigateToRegister() => mounted ? context.go('/register') : null;
+  void _navigateToForgotPassword() {
+    widget.onClose();
+    showForgotPasswordModal(context);
+  }
+
+  void _navigateToRegister() {
+    widget.onClose();
+    showRegisterModal(context);
+  }
 
   void _clearErrorOnChange() {
     if (_errorMessage != null) setState(() => _errorMessage = null);
@@ -182,46 +192,52 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: _navigateToHomeWithoutAuth),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const LoginLogo(),
-                const SizedBox(height: 40),
-                LoginFormFields(
-                  emailController: _emailController,
-                  passwordController: _passwordController,
-                  errorMessage: _errorMessage,
-                  onEmailChanged: (_) => _clearErrorOnChange(),
-                  onPasswordChanged: (_) => _clearErrorOnChange(),
-                  onForgotPasswordPressed:
-                      _isLoading ? null : _navigateToForgotPassword,
-                  onSubmitted: _submitLogin,
-                  isLoading: _isLoading,
-                ),
-                const SizedBox(height: 24),
-                LoginActions(
-                  isLoading: _isLoading,
-                  onLoginPressed: _submitLogin,
-                  onRegisterPressed: _isLoading ? null : _navigateToRegister,
-                  onContinueWithoutAuth: _navigateToHomeWithoutAuth,
-                  showSocialLogin: true,
-                ),
-              ],
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              icon: const Icon(
+                Icons.close,
+                size: 32, // più grande
+              ),
+              onPressed: widget.onClose,
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.grey.withAlpha(50),
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(8),
+              ),
+              iconSize: 32,
             ),
           ),
-        ),
+          const LoginLogo(),
+          const SizedBox(height: 24),
+          LoginFormFields(
+            emailController: _emailController,
+            passwordController: _passwordController,
+            errorMessage: _errorMessage,
+            onEmailChanged: (_) => _clearErrorOnChange(),
+            onPasswordChanged: (_) => _clearErrorOnChange(),
+            onForgotPasswordPressed:
+                _isLoading ? null : _navigateToForgotPassword,
+            onSubmitted: _submitLogin,
+            isLoading: _isLoading,
+          ),
+          const SizedBox(height: 24),
+          LoginActions(
+            isLoading: _isLoading,
+            onLoginPressed: _submitLogin,
+            onRegisterPressed: _isLoading ? null : _navigateToRegister,
+            onContinueWithoutAuth: widget.onClose,
+            showSocialLogin: true,
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }

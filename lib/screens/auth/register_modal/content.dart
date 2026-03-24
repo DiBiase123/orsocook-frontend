@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/screens/auth/login.dart';
 import 'package:orsocook/screens/auth/widgets/register_logo.dart';
 import 'package:orsocook/screens/auth/widgets/register_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/register_actions.dart';
 import 'package:orsocook/screens/auth/widgets/terms_checkbox.dart';
 
-class RegisterScreen extends StatefulWidget {
-  final VoidCallback? onRegisterSuccess;
+class RegisterModalContent extends StatefulWidget {
+  final VoidCallback onClose;
 
-  const RegisterScreen({super.key, this.onRegisterSuccess});
+  const RegisterModalContent({
+    super.key,
+    required this.onClose,
+  });
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterModalContent> createState() => _RegisterModalContentState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterModalContentState extends State<RegisterModalContent> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -62,11 +65,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (result.success) {
         if (result.requiresVerification) {
-          await _showVerificationDialog(_emailController.text.trim());
+          _showVerificationDialog(_emailController.text.trim());
         } else {
-          await _showSuccessDialog();
+          _showSuccessDialog();
         }
-        widget.onRegisterSuccess?.call();
       } else {
         setState(() => _errorMessage = result.message);
         _showSnackBar(result.message, Colors.red);
@@ -85,14 +87,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text(message),
-          backgroundColor: color,
-          duration: const Duration(seconds: 3)),
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 
-  Future<void> _showVerificationDialog(String email) async {
-    await showDialog(
+  void _showVerificationDialog(String email) {
+    showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
@@ -109,13 +112,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[100]!)),
-              child: Text(email,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.blue),
-                  textAlign: TextAlign.center),
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue[100]!),
+              ),
+              child: Text(
+                email,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 20),
             const Text('Per attivare il tuo account:',
@@ -128,9 +136,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: Colors.orange[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange[100]!)),
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange[100]!),
+              ),
               child: const Text(
                 '⚠️ Controlla la cartella SPAM',
                 textAlign: TextAlign.center,
@@ -143,7 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              context.go('/login');
+              widget.onClose();
             },
             child: const Text('HO CAPITO',
                 style: TextStyle(fontWeight: FontWeight.bold)),
@@ -153,8 +162,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Future<void> _showSuccessDialog() async {
-    await showDialog(
+  void _showSuccessDialog() {
+    showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
@@ -172,7 +181,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              context.go('/login');
+              widget.onClose();
             },
             child: const Text('ACCEDI'),
           ),
@@ -198,56 +207,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_errorMessage != null) setState(() => _errorMessage = null);
   }
 
-  void _navigateToLogin() => mounted ? context.go('/login') : null;
+  void _navigateToLogin() {
+    widget.onClose();
+    showLoginModal(context);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Registrazione'),
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back), onPressed: _navigateToLogin),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const RegisterLogo(),
-                const SizedBox(height: 32),
-                RegisterFormFields(
-                  usernameController: _usernameController,
-                  emailController: _emailController,
-                  passwordController: _passwordController,
-                  confirmPasswordController: _confirmPasswordController,
-                  errorMessage: _errorMessage,
-                  onUsernameChanged: (_) => _clearErrorOnChange(),
-                  onEmailChanged: (_) => _clearErrorOnChange(),
-                  onPasswordChanged: (_) => _clearErrorOnChange(),
-                  onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
-                  isLoading: _isLoading,
-                  validateForm: () => _formKey.currentState?.validate(),
-                ),
-                const SizedBox(height: 16),
-                TermsCheckbox(
-                  value: _acceptTerms,
-                  onChanged: (value) => setState(() => _acceptTerms = value),
-                  isLoading: _isLoading,
-                ),
-                const SizedBox(height: 24),
-                RegisterActions(
-                  isLoading: _isLoading,
-                  onRegisterPressed: _submitRegistration,
-                  onLoginPressed: _isLoading ? null : _navigateToLogin,
-                  showFeatures: true,
-                ),
-              ],
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              icon: const Icon(
+                Icons.close,
+                size: 32,
+              ),
+              onPressed: widget.onClose,
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.grey.withAlpha(50),
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(8),
+              ),
+              iconSize: 32,
             ),
           ),
-        ),
+          const RegisterLogo(),
+          const SizedBox(height: 24),
+          RegisterFormFields(
+            usernameController: _usernameController,
+            emailController: _emailController,
+            passwordController: _passwordController,
+            confirmPasswordController: _confirmPasswordController,
+            errorMessage: _errorMessage,
+            onUsernameChanged: (_) => _clearErrorOnChange(),
+            onEmailChanged: (_) => _clearErrorOnChange(),
+            onPasswordChanged: (_) => _clearErrorOnChange(),
+            onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
+            isLoading: _isLoading,
+            validateForm: () => _formKey.currentState?.validate(),
+          ),
+          const SizedBox(height: 16),
+          TermsCheckbox(
+            value: _acceptTerms,
+            onChanged: (value) => setState(() => _acceptTerms = value),
+            isLoading: _isLoading,
+          ),
+          const SizedBox(height: 24),
+          RegisterActions(
+            isLoading: _isLoading,
+            onRegisterPressed: _submitRegistration,
+            onLoginPressed: _isLoading ? null : _navigateToLogin,
+            showFeatures: true,
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
