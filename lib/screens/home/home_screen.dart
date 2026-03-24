@@ -65,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final authService = context.read<AuthService>();
     if (!authService.isLoggedIn) {
       AppLogger.debug('🔍 [HOME] Chiamo showLoginModal');
-
       showLoginModal(context);
       return;
     }
@@ -99,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              showLoginModal(context); // ← usa showLoginModal
+              showLoginModal(context);
             },
             child: const Text('LOGIN'),
           ),
@@ -146,11 +145,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
-                      Image.asset(
-                        'assets/images/OrsoCooK.png',
-                        height: 100,
-                        width: 100,
-                        fit: BoxFit.contain,
+                      // Logo placeholder temporaneo
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(50),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.restaurant,
+                          size: 40,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       const Text(
