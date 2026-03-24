@@ -25,12 +25,12 @@ class RegisterModal extends StatelessWidget {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.home),
+              icon: const Icon(Icons.close),
               onPressed: () {
                 Navigator.of(context).pop();
                 context.go('/home');
               },
-              tooltip: 'Home',
+              tooltip: 'Chiudi',
             ),
           ],
         ),
