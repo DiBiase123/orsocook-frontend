@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/screens/auth/login.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
@@ -88,7 +89,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   void _navigateToLogin() {
     if (mounted) {
-      context.go('/login');
+      // Chiudi questa schermata e poi apri il modal login
+      Navigator.of(context).pop();
+      Future.delayed(const Duration(milliseconds: 100), () {
+        showLoginModal(context);
+      });
     }
   }
 

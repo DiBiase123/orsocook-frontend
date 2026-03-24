@@ -208,51 +208,54 @@ class _LoginModalContentState extends State<LoginModalContent> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-      child: Form(
-        key: _formKey, // ← AGGIUNGI QUESTO
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                icon: const Icon(Icons.close, size: 32),
-                onPressed: widget.onClose,
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.grey.withAlpha(50),
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(8),
+    return Material(
+      color: Colors.transparent,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: const Icon(Icons.close, size: 32),
+                  onPressed: widget.onClose,
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.grey.withAlpha(50),
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                  iconSize: 32,
                 ),
-                iconSize: 32,
               ),
-            ),
-            const LoginLogo(),
-            const SizedBox(height: 24),
-            LoginFormFields(
-              emailController: _emailController,
-              passwordController: _passwordController,
-              errorMessage: _errorMessage,
-              onEmailChanged: (_) => _clearErrorOnChange(),
-              onPasswordChanged: (_) => _clearErrorOnChange(),
-              onForgotPasswordPressed:
-                  _isLoading ? null : _navigateToForgotPassword,
-              onSubmitted: _submitLogin,
-              isLoading: _isLoading,
-            ),
-            const SizedBox(height: 24),
-            LoginActions(
-              isLoading: _isLoading,
-              onLoginPressed: _submitLogin,
-              onRegisterPressed: _isLoading ? null : _navigateToRegister,
-              onContinueWithoutAuth: widget.onClose,
-              showSocialLogin: true,
-            ),
-            const SizedBox(height: 16),
-          ],
+              const LoginLogo(),
+              const SizedBox(height: 24),
+              LoginFormFields(
+                emailController: _emailController,
+                passwordController: _passwordController,
+                errorMessage: _errorMessage,
+                onEmailChanged: (_) => _clearErrorOnChange(),
+                onPasswordChanged: (_) => _clearErrorOnChange(),
+                onForgotPasswordPressed:
+                    _isLoading ? null : _navigateToForgotPassword,
+                onSubmitted: _submitLogin,
+                isLoading: _isLoading,
+              ),
+              const SizedBox(height: 24),
+              LoginActions(
+                isLoading: _isLoading,
+                onLoginPressed: _submitLogin,
+                onRegisterPressed: _isLoading ? null : _navigateToRegister,
+                onContinueWithoutAuth: widget.onClose,
+                showSocialLogin: true,
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
