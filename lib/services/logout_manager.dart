@@ -12,6 +12,10 @@ class LogoutManager {
   static Future<void> performLogout(BuildContext context) async {
     AppLogger.warning('🚪 Logout completo - pulizia cache service');
 
+    // Salva il contesto prima dell'async
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
       final profileService =
@@ -28,36 +32,22 @@ class LogoutManager {
       // 2. Logout
       await authService.logout();
 
-      // 3. Verifica che il contesto sia ancora valido prima di navigare
-      if (!context.mounted) return;
-
-      // 4. Chiudi eventuali dialog aperti
-      Navigator.of(context).popUntil((route) => route.isFirst);
-
-      // 5. Vai alla home
+      // 3. Chiudi eventuali dialog aperti e torna alla home
       if (context.mounted) {
+        navigator.popUntil((route) => route.isFirst);
         context.go('/home');
 
-        // 6. Mostra il modal login dopo un breve delay
+        // 4. Mostra il modal login dopo un breve delay
         Future.delayed(const Duration(milliseconds: 100), () {
           if (context.mounted) {
             showLoginModal(context);
           }
         });
       }
-
-      // Snackbar dopo la navigazione
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Logout effettuato con successo'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
     } catch (e) {
       AppLogger.error('Errore durante logout', e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Errore durante il logout: $e'),
             backgroundColor: Colors.red,

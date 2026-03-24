@@ -61,6 +61,13 @@ class _ForgotPasswordModalContentState
         if (result.success) {
           _isSuccess = true;
           _successMessage = result.message;
+          // Dopo 2 secondi, chiudi il modal e apri il login
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              widget.onClose();
+              showLoginModal(context);
+            }
+          });
         } else {
           _errorMessage = result.message;
         }
@@ -178,6 +185,15 @@ class _ForgotPasswordModalContentState
           const Text(
             '⚠️ Controlla la cartella spam',
             style: TextStyle(fontSize: 12, color: Colors.orange),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Reindirizzamento al login...',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          const SizedBox(height: 8),
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
           ),
         ],
       ),

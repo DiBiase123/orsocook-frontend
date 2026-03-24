@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/screens/auth/register_modal/style.dart';
 import 'package:orsocook/screens/auth/register_modal/content.dart';
+import 'package:orsocook/screens/auth/login.dart';
 
 class RegisterModal extends StatelessWidget {
   const RegisterModal({super.key});
@@ -16,8 +18,21 @@ class RegisterModal extends StatelessWidget {
           title: const Text('Registrazione'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop();
+              showLoginModal(context);
+            },
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home),
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go('/home');
+              },
+              tooltip: 'Home',
+            ),
+          ],
         ),
         body: RegisterModalContent(
           onClose: () => Navigator.of(context).pop(),

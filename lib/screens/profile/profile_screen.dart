@@ -52,18 +52,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _handleLogout() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Logout'),
         content: const Text('Sei sicuro di voler effettuare il logout?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(context).pop(),
             child: const Text('Annulla'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              LogoutManager.performLogout(context);
+            onPressed: () async {
+              // Chiudi il dialog
+              Navigator.of(context).pop();
+              // Esegui il logout
+              await LogoutManager.performLogout(context);
             },
             child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),
