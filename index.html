@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/orsocook-frontend/">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="OrsoCook - Le tue ricette preferite">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/orsocook-frontend/manifest.json">
+  <title>OrsoCook</title>
+  <script>
+    // Salva il token PRIMA di qualsiasi modifica all'URL
+    (function() {
+      console.log('🔍 index.html caricato - URL:', window.location.href);
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      
+      if (token) {
+        console.log('🔍 Token trovato in URL:', token);
+        localStorage.setItem('pendingVerificationToken', token);
+        sessionStorage.setItem('pendingVerificationToken', token);
+        console.log('🔍 Token salvato in storage');
+      }
+      
+      // SE siamo su /verify-email, NON fare replaceState
+      if (window.location.pathname.includes('/verify-email') || 
+          window.location.hash.includes('/verify-email')) {
+        console.log('🔍 Già su verify-email, mantengo la route');
+        // Non fare nulla, lascia che Flutter gestisca
+      } else if (token) {
+        // Se c'è un token ma non siamo su verify-email, reindirizza
+        console.log('🔍 Reindirizzamento a verify-email con token');
+        window.location.href = '/orsocook-frontend/#/verify-email?token=' + token;
+      }
+    })();
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</head>
+<body>
+</body>
+</html>

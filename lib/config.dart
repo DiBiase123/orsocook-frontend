@@ -3,24 +3,8 @@
 import 'package:flutter/foundation.dart';
 
 class Config {
-  // 🔧 AMBIENTE DINAMICO (rileva automaticamente)
-  static String get environment {
-    // Se siamo in web, usa produzione
-    if (kIsWeb) {
-      return 'prod';
-    }
-    // Altrimenti, usa ambiente di sviluppo in debug
-    if (kDebugMode) {
-      return 'local';
-    }
-    return 'prod';
-  }
-
-  static const Map<String, String> apiUrls = {
-    'dev': 'http://10.0.2.2:5000', // Per emulatore Android
-    'local': 'http://localhost:5000', // Per sviluppo locale
-    'prod': 'https://orsocook-api.onrender.com', // Produzione
-  };
+  // 🔧 FORZATO SU PRODUZIONE (Render)
+  static const String _forcedApiUrl = 'https://orsocook-api.onrender.com';
 
   static String? _cachedApiBaseUrl;
 
@@ -29,17 +13,13 @@ class Config {
       return _cachedApiBaseUrl!;
     }
 
-    final url = apiUrls[environment];
-    if (url == null) {
-      throw Exception('Ambiente "$environment" non configurato');
-    }
+    _cachedApiBaseUrl = _forcedApiUrl;
 
     if (kDebugMode) {
-      debugPrint('🔧 Config: ambiente "$environment" -> $url');
+      debugPrint('🔧 Config: API URL -> $_cachedApiBaseUrl');
     }
 
-    _cachedApiBaseUrl = url;
-    return url;
+    return _cachedApiBaseUrl!;
   }
 
   static String buildUrl([String endpoint = '']) {
