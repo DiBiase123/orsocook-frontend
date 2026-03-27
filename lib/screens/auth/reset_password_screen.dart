@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/screens/auth/login.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
@@ -32,12 +32,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'La password è obbligatoria';
-    if (value.length < 8) return 'Almeno 8 caratteri';
+    if (value == null || value.isEmpty) {
+      return 'La password è obbligatoria';
+    }
+    if (value.length < 8) {
+      return 'Almeno 8 caratteri';
+    }
     if (!RegExp(r'[A-Z]').hasMatch(value)) {
       return 'Almeno una lettera maiuscola';
     }
-    if (!RegExp(r'[0-9]').hasMatch(value)) return 'Almeno un numero';
+    if (!RegExp(r'[0-9]').hasMatch(value)) {
+      return 'Almeno un numero';
+    }
     return null;
   }
 
@@ -73,7 +79,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           _isSuccess = true;
           _successMessage = result.message;
         });
-        Future.delayed(const Duration(seconds: 2), _navigateToLogin);
+        // Dopo 2 secondi, vai al login
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            context.go('/home');
+          }
+        });
       } else {
         setState(() => _errorMessage = result.message);
       }
@@ -86,24 +97,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
   }
 
-  void _navigateToLogin() {
-    if (mounted) {
-      Navigator.of(context).pop();
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (mounted) {
-          showLoginModal(context);
-        }
-      });
-    }
-  }
-
-  void _clearErrorOnChange() {
-    if (_errorMessage != null || _successMessage != null) {
-      setState(() {
-        _errorMessage = null;
-        _successMessage = null;
-      });
-    }
+  void _goToLogin() {
+    context.go('/home');
   }
 
   void _togglePasswordVisibility() =>
@@ -148,10 +143,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       ),
       validator: _validatePassword,
       onChanged: (_) {
-        _clearErrorOnChange();
-        if (_confirmPasswordController.text.isNotEmpty) {
-          _formKey.currentState?.validate();
-        }
+        if (_errorMessage != null) setState(() => _errorMessage = null);
       },
     );
   }
@@ -175,7 +167,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       ),
       validator: _validateConfirmPassword,
       onFieldSubmitted: (_) => _submitResetPassword(),
-      onChanged: (_) => _clearErrorOnChange(),
+      onChanged: (_) {
+        if (_errorMessage != null) setState(() => _errorMessage = null);
+      },
     );
   }
 
@@ -221,14 +215,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildErrorSection() {
     if (_errorMessage == null) return const SizedBox.shrink();
-
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red[100]!),
-      ),
+          color: Colors.red[50], borderRadius: BorderRadius.circular(8)),
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: Colors.red),
@@ -243,14 +233,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildSuccessSection() {
     if (!_isSuccess) return const SizedBox.shrink();
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green[100]!),
-      ),
+          color: Colors.green[50], borderRadius: BorderRadius.circular(8)),
       child: Column(
         children: [
           const Row(
@@ -267,7 +253,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           Text(_successMessage ?? 'Password reimpostata con successo!',
               style: const TextStyle(color: Colors.green)),
           const SizedBox(height: 8),
-          const Text('Verrai reindirizzato al login...',
+          const Text('Verrai reindirizzato alla home...',
               style: TextStyle(fontSize: 12, color: Colors.green)),
           const SizedBox(height: 16),
           const CircularProgressIndicator(
@@ -297,14 +283,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildLoginLink() {
     if (_isSuccess) return const SizedBox.shrink();
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('Torna al ', style: TextStyle(color: Colors.grey)),
+        const Text('Torna alla ', style: TextStyle(color: Colors.grey)),
         TextButton(
-          onPressed: _isLoading ? null : _navigateToLogin,
-          child: const Text('Login',
+          onPressed: _isLoading ? null : _goToLogin,
+          child: const Text('Home',
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: Colors.deepOrange)),
         ),
@@ -322,16 +307,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password),
       _ => false,
     };
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Icon(
-            isMet ? Icons.check_circle : Icons.radio_button_unchecked,
-            color: isMet ? Colors.green : Colors.grey[400],
-            size: 18,
-          ),
+          Icon(isMet ? Icons.check_circle : Icons.radio_button_unchecked,
+              color: isMet ? Colors.green : Colors.grey[400], size: 18),
           const SizedBox(width: 8),
           Text(text,
               style: TextStyle(color: isMet ? Colors.green : Colors.grey[600])),
@@ -349,7 +330,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ? null
             : IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: _navigateToLogin,
+                onPressed: _goToLogin,
               ),
       ),
       body: SafeArea(
