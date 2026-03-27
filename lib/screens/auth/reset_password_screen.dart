@@ -74,7 +74,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           _isSuccess = true;
           _successMessage = result.message;
         });
-        Future.delayed(const Duration(seconds: 3), _navigateToLogin);
+        Future.delayed(const Duration(seconds: 2), _navigateToLogin);
       } else {
         setState(() => _errorMessage = result.message);
       }
@@ -89,9 +89,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   void _navigateToLogin() {
     if (mounted) {
-      // Salva il context prima dell'async gap
-      final navigator = Navigator.of(context);
-      navigator.pop();
+      // Chiudi questa schermata
+      Navigator.of(context).pop();
+      // Apri il modal login
       Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
           showLoginModal(context);

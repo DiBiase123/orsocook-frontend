@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/screens/auth/register_modal/style.dart';
@@ -27,7 +28,7 @@ class RegisterModal extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
-                Navigator.of(context).pop();
+                // Vai direttamente alla home
                 context.go('/home');
               },
               tooltip: 'Chiudi',
@@ -41,38 +42,56 @@ class RegisterModal extends StatelessWidget {
       );
     }
 
-    return Center(
-      child: Container(
-        width: RegisterModalStyle.cardWidth,
-        constraints: RegisterModalStyle.constraints,
-        margin: const EdgeInsets.symmetric(vertical: 40),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(RegisterModalStyle.borderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(40),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
+    // Desktop: modal con effetto glass
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              color: Colors.black.withAlpha(60),
+              width: double.infinity,
+              height: double.infinity,
             ),
-            BoxShadow(
-              color: Colors.black.withAlpha(20),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+          ),
+          Center(
+            child: Container(
+              width: RegisterModalStyle.cardWidth,
+              constraints: RegisterModalStyle.constraints,
+              margin: const EdgeInsets.symmetric(vertical: 40),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    BorderRadius.circular(RegisterModalStyle.borderRadius),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(40),
+                    blurRadius: 40,
+                    offset: const Offset(0, 20),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withAlpha(20),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.grey.withAlpha(50),
+                  width: 1,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(RegisterModalStyle.borderRadius),
+                child: RegisterModalContent(
+                  onClose: () => Navigator.of(context).pop(),
+                  showCloseButton: true,
+                ),
+              ),
             ),
-          ],
-          border: Border.all(
-            color: Colors.grey.withAlpha(50),
-            width: 1,
           ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(RegisterModalStyle.borderRadius),
-          child: RegisterModalContent(
-            onClose: () => Navigator.of(context).pop(),
-            showCloseButton: true,
-          ),
-        ),
+        ],
       ),
     );
   }

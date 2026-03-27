@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/logger.dart';
 
 class CookiePolicyScreen extends StatelessWidget {
@@ -14,7 +15,11 @@ class CookiePolicyScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go('/home');
+            }
           },
         ),
       ),
@@ -41,20 +46,21 @@ class CookiePolicyScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
-            
+
             // INTRODUZIONE
             _buildSection(
               title: 'Cosa sono i Cookie?',
-              content: 'I cookie sono piccoli file di testo che i siti web e le app memorizzano sul tuo dispositivo quando li visiti. '
+              content:
+                  'I cookie sono piccoli file di testo che i siti web e le app memorizzano sul tuo dispositivo quando li visiti. '
                   'Contengono informazioni che aiutano a migliorare la tua esperienza di navigazione.',
             ),
-            
+
             // TIPI DI COOKIE
             _buildSection(
               title: 'Tipi di Cookie Utilizzati',
               content: 'Utilizziamo diverse categorie di cookie:',
             ),
-            
+
             // TABELLA COOKIE
             DataTable(
               columns: const [
@@ -64,93 +70,100 @@ class CookiePolicyScreen extends StatelessWidget {
               ],
               rows: const [
                 DataRow(cells: [
-                  DataCell(Text('Essenziali', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text('Essenziali',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
                   DataCell(Text('Funzionalità base')),
                   DataCell(Text('Autenticazione, sicurezza')),
                 ]),
                 DataRow(cells: [
-                  DataCell(Text('Preferenze', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text('Preferenze',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
                   DataCell(Text('Personalizzazione')),
                   DataCell(Text('Lingua, tema, impostazioni')),
                 ]),
                 DataRow(cells: [
-                  DataCell(Text('Sicurezza', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text('Sicurezza',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
                   DataCell(Text('Protezione account')),
                   DataCell(Text('Prevenzione frodi, accessi non autorizzati')),
                 ]),
                 DataRow(cells: [
-                  DataCell(Text('Performance', style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text('Performance',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
                   DataCell(Text('Analisi uso app')),
                   DataCell(Text('Statistiche anonime, miglioramenti')),
                 ]),
               ],
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // COOKIE SPECIFICI
             _buildSection(
               title: 'Cookie Specifici di OrsoCook',
               content: 'Elenco dei principali cookie utilizzati:',
             ),
-            
+
             _buildCookieItem(
               name: 'session_id',
               purpose: 'Mantiene la sessione di login attiva',
               duration: '30 giorni',
               type: 'Essenziale',
             ),
-            
+
             _buildCookieItem(
               name: 'csrf_token',
               purpose: 'Protezione da attacchi CSRF',
               duration: 'Sessione',
               type: 'Sicurezza',
             ),
-            
+
             _buildCookieItem(
               name: 'theme_preference',
               purpose: 'Memorizza tema scelto (chiaro/scuro)',
               duration: '1 anno',
               type: 'Preferenze',
             ),
-            
+
             _buildCookieItem(
               name: 'language',
               purpose: 'Memorizza lingua preferita',
               duration: '1 anno',
               type: 'Preferenze',
             ),
-            
+
             // GESTIONE COOKIE
             _buildSection(
               title: 'Come Gestire i Cookie',
-              content: 'Puoi controllare e gestire i cookie attraverso le impostazioni del tuo browser:\n\n'
+              content:
+                  'Puoi controllare e gestire i cookie attraverso le impostazioni del tuo browser:\n\n'
                   '**Chrome:** Impostazioni → Privacy e sicurezza → Cookie\n'
                   '**Firefox:** Opzioni → Privacy & Sicurezza → Cookie\n'
                   '**Safari:** Preferenze → Privacy → Gestione cookie\n'
                   '**Edge:** Impostazioni → Cookie e autorizzazioni sito\n\n'
                   'Disabilitando i cookie essenziali, alcune funzionalità dell\'app potrebbero non funzionare correttamente.',
             ),
-            
+
             // COOKIE TERZE PARTI
             _buildSection(
               title: 'Cookie di Terze Parti',
-              content: 'Attualmente OrsoCook NON utilizza cookie di terze parti per:\n'
+              content:
+                  'Attualmente OrsoCook NON utilizza cookie di terze parti per:\n'
                   '• Pubblicità\n'
                   '• Analytics esterni\n'
                   '• Social media\n'
                   '• Servizi di tracciamento\n\n'
                   'Se in futuro implementeremo tali servizi, aggiorneremo questa informativa e richiederemo il tuo consenso.',
             ),
-            
+
             // CONSENSO
             _buildSection(
               title: 'Consenso',
-              content: 'Utilizzando OrsoCook, accetti l\'uso dei cookie essenziali e di sicurezza, necessari per il funzionamento dell\'app.\n\n'
+              content:
+                  'Utilizzando OrsoCook, accetti l\'uso dei cookie essenziali e di sicurezza, necessari per il funzionamento dell\'app.\n\n'
                   'Per i cookie non essenziali (se implementati in futuro), richiederemo il tuo consenso esplicito.',
             ),
-            
+
             // INFORMAZIONI
             _buildSection(
               title: 'Informazioni e Contatti',
@@ -158,7 +171,7 @@ class CookiePolicyScreen extends StatelessWidget {
                   'Email: privacy@orsocook.app\n'
                   'Ultimo aggiornamento: 02/02/2026',
             ),
-            
+
             const SizedBox(height: 30),
             Container(
               padding: const EdgeInsets.all(16),
@@ -223,7 +236,8 @@ class CookiePolicyScreen extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getColorForType(type),
                     borderRadius: BorderRadius.circular(4),

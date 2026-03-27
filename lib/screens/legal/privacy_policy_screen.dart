@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/logger.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
@@ -14,7 +15,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go('/home');
+            }
           },
         ),
       ),
@@ -41,13 +46,14 @@ class PrivacyPolicyScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
-            
+
             // 1. INTRODUZIONE
             _buildSection(
               title: '1. Introduzione',
-              content: 'La presente Informativa sulla privacy descrive come OrsoCook (di seguito "noi", "ci", "nostro") raccoglie, utilizza e condivide le tue informazioni personali quando utilizzi la nostra applicazione.',
+              content:
+                  'La presente Informativa sulla privacy descrive come OrsoCook (di seguito "noi", "ci", "nostro") raccoglie, utilizza e condivide le tue informazioni personali quando utilizzi la nostra applicazione.',
             ),
-            
+
             // 2. DATI RACCOLTI
             _buildSection(
               title: '2. Dati Personali Raccolti',
@@ -63,7 +69,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   '• Timestamp di accessi e attività\n'
                   '• Cookie e tecnologie simili',
             ),
-            
+
             // 3. FINALITÀ DEL TRATTAMENTO
             _buildSection(
               title: '3. Finalità del Trattamento',
@@ -75,7 +81,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   '• Comunicazioni di servizio (verifica email, reset password)\n'
                   '• Rispetto di obblighi legali',
             ),
-            
+
             // 4. BASI GIURIDICHE GDPR
             _buildSection(
               title: '4. Basi Giuridiche (GDPR Art. 6)',
@@ -85,18 +91,19 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   '• **Consenso:** Per specifiche finalità quando richiesto\n'
                   '• **Obbligo legale:** Per adempiere a obblighi normativi',
             ),
-            
+
             // 5. CONSERVAZIONE DATI
             _buildSection(
               title: '5. Conservazione dei Dati',
-              content: 'Conserviamo i tuoi dati solo per il periodo necessario:\n\n'
+              content:
+                  'Conserviamo i tuoi dati solo per il periodo necessario:\n\n'
                   '• Dati account: Finché l\'account è attivo\n'
                   '• Sessioni di accesso: 30 giorni dall\'ultima attività\n'
                   '• Log di sicurezza: 90 giorni\n'
                   '• Contenuti pubblicati: Fino a cancellazione account\n\n'
                   'Al termine del periodo, i dati vengono cancellati o anonimizzati.',
             ),
-            
+
             // 6. DIRITTI DELL'INTERESSATO
             _buildSection(
               title: '6. I Tuoi Diritti (GDPR)',
@@ -109,7 +116,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   '• **Opposizione:** Opporti al trattamento per motivi legittimi\n\n'
                   'Per esercitare i tuoi diritti, contattaci all\'email: privacy@orsocook.app',
             ),
-            
+
             // 7. SICUREZZA
             _buildSection(
               title: '7. Sicurezza dei Dati',
@@ -120,7 +127,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   '• Limitazione accessi al personale autorizzato\n'
                   '• Valutazione periodica dei rischi',
             ),
-            
+
             // 8. COOKIE
             _buildSection(
               title: '8. Cookie e Tecnologie Simili',
@@ -130,15 +137,16 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   '• **Cookie di preferenze:** Memorizzare impostazioni\n\n'
                   'Puoi gestire le preferenze cookie nelle impostazioni del browser.',
             ),
-            
+
             // 9. TRASFERIMENTO DATI
             _buildSection(
               title: '9. Trasferimento Dati Extra-UE',
-              content: 'I tuoi dati sono ospitati su server nell\'Unione Europea.\n'
+              content:
+                  'I tuoi dati sono ospitati su server nell\'Unione Europea.\n'
                   'Non trasferiamo dati al di fuori dello Spazio Economico Europeo (SEE) '
                   'senza garanzie adeguate come clausole contrattuali standard.',
             ),
-            
+
             // 10. CONTATTI
             _buildSection(
               title: '10. Contatti e Responsabile della Protezione Dati',
@@ -149,7 +157,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   'contattaci all\'email sopra indicata.\n\n'
                   'Ultimo aggiornamento: 02/02/2026',
             ),
-            
+
             const SizedBox(height: 40),
             Container(
               padding: const EdgeInsets.all(16),

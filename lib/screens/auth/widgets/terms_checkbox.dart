@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/screens/legal/privacy_policy_screen.dart';
+import 'package:orsocook/screens/legal/cookie_policy_screen.dart';
 
 class TermsCheckbox extends StatefulWidget {
   final bool value;
@@ -69,32 +70,32 @@ class _TermsCheckboxState extends State<TermsCheckbox> {
                 '📚 **Documentazione Completa:**\n',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _openPrivacyPolicy(context);
-                },
-                child: const Text(
-                  '📄 Leggi la Privacy Policy completa',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                    fontSize: 14,
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => _openPrivacyPolicy(context),
+                  child: const Text(
+                    '📄 Leggi la Privacy Policy completa',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _openCookiePolicy(context);
-                },
-                child: const Text(
-                  '🍪 Informativa Cookie',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                    fontSize: 14,
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => _openCookiePolicy(context),
+                  child: const Text(
+                    '🍪 Informativa Cookie',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
@@ -114,11 +115,31 @@ class _TermsCheckboxState extends State<TermsCheckbox> {
   }
 
   void _openPrivacyPolicy(BuildContext context) {
-    context.go('/privacy-policy');
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: const PrivacyPolicyScreen(),
+        ),
+      ),
+    );
   }
 
   void _openCookiePolicy(BuildContext context) {
-    context.go('/cookie-policy');
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: const CookiePolicyScreen(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -135,11 +156,14 @@ class _TermsCheckboxState extends State<TermsCheckbox> {
                 },
         ),
         Expanded(
-          child: GestureDetector(
-            onTap: widget.isLoading ? null : _showTermsDialog,
-            child: const Text(
-              'Accetto i termini, condizioni e privacy',
-              style: TextStyle(color: Colors.blue),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: widget.isLoading ? null : _showTermsDialog,
+              child: const Text(
+                'Accetto i termini, condizioni e privacy',
+                style: TextStyle(color: Colors.blue),
+              ),
             ),
           ),
         ),
