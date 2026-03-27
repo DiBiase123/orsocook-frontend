@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/screens/auth/login.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
@@ -83,7 +84,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         });
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
-            context.go('/login');
+            // Vai alla home
+            context.go('/home');
+            // Poi apri il modal login
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (mounted) {
+                showLoginModal(context);
+              }
+            });
           }
         });
       } else {
@@ -99,7 +107,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   void _goToLogin() {
-    context.go('/login');
+    context.go('/home');
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        showLoginModal(context);
+      }
+    });
   }
 
   void _togglePasswordVisibility() =>
@@ -263,7 +276,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           Text(_successMessage ?? 'Password reimpostata con successo!',
               style: const TextStyle(color: Colors.green)),
           const SizedBox(height: 8),
-          const Text('Verrai reindirizzato al login...',
+          const Text('Verrai reindirizzato alla home...',
               style: TextStyle(fontSize: 12, color: Colors.green)),
           const SizedBox(height: 16),
           const CircularProgressIndicator(
