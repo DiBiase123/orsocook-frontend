@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/screens/auth/login.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
@@ -88,14 +88,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   void _navigateToLogin() {
     if (mounted) {
-      // Chiudi questa schermata
-      Navigator.of(context).pop();
-      // Apri il modal login dopo un breve delay
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (mounted) {
-          showLoginModal(context);
-        }
-      });
+      context.go('/login');
     }
   }
 
@@ -305,7 +298,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       children: [
         const Text('Torna al ', style: TextStyle(color: Colors.grey)),
         TextButton(
-          onPressed: _isLoading ? null : _navigateToLogin,
+          onPressed: _isLoading ? null : () => context.go('/login'),
           child: const Text('Login',
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: Colors.deepOrange)),
@@ -351,7 +344,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ? null
             : IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: _navigateToLogin,
+                onPressed: () => context.go('/login'),
               ),
       ),
       body: SafeArea(
