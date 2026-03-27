@@ -276,7 +276,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           Text(_successMessage ?? 'Password reimpostata con successo!',
               style: const TextStyle(color: Colors.green)),
           const SizedBox(height: 8),
-          const Text('Verrai reindirizzato alla home...',
+          const Text('Verrai reindirizzato al login...',
               style: TextStyle(fontSize: 12, color: Colors.green)),
           const SizedBox(height: 16),
           const CircularProgressIndicator(
