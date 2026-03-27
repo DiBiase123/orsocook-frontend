@@ -5,15 +5,15 @@ import 'login_mobile.dart';
 
 Future<void> showLoginModal(BuildContext context) {
   final screenWidth = MediaQuery.of(context).size.width;
-  final isMobile = screenWidth < 768;
+  final isMobile = screenWidth < 1024; // aumentato da 768 a 1024
 
   if (isMobile) {
-    // Su mobile: schermata normale
+    // Mobile e tablet in verticale: schermata piena
     return Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const LoginMobile()),
     );
   } else {
-    // Su desktop: modal con effetto glass
+    // Tablet in orizzontale e desktop: modal
     return showDialog(
       context: context,
       barrierDismissible: true,

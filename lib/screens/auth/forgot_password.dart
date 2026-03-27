@@ -1,15 +1,18 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'forgot_password_modal/index.dart';
+import 'forgot_password_mobile.dart';
 
-export 'forgot_password_modal/index.dart' show ForgotPasswordModal;
+class ForgotPasswordDynamic extends StatelessWidget {
+  const ForgotPasswordDynamic({super.key});
 
-Future<void> showForgotPasswordModal(BuildContext context) {
-  return showDialog(
-    context: context,
-    barrierDismissible: true,
-    barrierColor: Colors.transparent,
-    builder: (context) {
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 1024;
+
+    if (isMobile) {
+      return const ForgotPasswordMobile();
+    } else {
       return Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
@@ -22,10 +25,31 @@ Future<void> showForgotPasswordModal(BuildContext context) {
                 height: double.infinity,
               ),
             ),
-            const ForgotPasswordModal(),
+            const Center(
+              child: ForgotPasswordModal(),
+            ),
           ],
         ),
       );
-    },
-  );
+    }
+  }
+}
+
+Future<void> showForgotPasswordModal(BuildContext context) {
+  final isMobile = MediaQuery.of(context).size.width < 1024;
+
+  if (isMobile) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ForgotPasswordMobile()),
+    );
+  } else {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.transparent,
+      builder: (context) {
+        return const ForgotPasswordDynamic();
+      },
+    );
+  }
 }

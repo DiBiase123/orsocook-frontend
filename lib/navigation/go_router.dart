@@ -31,17 +31,15 @@ final goRouter = GoRouter(
       builder: (context, state) => const LoginModal(),
     ),
 
-    // Register - modal
     GoRoute(
       path: '/register',
       name: 'register',
-      builder: (context, state) => const RegisterModal(),
+      builder: (context, state) => const RegisterDynamic(),
     ),
-    // Forgot password - modal
     GoRoute(
       path: '/forgot-password',
       name: 'forgot-password',
-      builder: (context, state) => const ForgotPasswordModal(),
+      builder: (context, state) => const ForgotPasswordDynamic(),
     ),
     // Reset password - screen
     GoRoute(

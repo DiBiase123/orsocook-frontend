@@ -1,16 +1,18 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'register_modal/index.dart';
+import 'register_mobile.dart';
 
-// Esporta RegisterModal per essere usato nel router
-export 'register_modal/index.dart' show RegisterModal;
+class RegisterDynamic extends StatelessWidget {
+  const RegisterDynamic({super.key});
 
-Future<void> showRegisterModal(BuildContext context) {
-  return showDialog(
-    context: context,
-    barrierDismissible: true,
-    barrierColor: Colors.transparent,
-    builder: (context) {
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 1024;
+
+    if (isMobile) {
+      return const RegisterMobile();
+    } else {
       return Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
@@ -23,10 +25,31 @@ Future<void> showRegisterModal(BuildContext context) {
                 height: double.infinity,
               ),
             ),
-            const RegisterModal(),
+            const Center(
+              child: RegisterModal(),
+            ),
           ],
         ),
       );
-    },
-  );
+    }
+  }
+}
+
+Future<void> showRegisterModal(BuildContext context) {
+  final isMobile = MediaQuery.of(context).size.width < 1024;
+
+  if (isMobile) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const RegisterMobile()),
+    );
+  } else {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.transparent,
+      builder: (context) {
+        return const RegisterDynamic();
+      },
+    );
+  }
 }
