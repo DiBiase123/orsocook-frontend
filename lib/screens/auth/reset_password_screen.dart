@@ -48,7 +48,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   String? _validateConfirmPassword(String? value) {
-    if (value == null || value.isEmpty) return 'Conferma la password';
+    if (value == null || value.isEmpty) {
+      return 'Conferma la password';
+    }
     return value == _passwordController.text
         ? null
         : 'Le password non corrispondono';
@@ -79,10 +81,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           _isSuccess = true;
           _successMessage = result.message;
         });
-        // Dopo 2 secondi, vai al login
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
-            context.go('/home');
+            context.go('/login');
           }
         });
       } else {
@@ -98,7 +99,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   void _goToLogin() {
-    context.go('/home');
+    context.go('/login');
   }
 
   void _togglePasswordVisibility() =>
@@ -111,15 +112,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       children: [
         Icon(Icons.lock_open, size: 80, color: Theme.of(context).primaryColor),
         const SizedBox(height: 16),
-        const Text('Nuova Password',
-            style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepOrange)),
+        const Text(
+          'Nuova Password',
+          style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.deepOrange),
+        ),
         const SizedBox(height: 8),
-        const Text('Crea una nuova password per il tuo account',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-            textAlign: TextAlign.center),
+        const Text(
+          'Crea una nuova password per il tuo account',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }
@@ -215,6 +220,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildErrorSection() {
     if (_errorMessage == null) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -233,6 +239,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildSuccessSection() {
     if (!_isSuccess) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -244,16 +251,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               Icon(Icons.check_circle, color: Colors.green),
               SizedBox(width: 12),
               Expanded(
-                  child: Text('Password reimpostata!',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.green))),
+                child: Text(
+                  'Password reimpostata!',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.green),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           Text(_successMessage ?? 'Password reimpostata con successo!',
               style: const TextStyle(color: Colors.green)),
           const SizedBox(height: 8),
-          const Text('Verrai reindirizzato alla home...',
+          const Text('Verrai reindirizzato al login...',
               style: TextStyle(fontSize: 12, color: Colors.green)),
           const SizedBox(height: 16),
           const CircularProgressIndicator(
@@ -283,13 +293,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildLoginLink() {
     if (_isSuccess) return const SizedBox.shrink();
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('Torna alla ', style: TextStyle(color: Colors.grey)),
+        const Text('Torna al ', style: TextStyle(color: Colors.grey)),
         TextButton(
           onPressed: _isLoading ? null : _goToLogin,
-          child: const Text('Home',
+          child: const Text('Login',
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: Colors.deepOrange)),
         ),
@@ -307,12 +318,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password),
       _ => false,
     };
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Icon(isMet ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: isMet ? Colors.green : Colors.grey[400], size: 18),
+          Icon(
+            isMet ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: isMet ? Colors.green : Colors.grey[400],
+            size: 18,
+          ),
           const SizedBox(width: 8),
           Text(text,
               style: TextStyle(color: isMet ? Colors.green : Colors.grey[600])),
@@ -357,9 +372,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 const SizedBox(height: 20),
                 const Divider(),
                 const SizedBox(height: 16),
-                const Text('Requisiti password:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center),
+                const Text(
+                  'Requisiti password:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 12),
                 _buildRequirementItem('Almeno 8 caratteri'),
                 _buildRequirementItem('Almeno una lettera maiuscola'),
