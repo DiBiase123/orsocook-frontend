@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/login.dart';
 
@@ -89,10 +88,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   void _navigateToLogin() {
     if (mounted) {
-      // Chiudi questa schermata
-      Navigator.of(context).pop();
-      // Apri il modal login
-      Future.delayed(const Duration(milliseconds: 100), () {
+      final navigator = Navigator.of(context);
+      navigator.pop();
+      Future.delayed(const Duration(milliseconds: 150), () {
         if (mounted) {
           showLoginModal(context);
         }
@@ -352,7 +350,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ? null
             : IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.pop(),
+                onPressed: _navigateToLogin,
               ),
       ),
       body: SafeArea(
