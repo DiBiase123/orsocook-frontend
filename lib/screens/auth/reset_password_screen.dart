@@ -88,9 +88,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   void _navigateToLogin() {
     if (mounted) {
-      final navigator = Navigator.of(context);
-      navigator.pop();
-      Future.delayed(const Duration(milliseconds: 150), () {
+      // Chiudi questa schermata
+      Navigator.of(context).pop();
+      // Apri il modal login dopo un breve delay
+      Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
           showLoginModal(context);
         }
