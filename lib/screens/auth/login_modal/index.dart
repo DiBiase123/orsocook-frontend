@@ -3,11 +3,22 @@ import 'package:orsocook/screens/auth/login_modal/style.dart';
 import 'package:orsocook/screens/auth/login_modal/content.dart';
 
 class LoginModal extends StatelessWidget {
-  const LoginModal({super.key});
+  final VoidCallback? onNavigateToRegister;
+  final VoidCallback? onNavigateToForgotPassword;
+  final VoidCallback? onClose;
+
+  const LoginModal({
+    super.key,
+    this.onNavigateToRegister,
+    this.onNavigateToForgotPassword,
+    this.onClose,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+
+    final closeCallback = onClose ?? () => Navigator.of(context).pop();
 
     if (isMobile) {
       return Scaffold(
@@ -16,12 +27,14 @@ class LoginModal extends StatelessWidget {
           title: const Text('Login'),
           leading: IconButton(
             icon: const Icon(Icons.home),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: closeCallback,
           ),
         ),
         body: LoginModalContent(
-          onClose: () => Navigator.of(context).pop(),
+          onClose: closeCallback,
           showCloseButton: false,
+          onNavigateToRegister: onNavigateToRegister,
+          onNavigateToForgotPassword: onNavigateToForgotPassword,
         ),
       );
     }
@@ -54,8 +67,10 @@ class LoginModal extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(LoginModalStyle.borderRadius),
           child: LoginModalContent(
-            onClose: () => Navigator.of(context).pop(),
+            onClose: closeCallback,
             showCloseButton: true,
+            onNavigateToRegister: onNavigateToRegister,
+            onNavigateToForgotPassword: onNavigateToForgotPassword,
           ),
         ),
       ),

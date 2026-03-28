@@ -1,22 +1,18 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'register_modal/index.dart';
-import 'register_mobile.dart';
+import 'register_screen.dart';
 
-class RegisterDynamic extends StatelessWidget {
-  const RegisterDynamic({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 1024;
-
-    if (isMobile) {
-      return const RegisterMobile();
-    } else {
+Future<void> showRegisterModal(BuildContext context) {
+  return showDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierColor: Colors.transparent,
+    builder: (context) {
       return Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
+            // Sfondo glass
             BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
               child: Container(
@@ -25,31 +21,11 @@ class RegisterDynamic extends StatelessWidget {
                 height: double.infinity,
               ),
             ),
-            const Center(
-              child: RegisterModal(),
-            ),
+            // Contenuto
+            const RegisterScreen(),
           ],
         ),
       );
-    }
-  }
-}
-
-Future<void> showRegisterModal(BuildContext context) {
-  final isMobile = MediaQuery.of(context).size.width < 1024;
-
-  if (isMobile) {
-    return Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const RegisterMobile()),
-    );
-  } else {
-    return showDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierColor: Colors.transparent,
-      builder: (context) {
-        return const RegisterDynamic();
-      },
-    );
-  }
+    },
+  );
 }

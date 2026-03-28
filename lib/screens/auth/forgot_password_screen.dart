@@ -1,26 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/screens/auth/widgets/auth_screen.dart';
 
-class ForgotPasswordModalContent extends StatefulWidget {
-  final VoidCallback onClose;
-  final bool showCloseButton;
+class ForgotPasswordScreen extends StatefulWidget {
   final VoidCallback? onNavigateToLogin;
 
-  const ForgotPasswordModalContent({
+  const ForgotPasswordScreen({
     super.key,
-    required this.onClose,
-    this.showCloseButton = true,
     this.onNavigateToLogin,
   });
 
   @override
-  State<ForgotPasswordModalContent> createState() =>
-      _ForgotPasswordModalContentState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordModalContentState
-    extends State<ForgotPasswordModalContent> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
@@ -42,23 +37,10 @@ class _ForgotPasswordModalContentState
   }
 
   Future<void> _submitForgotPassword() async {
-    // Usa WidgetsBinding per assicurarsi che il widget sia costruito
-    await WidgetsBinding.instance.endOfFrame;
-
-    if (!mounted) return;
+    await Future.delayed(Duration.zero);
 
     if (_formKey.currentState == null) {
-      print('Form non pronto, riprovo dopo il prossimo frame');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _formKey.currentState == null) {
-          print('Form ancora non pronto, ritento dopo 100ms');
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) _submitForgotPassword();
-          });
-        } else if (mounted) {
-          _submitForgotPassword();
-        }
-      });
+      Future.delayed(const Duration(milliseconds: 50), _submitForgotPassword);
       return;
     }
 
@@ -82,10 +64,9 @@ class _ForgotPasswordModalContentState
         if (result.success) {
           _isSuccess = true;
           _successMessage = result.message;
-          // Dopo 2 secondi, naviga al login
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) {
-              _navigateToLogin();
+              widget.onNavigateToLogin?.call();
             }
           });
         } else {
@@ -102,11 +83,7 @@ class _ForgotPasswordModalContentState
   }
 
   void _navigateToLogin() {
-    if (widget.onNavigateToLogin != null) {
-      widget.onNavigateToLogin!();
-    } else {
-      widget.onClose();
-    }
+    widget.onNavigateToLogin?.call();
   }
 
   Widget _buildLogo() {
@@ -114,19 +91,15 @@ class _ForgotPasswordModalContentState
       children: [
         Icon(Icons.lock_reset, size: 80, color: Theme.of(context).primaryColor),
         const SizedBox(height: 16),
-        const Text(
-          'Password dimenticata?',
-          style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepOrange),
-        ),
+        const Text('Password dimenticata?',
+            style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepOrange)),
         const SizedBox(height: 8),
-        const Text(
-          'Inserisci la tua email per reimpostare la password',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-          textAlign: TextAlign.center,
-        ),
+        const Text('Inserisci la tua email per reimpostare la password',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+            textAlign: TextAlign.center),
       ],
     );
   }
@@ -158,13 +131,10 @@ class _ForgotPasswordModalContentState
 
   Widget _buildErrorSection() {
     if (_errorMessage == null) return const SizedBox.shrink();
-
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(8),
-      ),
+          color: Colors.red[50], borderRadius: BorderRadius.circular(8)),
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: Colors.red),
@@ -179,13 +149,10 @@ class _ForgotPasswordModalContentState
 
   Widget _buildSuccessSection() {
     if (!_isSuccess) return const SizedBox.shrink();
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green[50],
-        borderRadius: BorderRadius.circular(8),
-      ),
+          color: Colors.green[50], borderRadius: BorderRadius.circular(8)),
       child: Column(
         children: [
           const Row(
@@ -200,24 +167,18 @@ class _ForgotPasswordModalContentState
           ),
           const SizedBox(height: 8),
           Text(
-            _successMessage ??
-                'Riceverai istruzioni per reimpostare la password.',
-            style: const TextStyle(color: Colors.green),
-          ),
+              _successMessage ??
+                  'Riceverai istruzioni per reimpostare la password.',
+              style: const TextStyle(color: Colors.green)),
           const SizedBox(height: 16),
-          const Text(
-            '⚠️ Controlla la cartella spam',
-            style: TextStyle(fontSize: 12, color: Colors.orange),
-          ),
+          const Text('⚠️ Controlla la cartella spam',
+              style: TextStyle(fontSize: 12, color: Colors.orange)),
           const SizedBox(height: 16),
-          const Text(
-            'Reindirizzamento al login...',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
+          const Text('Reindirizzamento al login...',
+              style: TextStyle(fontSize: 12, color: Colors.grey)),
           const SizedBox(height: 8),
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-          ),
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.green)),
         ],
       ),
     );
@@ -271,55 +232,39 @@ class _ForgotPasswordModalContentState
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (widget.showCloseButton)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, size: 32),
-                    onPressed: widget.onClose,
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.withAlpha(50),
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                ),
-              _buildLogo(),
-              const SizedBox(height: 24),
-              _buildEmailField(),
-              const SizedBox(height: 16),
-              _buildErrorSection(),
-              _buildSuccessSection(),
-              const SizedBox(height: 24),
-              _buildSubmitButton(),
-              const SizedBox(height: 24),
-              _buildLoginLink(),
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 16),
-              const Text('Cosa succede dopo:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              _buildStepItem('Riceverai un\'email con un link di reset'),
-              _buildStepItem('Clicca sul link (valido per 1 ora)'),
-              _buildStepItem('Imposta una nuova password'),
-              _buildStepItem('Accedi con la nuova password'),
-            ],
-          ),
-        ),
+    return AuthScreen(
+      title: 'Password Dimenticata',
+      logo: _buildLogo(),
+      formFields: Column(
+        children: [
+          _buildEmailField(),
+          const SizedBox(height: 16),
+          _buildErrorSection(),
+          _buildSuccessSection(),
+        ],
       ),
+      actions: Column(
+        children: [
+          _buildSubmitButton(),
+          const SizedBox(height: 24),
+          _buildLoginLink(),
+          const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 16),
+          const Text('Cosa succede dopo:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          _buildStepItem('Riceverai un\'email con un link di reset'),
+          _buildStepItem('Clicca sul link (valido per 1 ora)'),
+          _buildStepItem('Imposta una nuova password'),
+          _buildStepItem('Accedi con la nuova password'),
+        ],
+      ),
+      onBack: _navigateToLogin,
+      onClose: () => Navigator.of(context).pop(),
+      showBackButton: true,
+      showCloseButton: true,
     );
   }
 }

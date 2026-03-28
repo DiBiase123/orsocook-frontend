@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/screens/auth/widgets/auth_screen.dart';
 import 'package:orsocook/screens/auth/widgets/register_logo.dart';
 import 'package:orsocook/screens/auth/widgets/register_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/register_actions.dart';
 import 'package:orsocook/screens/auth/widgets/terms_checkbox.dart';
 
-class RegisterModalContent extends StatefulWidget {
-  final VoidCallback onClose;
-  final bool showCloseButton;
+class RegisterScreen extends StatefulWidget {
   final VoidCallback? onNavigateToLogin;
 
-  const RegisterModalContent({
+  const RegisterScreen({
     super.key,
-    required this.onClose,
-    this.showCloseButton = true,
     this.onNavigateToLogin,
   });
 
   @override
-  State<RegisterModalContent> createState() => _RegisterModalContentState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterModalContentState extends State<RegisterModalContent> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -43,29 +40,20 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
   }
 
   Future<void> _submitRegistration() async {
-    // Usa WidgetsBinding per assicurarsi che il widget sia costruito
-    await WidgetsBinding.instance.endOfFrame;
-
-    if (!mounted) return;
+    await Future.delayed(Duration.zero);
 
     if (_formKey.currentState == null) {
-      print('Form non pronto, riprovo dopo il prossimo frame');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _formKey.currentState == null) {
-          print('Form ancora non pronto, ritento dopo 100ms');
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) _submitRegistration();
-          });
-        } else if (mounted) {
-          _submitRegistration();
-        }
-      });
+      Future.delayed(const Duration(milliseconds: 50), _submitRegistration);
       return;
     }
 
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptTerms) {
-      _showSnackBar('Devi accettare i termini e condizioni', Colors.orange);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Devi accettare i termini e condizioni'),
+            backgroundColor: Colors.orange),
+      );
       return;
     }
 
@@ -93,27 +81,20 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
         }
       } else {
         setState(() => _errorMessage = result.message);
-        _showSnackBar(result.message, Colors.red);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.message), backgroundColor: Colors.red),
+        );
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Errore di connessione';
-      });
-      _showSnackBar('Errore di connessione', Colors.red);
+      setState(() => _isLoading = false);
+      setState(() => _errorMessage = 'Errore di connessione');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Errore di connessione'),
+            backgroundColor: Colors.red),
+      );
     }
-  }
-
-  void _showSnackBar(String message, Color color) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 3),
-      ),
-    );
   }
 
   void _showVerificationDialog(String email) {
@@ -132,9 +113,8 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8)),
               child: Text(email, textAlign: TextAlign.center),
             ),
             const SizedBox(height: 20),
@@ -147,9 +127,8 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8)),
               child: const Text('⚠️ Controlla la cartella SPAM'),
             ),
           ],
@@ -158,7 +137,7 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              widget.onClose();
+              widget.onNavigateToLogin?.call();
             },
             child: const Text('HO CAPITO'),
           ),
@@ -185,7 +164,7 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _navigateToLogin();
+              widget.onNavigateToLogin?.call();
             },
             child: const Text('ACCEDI'),
           ),
@@ -212,72 +191,47 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
   }
 
   void _navigateToLogin() {
-    if (widget.onNavigateToLogin != null) {
-      widget.onNavigateToLogin!();
-    } else {
-      widget.onClose();
-    }
+    widget.onNavigateToLogin?.call();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (widget.showCloseButton)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, size: 32),
-                    onPressed: widget.onClose,
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.withAlpha(50),
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                ),
-              const RegisterLogo(),
-              const SizedBox(height: 24),
-              RegisterFormFields(
-                usernameController: _usernameController,
-                emailController: _emailController,
-                passwordController: _passwordController,
-                confirmPasswordController: _confirmPasswordController,
-                errorMessage: _errorMessage,
-                onUsernameChanged: (_) => _clearErrorOnChange(),
-                onEmailChanged: (_) => _clearErrorOnChange(),
-                onPasswordChanged: (_) => _clearErrorOnChange(),
-                onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
-                isLoading: _isLoading,
-                validateForm: () => _formKey.currentState?.validate(),
-              ),
-              const SizedBox(height: 16),
-              TermsCheckbox(
-                value: _acceptTerms,
-                onChanged: (value) => setState(() => _acceptTerms = value),
-                isLoading: _isLoading,
-              ),
-              const SizedBox(height: 24),
-              RegisterActions(
-                isLoading: _isLoading,
-                onRegisterPressed: _submitRegistration,
-                onLoginPressed: _isLoading ? null : _navigateToLogin,
-                showFeatures: true,
-              ),
-              const SizedBox(height: 16),
-            ],
+    return AuthScreen(
+      title: 'Registrazione',
+      logo: const RegisterLogo(),
+      formFields: Column(
+        children: [
+          RegisterFormFields(
+            usernameController: _usernameController,
+            emailController: _emailController,
+            passwordController: _passwordController,
+            confirmPasswordController: _confirmPasswordController,
+            errorMessage: _errorMessage,
+            onUsernameChanged: (_) => _clearErrorOnChange(),
+            onEmailChanged: (_) => _clearErrorOnChange(),
+            onPasswordChanged: (_) => _clearErrorOnChange(),
+            onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
+            isLoading: _isLoading,
+            validateForm: () => _formKey.currentState?.validate(),
           ),
-        ),
+          const SizedBox(height: 16),
+          TermsCheckbox(
+            value: _acceptTerms,
+            onChanged: (value) => setState(() => _acceptTerms = value),
+            isLoading: _isLoading,
+          ),
+        ],
       ),
+      actions: RegisterActions(
+        isLoading: _isLoading,
+        onRegisterPressed: _submitRegistration,
+        onLoginPressed: _isLoading ? null : _navigateToLogin,
+        showFeatures: true,
+      ),
+      onBack: _navigateToLogin,
+      onClose: () => Navigator.of(context).pop(),
+      showBackButton: true,
+      showCloseButton: true,
     );
   }
 }

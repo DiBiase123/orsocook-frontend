@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/auth/login.dart';
 import 'package:orsocook/screens/auth/forgot_password_modal/style.dart';
 import 'package:orsocook/screens/auth/forgot_password_modal/content.dart';
 
 class ForgotPasswordModal extends StatelessWidget {
-  const ForgotPasswordModal({super.key});
+  final VoidCallback? onNavigateToLogin;
+  final VoidCallback? onClose;
+
+  const ForgotPasswordModal({
+    super.key,
+    this.onNavigateToLogin,
+    this.onClose,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+
+    final closeCallback = onClose ?? () => Navigator.of(context).pop();
 
     if (isMobile) {
       return Scaffold(
@@ -17,15 +25,13 @@ class ForgotPasswordModal extends StatelessWidget {
           title: const Text('Password Dimenticata'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-              showLoginModal(context);
-            },
+            onPressed: onNavigateToLogin ?? closeCallback,
           ),
         ),
         body: ForgotPasswordModalContent(
-          onClose: () => Navigator.of(context).pop(),
+          onClose: closeCallback,
           showCloseButton: false,
+          onNavigateToLogin: onNavigateToLogin,
         ),
       );
     }
@@ -60,8 +66,9 @@ class ForgotPasswordModal extends StatelessWidget {
           borderRadius:
               BorderRadius.circular(ForgotPasswordModalStyle.borderRadius),
           child: ForgotPasswordModalContent(
-            onClose: () => Navigator.of(context).pop(),
+            onClose: closeCallback,
             showCloseButton: true,
+            onNavigateToLogin: onNavigateToLogin,
           ),
         ),
       ),

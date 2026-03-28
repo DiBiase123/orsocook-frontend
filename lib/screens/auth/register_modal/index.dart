@@ -1,16 +1,23 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:orsocook/screens/auth/register_modal/style.dart';
 import 'package:orsocook/screens/auth/register_modal/content.dart';
-import 'package:orsocook/screens/auth/login.dart';
 
 class RegisterModal extends StatelessWidget {
-  const RegisterModal({super.key});
+  final VoidCallback? onNavigateToLogin;
+  final VoidCallback? onClose;
+
+  const RegisterModal({
+    super.key,
+    this.onNavigateToLogin,
+    this.onClose,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+
+    final closeCallback = onClose ?? () => Navigator.of(context).pop();
 
     if (isMobile) {
       return Scaffold(
@@ -19,25 +26,20 @@ class RegisterModal extends StatelessWidget {
           title: const Text('Registrazione'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-              showLoginModal(context);
-            },
+            onPressed: onNavigateToLogin ?? closeCallback,
           ),
           actions: [
             IconButton(
               icon: const Icon(Icons.close),
-              onPressed: () {
-                // Vai direttamente alla home
-                context.go('/home');
-              },
+              onPressed: closeCallback,
               tooltip: 'Chiudi',
             ),
           ],
         ),
         body: RegisterModalContent(
-          onClose: () => Navigator.of(context).pop(),
+          onClose: closeCallback,
           showCloseButton: false,
+          onNavigateToLogin: onNavigateToLogin,
         ),
       );
     }
@@ -85,8 +87,9 @@ class RegisterModal extends StatelessWidget {
                 borderRadius:
                     BorderRadius.circular(RegisterModalStyle.borderRadius),
                 child: RegisterModalContent(
-                  onClose: () => Navigator.of(context).pop(),
+                  onClose: closeCallback,
                   showCloseButton: true,
+                  onNavigateToLogin: onNavigateToLogin,
                 ),
               ),
             ),
