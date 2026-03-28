@@ -5,8 +5,8 @@ import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/widgets/login_logo.dart';
 import 'package:orsocook/screens/auth/widgets/login_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/login_actions.dart';
-import 'package:orsocook/screens/auth/register.dart';
-import 'package:orsocook/screens/auth/forgot_password.dart';
+import 'package:orsocook/screens/auth/register_mobile.dart';
+import 'package:orsocook/screens/auth/forgot_password_mobile.dart';
 
 class LoginMobile extends StatefulWidget {
   const LoginMobile({super.key});
@@ -176,11 +176,15 @@ class _LoginMobileState extends State<LoginMobile> {
   }
 
   void _navigateToForgotPassword() {
-    showForgotPasswordModal(context);
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const ForgotPasswordMobile()),
+    );
   }
 
   void _navigateToRegister() {
-    showRegisterModal(context);
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const RegisterMobile()),
+    );
   }
 
   void _clearErrorOnChange() {
