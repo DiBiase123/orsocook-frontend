@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/login.dart';
+import 'package:orsocook/screens/auth/login_mobile.dart';
 
 class ForgotPasswordMobile extends StatefulWidget {
   const ForgotPasswordMobile({super.key});
@@ -73,8 +74,9 @@ class _ForgotPasswordMobileState extends State<ForgotPasswordMobile> {
   }
 
   void _navigateToLogin() {
-    Navigator.of(context).pop();
-    showLoginModal(context);
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginMobile()),
+    );
   }
 
   Widget _buildLogo() {

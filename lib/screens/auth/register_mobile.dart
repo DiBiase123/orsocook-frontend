@@ -7,6 +7,7 @@ import 'package:orsocook/screens/auth/widgets/register_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/register_actions.dart';
 import 'package:orsocook/screens/auth/widgets/terms_checkbox.dart';
 import 'package:orsocook/screens/auth/login.dart';
+import 'package:orsocook/screens/auth/login_mobile.dart';
 
 class RegisterMobile extends StatefulWidget {
   const RegisterMobile({super.key});
@@ -187,8 +188,9 @@ class _RegisterMobileState extends State<RegisterMobile> {
   }
 
   void _navigateToLogin() {
-    Navigator.of(context).pop();
-    showLoginModal(context);
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginMobile()),
+    );
   }
 
   @override
