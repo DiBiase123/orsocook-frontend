@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/widgets/password_strength_indicator.dart';
+import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
 
 class RegisterFormFields extends StatefulWidget {
   final TextEditingController usernameController;
@@ -57,10 +58,9 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
     if (value == null || value.isEmpty) {
       return 'L\'email è obbligatoria';
     }
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-      return 'Inserisci un\'email valida';
-    }
-    return null;
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)
+        ? null
+        : 'Inserisci un\'email valida';
   }
 
   String? _validatePassword(String? value) {
@@ -83,134 +83,9 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
     if (value == null || value.isEmpty) {
       return 'Conferma la password';
     }
-    if (value != widget.passwordController.text) {
-      return 'Le password non corrispondono';
-    }
-    return null;
-  }
-
-  Widget _buildUsernameField() {
-    return TextFormField(
-      controller: widget.usernameController,
-      textInputAction: TextInputAction.next,
-      decoration: const InputDecoration(
-        labelText: 'Nome utente',
-        prefixIcon: Icon(Icons.person),
-        border: OutlineInputBorder(),
-        filled: true,
-        hintText: 'es. chef_mario',
-      ),
-      validator: _validateUsername,
-      onChanged: (value) {
-        widget.onUsernameChanged(value);
-      },
-    );
-  }
-
-  Widget _buildEmailField() {
-    return TextFormField(
-      controller: widget.emailController,
-      keyboardType: TextInputType.emailAddress,
-      autofillHints: const [AutofillHints.email],
-      textInputAction: TextInputAction.next,
-      decoration: const InputDecoration(
-        labelText: 'Email',
-        prefixIcon: Icon(Icons.email),
-        border: OutlineInputBorder(),
-        filled: true,
-        hintText: 'es. mario@esempio.com',
-      ),
-      validator: _validateEmail,
-      onChanged: (value) {
-        widget.onEmailChanged(value);
-      },
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return TextFormField(
-      controller: widget.passwordController,
-      obscureText: _obscurePassword,
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        prefixIcon: const Icon(Icons.lock),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
-        ),
-        border: const OutlineInputBorder(),
-        filled: true,
-        helperText: 'Minimo 8 caratteri, 1 maiuscola, 1 numero',
-      ),
-      validator: _validatePassword,
-      onChanged: (value) {
-        widget.onPasswordChanged(value);
-        if (widget.confirmPasswordController.text.isNotEmpty &&
-            widget.validateForm != null) {
-          widget.validateForm!();
-        }
-      },
-    );
-  }
-
-  Widget _buildConfirmPasswordField() {
-    return TextFormField(
-      controller: widget.confirmPasswordController,
-      obscureText: _obscureConfirmPassword,
-      textInputAction: TextInputAction.done,
-      decoration: InputDecoration(
-        labelText: 'Conferma Password',
-        prefixIcon: const Icon(Icons.lock_outline),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscureConfirmPassword = !_obscureConfirmPassword;
-            });
-          },
-        ),
-        border: const OutlineInputBorder(),
-        filled: true,
-      ),
-      validator: _validateConfirmPassword,
-      onChanged: (value) {
-        widget.onConfirmPasswordChanged(value);
-      },
-    );
-  }
-
-  Widget _buildErrorSection() {
-    if (widget.errorMessage == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red[100]!),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: Colors.red),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              widget.errorMessage!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
+    return value != widget.passwordController.text
+        ? 'Le password non corrispondono'
+        : null;
   }
 
   @override
@@ -218,16 +93,90 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildUsernameField(),
+        TextFormField(
+          controller: widget.usernameController,
+          textInputAction: TextInputAction.next,
+          decoration: const InputDecoration(
+            labelText: 'Nome utente',
+            prefixIcon: Icon(Icons.person),
+            border: OutlineInputBorder(),
+            filled: true,
+            hintText: 'es. chef_mario',
+          ),
+          validator: _validateUsername,
+          onChanged: widget.onUsernameChanged,
+        ),
         const SizedBox(height: 16),
-        _buildEmailField(),
+        TextFormField(
+          controller: widget.emailController,
+          keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.email],
+          textInputAction: TextInputAction.next,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            prefixIcon: Icon(Icons.email),
+            border: OutlineInputBorder(),
+            filled: true,
+            hintText: 'es. mario@esempio.com',
+          ),
+          validator: _validateEmail,
+          onChanged: widget.onEmailChanged,
+        ),
         const SizedBox(height: 16),
-        _buildPasswordField(),
+        TextFormField(
+          controller: widget.passwordController,
+          obscureText: _obscurePassword,
+          textInputAction: TextInputAction.next,
+          decoration: InputDecoration(
+            labelText: 'Password',
+            prefixIcon: const Icon(Icons.lock),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility : Icons.visibility_off,
+              ),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+            ),
+            border: const OutlineInputBorder(),
+            filled: true,
+            helperText: 'Minimo 8 caratteri, 1 maiuscola, 1 numero',
+          ),
+          validator: _validatePassword,
+          onChanged: (value) {
+            widget.onPasswordChanged(value);
+            if (widget.confirmPasswordController.text.isNotEmpty &&
+                widget.validateForm != null) {
+              widget.validateForm!();
+            }
+          },
+        ),
         PasswordStrengthIndicator(password: widget.passwordController.text),
         const SizedBox(height: 16),
-        _buildConfirmPasswordField(),
+        TextFormField(
+          controller: widget.confirmPasswordController,
+          obscureText: _obscureConfirmPassword,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+            labelText: 'Conferma Password',
+            prefixIcon: const Icon(Icons.lock_outline),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureConfirmPassword
+                    ? Icons.visibility
+                    : Icons.visibility_off,
+              ),
+              onPressed: () => setState(
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword),
+            ),
+            border: const OutlineInputBorder(),
+            filled: true,
+          ),
+          validator: _validateConfirmPassword,
+          onChanged: widget.onConfirmPasswordChanged,
+        ),
         const SizedBox(height: 16),
-        _buildErrorSection(),
+        if (widget.errorMessage != null)
+          AuthErrorBox(message: widget.errorMessage!),
       ],
     );
   }

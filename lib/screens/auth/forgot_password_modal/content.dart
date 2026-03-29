@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
+import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
+import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
 
 class ForgotPasswordModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -38,33 +41,20 @@ class _ForgotPasswordModalContentState
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return 'L\'email è obbligatoria';
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    return emailRegex.hasMatch(value) ? null : 'Inserisci un\'email valida';
+    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)
+        ? null
+        : 'Inserisci un\'email valida';
   }
 
   Future<void> _submitForgotPassword() async {
-    // Usa WidgetsBinding per assicurarsi che il widget sia costruito
-    await WidgetsBinding.instance.endOfFrame;
+    await AuthUtils.submitWithFormGuard(
+      formKey: _formKey,
+      mounted: mounted,
+      onSubmit: _doSubmit,
+    );
+  }
 
-    if (!mounted) return;
-
-    if (_formKey.currentState == null) {
-      AppLogger.debug('Form non pronto, riprovo dopo il prossimo frame');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _formKey.currentState == null) {
-          AppLogger.debug('Form ancora non pronto, ritento dopo 100ms');
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) _submitForgotPassword();
-          });
-        } else if (mounted) {
-          _submitForgotPassword();
-        }
-      });
-      return;
-    }
-
-    if (!_formKey.currentState!.validate()) return;
-
+  Future<void> _doSubmit() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -72,9 +62,8 @@ class _ForgotPasswordModalContentState
     });
 
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final result =
-          await authService.forgotPassword(_emailController.text.trim());
+      final result = await Provider.of<AuthService>(context, listen: false)
+          .forgotPassword(_emailController.text.trim());
 
       if (!mounted) return;
 
@@ -83,17 +72,18 @@ class _ForgotPasswordModalContentState
         if (result.success) {
           _isSuccess = true;
           _successMessage = result.message;
-          // Dopo 2 secondi, naviga al login
-          Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              _navigateToLogin();
-            }
-          });
+          Future.delayed(
+            const Duration(seconds: 2),
+            () {
+              if (mounted) _navigateToLogin();
+            },
+          );
         } else {
           _errorMessage = result.message;
         }
       });
     } catch (e) {
+      AppLogger.debug('forgotPassword error: $e');
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -102,225 +92,173 @@ class _ForgotPasswordModalContentState
     }
   }
 
-  void _navigateToLogin() {
-    if (widget.onNavigateToLogin != null) {
-      widget.onNavigateToLogin!();
-    } else {
-      widget.onClose();
+  void _navigateToLogin() =>
+      AuthUtils.navigateOrClose(widget.onNavigateToLogin, widget.onClose);
+
+  void _clearMessages() {
+    if (_errorMessage != null || _successMessage != null) {
+      setState(() {
+        _errorMessage = null;
+        _successMessage = null;
+      });
     }
-  }
-
-  Widget _buildLogo() {
-    return Column(
-      children: [
-        Icon(Icons.lock_reset, size: 80, color: Theme.of(context).primaryColor),
-        const SizedBox(height: 16),
-        const Text(
-          'Password dimenticata?',
-          style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepOrange),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Inserisci la tua email per reimpostare la password',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmailField() {
-    return TextFormField(
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
-      textInputAction: TextInputAction.done,
-      decoration: const InputDecoration(
-        labelText: 'Email',
-        prefixIcon: Icon(Icons.email),
-        border: OutlineInputBorder(),
-        filled: true,
-        hintText: 'es. mario@esempio.com',
-      ),
-      validator: _validateEmail,
-      onChanged: (_) {
-        if (_errorMessage != null || _successMessage != null) {
-          setState(() {
-            _errorMessage = null;
-            _successMessage = null;
-          });
-        }
-      },
-      onFieldSubmitted: (_) => _submitForgotPassword(),
-    );
-  }
-
-  Widget _buildErrorSection() {
-    if (_errorMessage == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: Colors.red),
-          const SizedBox(width: 12),
-          Expanded(
-              child: Text(_errorMessage!,
-                  style: const TextStyle(color: Colors.red))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSuccessSection() {
-    if (!_isSuccess) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.green[50],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green),
-              SizedBox(width: 12),
-              Expanded(
-                  child: Text('Email inviata!',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.green))),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _successMessage ??
-                'Riceverai istruzioni per reimpostare la password.',
-            style: const TextStyle(color: Colors.green),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            '⚠️ Controlla la cartella spam',
-            style: TextStyle(fontSize: 12, color: Colors.orange),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Reindirizzamento al login...',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          const SizedBox(height: 8),
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _isLoading ? null : _submitForgotPassword,
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 50),
-        backgroundColor: Colors.deepOrange,
-      ),
-      child: _isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                  strokeWidth: 2, color: Colors.white))
-          : const Text('INVIA ISTRUZIONI',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _buildLoginLink() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text('Torna al ', style: TextStyle(color: Colors.grey)),
-        TextButton(
-          onPressed: _isLoading ? null : _navigateToLogin,
-          child: const Text('Login',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.deepOrange)),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStepItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        children: [
-          const Icon(Icons.arrow_right, color: Colors.deepOrange, size: 20),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text)),
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (widget.showCloseButton)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, size: 32),
-                    onPressed: widget.onClose,
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.withAlpha(50),
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                ),
-              _buildLogo(),
-              const SizedBox(height: 24),
-              _buildEmailField(),
-              const SizedBox(height: 16),
-              _buildErrorSection(),
-              _buildSuccessSection(),
-              const SizedBox(height: 24),
-              _buildSubmitButton(),
-              const SizedBox(height: 24),
-              _buildLoginLink(),
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 16),
-              const Text('Cosa succede dopo:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              _buildStepItem('Riceverai un\'email con un link di reset'),
-              _buildStepItem('Clicca sul link (valido per 1 ora)'),
-              _buildStepItem('Imposta una nuova password'),
-              _buildStepItem('Accedi con la nuova password'),
-            ],
-          ),
+    return AuthFormWrapper(
+      formKey: _formKey,
+      onClose: widget.onClose,
+      showCloseButton: widget.showCloseButton,
+      children: [
+        _buildLogo(),
+        const SizedBox(height: 24),
+        _buildEmailField(),
+        const SizedBox(height: 16),
+        if (_errorMessage != null) AuthErrorBox(message: _errorMessage!),
+        if (_isSuccess) _buildSuccessSection(),
+        const SizedBox(height: 24),
+        _buildSubmitButton(),
+        const SizedBox(height: 24),
+        _buildLoginLink(),
+        const SizedBox(height: 20),
+        const Divider(),
+        const SizedBox(height: 16),
+        const Text(
+          'Cosa succede dopo:',
+          style: TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
-      ),
+        const SizedBox(height: 12),
+        _buildStepItem('Riceverai un\'email con un link di reset'),
+        _buildStepItem('Clicca sul link (valido per 1 ora)'),
+        _buildStepItem('Imposta una nuova password'),
+        _buildStepItem('Accedi con la nuova password'),
+      ],
     );
   }
+
+  Widget _buildLogo() => Column(
+        children: [
+          Icon(Icons.lock_reset,
+              size: 80, color: Theme.of(context).primaryColor),
+          const SizedBox(height: 16),
+          const Text(
+            'Password dimenticata?',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.deepOrange,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Inserisci la tua email per reimpostare la password',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      );
+
+  Widget _buildEmailField() => TextFormField(
+        controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        textInputAction: TextInputAction.done,
+        decoration: const InputDecoration(
+          labelText: 'Email',
+          prefixIcon: Icon(Icons.email),
+          border: OutlineInputBorder(),
+          filled: true,
+          hintText: 'es. mario@esempio.com',
+        ),
+        validator: _validateEmail,
+        onChanged: (_) => _clearMessages(),
+        onFieldSubmitted: (_) => _submitForgotPassword(),
+      );
+
+  Widget _buildSuccessSection() => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.green[50],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Email inviata!',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.green),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _successMessage ??
+                  'Riceverai istruzioni per reimpostare la password.',
+              style: const TextStyle(color: Colors.green),
+            ),
+            const SizedBox(height: 16),
+            const Text('⚠️ Controlla la cartella spam',
+                style: TextStyle(fontSize: 12, color: Colors.orange)),
+            const SizedBox(height: 16),
+            const Text('Reindirizzamento al login...',
+                style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 8),
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildSubmitButton() => ElevatedButton(
+        onPressed: _isLoading ? null : _submitForgotPassword,
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 50),
+          backgroundColor: Colors.deepOrange,
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
+              )
+            : const Text(
+                'INVIA ISTRUZIONI',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+      );
+
+  Widget _buildLoginLink() => Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('Torna al ', style: TextStyle(color: Colors.grey)),
+          TextButton(
+            onPressed: _isLoading ? null : _navigateToLogin,
+            child: const Text(
+              'Login',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.deepOrange),
+            ),
+          ),
+        ],
+      );
+
+  Widget _buildStepItem(String text) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Row(
+          children: [
+            const Icon(Icons.arrow_right, color: Colors.deepOrange, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(text)),
+          ],
+        ),
+      );
 }

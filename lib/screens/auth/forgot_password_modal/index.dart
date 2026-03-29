@@ -14,7 +14,12 @@ class ForgotPasswordModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final mediaQuery = MediaQuery.of(context);
+    final orientation = mediaQuery.orientation;
+    final shortestSide = mediaQuery.size.shortestSide;
+    final isLandscapeMobile =
+        orientation == Orientation.landscape && shortestSide < 600;
+    final isMobile = mediaQuery.size.width < 768 || isLandscapeMobile;
 
     final closeCallback = onClose ?? () => Navigator.of(context).pop();
 

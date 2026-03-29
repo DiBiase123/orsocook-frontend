@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
 
 class LoginFormFields extends StatefulWidget {
   final TextEditingController emailController;
@@ -7,7 +8,7 @@ class LoginFormFields extends StatefulWidget {
   final Function(String?) onEmailChanged;
   final Function(String?) onPasswordChanged;
   final Function()? onForgotPasswordPressed;
-  final Function()? onSubmitted; // <-- NUOVO: callback per invio da tastiera
+  final Function()? onSubmitted;
   final bool isLoading;
 
   const LoginFormFields({
@@ -18,7 +19,7 @@ class LoginFormFields extends StatefulWidget {
     required this.onEmailChanged,
     required this.onPasswordChanged,
     this.onForgotPasswordPressed,
-    this.onSubmitted, // <-- NUOVO parametro
+    this.onSubmitted,
     required this.isLoading,
   });
 
@@ -49,93 +50,52 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
     return null;
   }
 
-  Widget _buildEmailField() {
-    return TextFormField(
-      controller: widget.emailController,
-      keyboardType: TextInputType.emailAddress,
-      autofillHints: const [AutofillHints.email],
-      textInputAction: TextInputAction.next,
-      decoration: const InputDecoration(
-        labelText: 'Email',
-        prefixIcon: Icon(Icons.email),
-        border: OutlineInputBorder(),
-        filled: true,
-      ),
-      validator: _validateEmail,
-      onChanged: (value) {
-        widget.onEmailChanged(value);
-      },
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return TextFormField(
-      controller: widget.passwordController,
-      obscureText: _obscurePassword,
-      autofillHints: const [AutofillHints.password],
-      textInputAction: TextInputAction.done,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        prefixIcon: const Icon(Icons.lock),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
-        ),
-        border: const OutlineInputBorder(),
-        filled: true,
-      ),
-      validator: _validatePassword,
-      onFieldSubmitted: (_) {
-        // Invoca il callback quando si preme "invio" sulla tastiera
-        if (widget.onSubmitted != null) {
-          widget.onSubmitted!();
-        }
-      },
-      onChanged: (value) {
-        widget.onPasswordChanged(value);
-      },
-    );
-  }
-
-  Widget _buildErrorSection() {
-    if (widget.errorMessage == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red[100]!),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: Colors.red),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              widget.errorMessage!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildEmailField(),
+        TextFormField(
+          controller: widget.emailController,
+          keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.email],
+          textInputAction: TextInputAction.next,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            prefixIcon: Icon(Icons.email),
+            border: OutlineInputBorder(),
+            filled: true,
+          ),
+          validator: _validateEmail,
+          onChanged: widget.onEmailChanged,
+        ),
         const SizedBox(height: 20),
-        _buildPasswordField(),
+        TextFormField(
+          controller: widget.passwordController,
+          obscureText: _obscurePassword,
+          autofillHints: const [AutofillHints.password],
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+            labelText: 'Password',
+            prefixIcon: const Icon(Icons.lock),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility : Icons.visibility_off,
+              ),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+            ),
+            border: const OutlineInputBorder(),
+            filled: true,
+          ),
+          validator: _validatePassword,
+          onFieldSubmitted: (_) {
+            if (widget.onSubmitted != null) {
+              widget.onSubmitted!();
+            }
+          },
+          onChanged: widget.onPasswordChanged,
+        ),
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerRight,
@@ -148,7 +108,8 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildErrorSection(),
+        if (widget.errorMessage != null)
+          AuthErrorBox(message: widget.errorMessage!),
       ],
     );
   }

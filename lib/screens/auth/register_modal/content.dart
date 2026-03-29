@@ -5,7 +5,8 @@ import 'package:orsocook/screens/auth/widgets/register_logo.dart';
 import 'package:orsocook/screens/auth/widgets/register_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/register_actions.dart';
 import 'package:orsocook/screens/auth/widgets/terms_checkbox.dart';
-import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
+import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
 
 class RegisterModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -44,29 +45,18 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
   }
 
   Future<void> _submitRegistration() async {
-    // Usa WidgetsBinding per assicurarsi che il widget sia costruito
-    await WidgetsBinding.instance.endOfFrame;
+    await AuthUtils.submitWithFormGuard(
+      formKey: _formKey,
+      mounted: mounted,
+      onSubmit: _doSubmit,
+    );
+  }
 
-    if (!mounted) return;
-
-    if (_formKey.currentState == null) {
-      AppLogger.debug('Form non pronto, riprovo dopo il prossimo frame');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _formKey.currentState == null) {
-          AppLogger.debug('Form ancora non pronto, ritento dopo 100ms');
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) _submitRegistration();
-          });
-        } else if (mounted) {
-          _submitRegistration();
-        }
-      });
-      return;
-    }
-
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _doSubmit() async {
     if (!_acceptTerms) {
-      _showSnackBar('Devi accettare i termini e condizioni', Colors.orange);
+      AuthUtils.showAuthSnackBar(context,
+          message: 'Devi accettare i termini e condizioni',
+          color: Colors.orange);
       return;
     }
 
@@ -76,8 +66,8 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
     });
 
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final result = await authService.registerWithVerification(
+      final result = await Provider.of<AuthService>(context, listen: false)
+          .registerWithVerification(
         _usernameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,
@@ -94,7 +84,7 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
         }
       } else {
         setState(() => _errorMessage = result.message);
-        _showSnackBar(result.message, Colors.red);
+        AuthUtils.showAuthSnackBar(context, message: result.message);
       }
     } catch (e) {
       if (!mounted) return;
@@ -102,19 +92,8 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
         _isLoading = false;
         _errorMessage = 'Errore di connessione';
       });
-      _showSnackBar('Errore di connessione', Colors.red);
+      AuthUtils.showAuthSnackBar(context, message: 'Errore di connessione');
     }
-  }
-
-  void _showSnackBar(String message, Color color) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 3),
-      ),
-    );
   }
 
   void _showVerificationDialog(String email) {
@@ -195,90 +174,61 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
     );
   }
 
-  Widget _buildStep(String text, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.blue, size: 20),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text)),
-        ],
-      ),
-    );
-  }
+  Widget _buildStep(String text, IconData icon) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.blue, size: 20),
+            const SizedBox(width: 10),
+            Expanded(child: Text(text)),
+          ],
+        ),
+      );
 
   void _clearErrorOnChange() {
     if (_errorMessage != null) setState(() => _errorMessage = null);
   }
 
-  void _navigateToLogin() {
-    if (widget.onNavigateToLogin != null) {
-      widget.onNavigateToLogin!();
-    } else {
-      widget.onClose();
-    }
-  }
+  void _navigateToLogin() =>
+      AuthUtils.navigateOrClose(widget.onNavigateToLogin, widget.onClose);
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (widget.showCloseButton)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, size: 32),
-                    onPressed: widget.onClose,
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.withAlpha(50),
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                ),
-              const RegisterLogo(),
-              const SizedBox(height: 24),
-              RegisterFormFields(
-                usernameController: _usernameController,
-                emailController: _emailController,
-                passwordController: _passwordController,
-                confirmPasswordController: _confirmPasswordController,
-                errorMessage: _errorMessage,
-                onUsernameChanged: (_) => _clearErrorOnChange(),
-                onEmailChanged: (_) => _clearErrorOnChange(),
-                onPasswordChanged: (_) => _clearErrorOnChange(),
-                onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
-                isLoading: _isLoading,
-                validateForm: () => _formKey.currentState?.validate(),
-              ),
-              const SizedBox(height: 16),
-              TermsCheckbox(
-                value: _acceptTerms,
-                onChanged: (value) => setState(() => _acceptTerms = value),
-                isLoading: _isLoading,
-              ),
-              const SizedBox(height: 24),
-              RegisterActions(
-                isLoading: _isLoading,
-                onRegisterPressed: _submitRegistration,
-                onLoginPressed: _isLoading ? null : _navigateToLogin,
-                showFeatures: true,
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+    return AuthFormWrapper(
+      formKey: _formKey,
+      onClose: widget.onClose,
+      showCloseButton: widget.showCloseButton,
+      children: [
+        const RegisterLogo(),
+        const SizedBox(height: 24),
+        RegisterFormFields(
+          usernameController: _usernameController,
+          emailController: _emailController,
+          passwordController: _passwordController,
+          confirmPasswordController: _confirmPasswordController,
+          errorMessage: _errorMessage,
+          onUsernameChanged: (_) => _clearErrorOnChange(),
+          onEmailChanged: (_) => _clearErrorOnChange(),
+          onPasswordChanged: (_) => _clearErrorOnChange(),
+          onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
+          isLoading: _isLoading,
+          validateForm: () => _formKey.currentState?.validate(),
         ),
-      ),
+        const SizedBox(height: 16),
+        TermsCheckbox(
+          value: _acceptTerms,
+          onChanged: (value) => setState(() => _acceptTerms = value),
+          isLoading: _isLoading,
+        ),
+        const SizedBox(height: 24),
+        RegisterActions(
+          isLoading: _isLoading,
+          onRegisterPressed: _submitRegistration,
+          onLoginPressed: _isLoading ? null : _navigateToLogin,
+          showFeatures: true,
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

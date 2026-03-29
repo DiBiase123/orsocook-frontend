@@ -4,7 +4,8 @@ import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/widgets/login_logo.dart';
 import 'package:orsocook/screens/auth/widgets/login_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/login_actions.dart';
-import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
+import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
 
 class LoginModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -40,36 +41,22 @@ class _LoginModalContentState extends State<LoginModalContent> {
   }
 
   Future<void> _submitLogin() async {
-    // Usa WidgetsBinding per assicurarsi che il widget sia costruito
-    await WidgetsBinding.instance.endOfFrame;
+    await AuthUtils.submitWithFormGuard(
+      formKey: _formKey,
+      mounted: mounted,
+      onSubmit: _doSubmit,
+    );
+  }
 
-    if (!mounted) return;
-
-    if (_formKey.currentState == null) {
-      AppLogger.debug('Form non pronto, riprovo dopo il prossimo frame');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _formKey.currentState == null) {
-          AppLogger.debug('Form ancora non pronto, ritento dopo 100ms');
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) _submitLogin();
-          });
-        } else if (mounted) {
-          _submitLogin();
-        }
-      });
-      return;
-    }
-
-    if (!_formKey.currentState!.validate()) return;
-
+  Future<void> _doSubmit() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final result = await authService.login(
+      final result =
+          await Provider.of<AuthService>(context, listen: false).login(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -78,7 +65,8 @@ class _LoginModalContentState extends State<LoginModalContent> {
       setState(() => _isLoading = false);
 
       if (result.success) {
-        _showSnackBar('Login effettuato con successo!', Colors.green);
+        AuthUtils.showAuthSnackBar(context,
+            message: 'Login effettuato con successo!', color: Colors.green);
         widget.onClose();
       } else {
         _handleLoginError(result);
@@ -86,7 +74,7 @@ class _LoginModalContentState extends State<LoginModalContent> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showSnackBar('Errore di connessione', Colors.red);
+      AuthUtils.showAuthSnackBar(context, message: 'Errore di connessione');
     }
   }
 
@@ -97,19 +85,28 @@ class _LoginModalContentState extends State<LoginModalContent> {
       _showAccountLockedDialog(result.lockTime ?? 15);
     } else {
       setState(() => _errorMessage = result.message);
-      _showSnackBar(result.message, Colors.red);
+      AuthUtils.showAuthSnackBar(context, message: result.message);
     }
   }
 
-  void _showSnackBar(String message, Color color) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+  Future<void> _resendVerificationEmail(String email) async {
+    setState(() => _isLoading = true);
+    Navigator.of(context).pop();
+
+    try {
+      final result = await Provider.of<AuthService>(context, listen: false)
+          .resendVerificationEmail(email);
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      AuthUtils.showAuthSnackBar(context,
+          message: result.message,
+          color: result.success ? Colors.green : Colors.red);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      AuthUtils.showAuthSnackBar(context, message: 'Errore di connessione');
+    }
   }
 
   void _showEmailNotVerifiedDialog(String email) {
@@ -144,24 +141,6 @@ class _LoginModalContentState extends State<LoginModalContent> {
         ],
       ),
     );
-  }
-
-  Future<void> _resendVerificationEmail(String email) async {
-    setState(() => _isLoading = true);
-    Navigator.of(context).pop();
-
-    try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final result = await authService.resendVerificationEmail(email);
-
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      _showSnackBar(result.message, result.success ? Colors.green : Colors.red);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      _showSnackBar('Errore di connessione', Colors.red);
-    }
   }
 
   void _showAccountLockedDialog(int lockTime) {
@@ -199,21 +178,11 @@ class _LoginModalContentState extends State<LoginModalContent> {
     );
   }
 
-  void _navigateToForgotPassword() {
-    if (widget.onNavigateToForgotPassword != null) {
-      widget.onNavigateToForgotPassword!();
-    } else {
-      widget.onClose();
-    }
-  }
+  void _navigateToForgotPassword() => AuthUtils.navigateOrClose(
+      widget.onNavigateToForgotPassword, widget.onClose);
 
-  void _navigateToRegister() {
-    if (widget.onNavigateToRegister != null) {
-      widget.onNavigateToRegister!();
-    } else {
-      widget.onClose();
-    }
-  }
+  void _navigateToRegister() =>
+      AuthUtils.navigateOrClose(widget.onNavigateToRegister, widget.onClose);
 
   void _clearErrorOnChange() {
     if (_errorMessage != null) setState(() => _errorMessage = null);
@@ -221,56 +190,34 @@ class _LoginModalContentState extends State<LoginModalContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (widget.showCloseButton)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, size: 32),
-                    onPressed: widget.onClose,
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.withAlpha(50),
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                ),
-              const LoginLogo(),
-              const SizedBox(height: 24),
-              LoginFormFields(
-                emailController: _emailController,
-                passwordController: _passwordController,
-                errorMessage: _errorMessage,
-                onEmailChanged: (_) => _clearErrorOnChange(),
-                onPasswordChanged: (_) => _clearErrorOnChange(),
-                onForgotPasswordPressed:
-                    _isLoading ? null : _navigateToForgotPassword,
-                onSubmitted: _submitLogin,
-                isLoading: _isLoading,
-              ),
-              const SizedBox(height: 24),
-              LoginActions(
-                isLoading: _isLoading,
-                onLoginPressed: _submitLogin,
-                onRegisterPressed: _isLoading ? null : _navigateToRegister,
-                onContinueWithoutAuth: widget.onClose,
-                showSocialLogin: true,
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+    return AuthFormWrapper(
+      formKey: _formKey,
+      onClose: widget.onClose,
+      showCloseButton: widget.showCloseButton,
+      children: [
+        const LoginLogo(),
+        const SizedBox(height: 24),
+        LoginFormFields(
+          emailController: _emailController,
+          passwordController: _passwordController,
+          errorMessage: _errorMessage,
+          onEmailChanged: (_) => _clearErrorOnChange(),
+          onPasswordChanged: (_) => _clearErrorOnChange(),
+          onForgotPasswordPressed:
+              _isLoading ? null : _navigateToForgotPassword,
+          onSubmitted: _submitLogin,
+          isLoading: _isLoading,
         ),
-      ),
+        const SizedBox(height: 24),
+        LoginActions(
+          isLoading: _isLoading,
+          onLoginPressed: _submitLogin,
+          onRegisterPressed: _isLoading ? null : _navigateToRegister,
+          onContinueWithoutAuth: widget.onClose,
+          showSocialLogin: true,
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }
