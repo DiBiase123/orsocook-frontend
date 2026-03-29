@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class DetailHeaderSection extends StatelessWidget {
   final Recipe recipe;
@@ -24,9 +25,11 @@ class DetailHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 👈 LOG PER DEBUG
-    print('🔍 DetailHeaderSection - category: ${recipe.category}');
-    print('🔍 DetailHeaderSection - category name: ${recipe.category?.name}');
+    // 👈 LOG PER DEBUG con AppLogger
+    AppLogger.debug('DetailHeaderSection - category: ${recipe.category}');
+    AppLogger.debug(
+        'DetailHeaderSection - category name: ${recipe.category?.name}');
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

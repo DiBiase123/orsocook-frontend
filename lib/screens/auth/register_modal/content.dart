@@ -5,6 +5,7 @@ import 'package:orsocook/screens/auth/widgets/register_logo.dart';
 import 'package:orsocook/screens/auth/widgets/register_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/register_actions.dart';
 import 'package:orsocook/screens/auth/widgets/terms_checkbox.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class RegisterModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -49,10 +50,10 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
     if (!mounted) return;
 
     if (_formKey.currentState == null) {
-      print('Form non pronto, riprovo dopo il prossimo frame');
+      AppLogger.debug('Form non pronto, riprovo dopo il prossimo frame');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _formKey.currentState == null) {
-          print('Form ancora non pronto, ritento dopo 100ms');
+          AppLogger.debug('Form ancora non pronto, ritento dopo 100ms');
           Future.delayed(const Duration(milliseconds: 100), () {
             if (mounted) _submitRegistration();
           });

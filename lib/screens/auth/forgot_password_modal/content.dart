@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class ForgotPasswordModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -48,10 +49,10 @@ class _ForgotPasswordModalContentState
     if (!mounted) return;
 
     if (_formKey.currentState == null) {
-      print('Form non pronto, riprovo dopo il prossimo frame');
+      AppLogger.debug('Form non pronto, riprovo dopo il prossimo frame');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _formKey.currentState == null) {
-          print('Form ancora non pronto, ritento dopo 100ms');
+          AppLogger.debug('Form ancora non pronto, ritento dopo 100ms');
           Future.delayed(const Duration(milliseconds: 100), () {
             if (mounted) _submitForgotPassword();
           });

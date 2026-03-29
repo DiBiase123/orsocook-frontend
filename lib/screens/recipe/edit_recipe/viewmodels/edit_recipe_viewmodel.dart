@@ -246,8 +246,9 @@ class EditRecipeViewModel extends ChangeNotifier {
         AppLogger.error('Errore nel trovare categoria', e);
       }
     }
-    print('🔍 MODIFICA - selectedCategory: $selectedCategory');
-    print('🔍 MODIFICA - selectedCategoryObj: $selectedCategoryObj');
+    AppLogger.debug('MODIFICA - selectedCategory: $selectedCategory');
+    AppLogger.debug('MODIFICA - selectedCategoryObj: $selectedCategoryObj');
+
     return Recipe(
       id: originalRecipe.id,
       title: titleController.text.trim(),
@@ -313,7 +314,8 @@ class EditRecipeViewModel extends ChangeNotifier {
       final updatedRecipe = _buildUpdatedRecipe(imageUrl);
 
       // 👈 LOG PER VEDERE COSA VIENE INVIATO
-      print('🔍 INVIO AL BACKEND - recipe.toJson(): ${updatedRecipe.toJson()}');
+      AppLogger.debug(
+          'INVIO AL BACKEND - recipe.toJson(): ${updatedRecipe.toJson()}');
 
       final result =
           await _recipeService.updateRecipe(originalRecipe.id, updatedRecipe);

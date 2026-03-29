@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:orsocook/screens/auth/login_screen.dart';
-import 'package:orsocook/screens/auth/register_screen.dart';
-import 'package:orsocook/screens/auth/forgot_password_screen.dart';
 import 'package:orsocook/screens/auth/reset_password_screen.dart';
 import 'package:orsocook/screens/auth/verify_email_screen.dart';
 import 'package:orsocook/screens/home/home_screen.dart';
@@ -25,23 +22,7 @@ final goRouter = GoRouter(
       path: '/',
       redirect: (context, state) => '/home',
     ),
-    // Auth screens unificati
-    GoRoute(
-      path: '/login',
-      name: 'login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/register',
-      name: 'register',
-      builder: (context, state) => const RegisterScreen(),
-    ),
-    GoRoute(
-      path: '/forgot-password',
-      name: 'forgot-password',
-      builder: (context, state) => const ForgotPasswordScreen(),
-    ),
-    // Reset password - screen
+    // Reset password - screen (arriva da email)
     GoRoute(
       path: '/reset-password',
       name: 'reset-password',
@@ -55,7 +36,7 @@ final goRouter = GoRouter(
         return ResetPasswordScreen(token: token);
       },
     ),
-    // Verify email - screen
+    // Verify email - screen (arriva da email)
     GoRoute(
       path: '/verify-email',
       name: 'verify-email',

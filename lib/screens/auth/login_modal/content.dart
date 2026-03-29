@@ -4,6 +4,7 @@ import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/widgets/login_logo.dart';
 import 'package:orsocook/screens/auth/widgets/login_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/login_actions.dart';
+import 'package:orsocook/utils/logger.dart';
 
 class LoginModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -45,10 +46,10 @@ class _LoginModalContentState extends State<LoginModalContent> {
     if (!mounted) return;
 
     if (_formKey.currentState == null) {
-      print('Form non pronto, riprovo dopo il prossimo frame');
+      AppLogger.debug('Form non pronto, riprovo dopo il prossimo frame');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _formKey.currentState == null) {
-          print('Form ancora non pronto, ritento dopo 100ms');
+          AppLogger.debug('Form ancora non pronto, ritento dopo 100ms');
           Future.delayed(const Duration(milliseconds: 100), () {
             if (mounted) _submitLogin();
           });
