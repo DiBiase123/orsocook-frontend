@@ -20,36 +20,28 @@ class LogoutManager {
       final favoriteService =
           Provider.of<FavoriteService>(context, listen: false);
 
-      // 1. Prima pulisci le cache (prima di logout)
+      // 1. Pulisci le cache
       profileService.clearProfile();
       recipeService.clearCache();
       favoriteService.reset();
 
       AppLogger.debug('✅ Cache pulite');
 
-      // 2. Esegui logout (questo fa anche notifyListeners)
+      // 2. Esegui logout
       await authService.logout();
 
       AppLogger.success('✅ Logout completato');
 
-      // 3. Verifica contesto
-      if (!context.mounted) return;
-
-      // 4. Forza un piccolo delay per permettere a tutti i listener di aggiornarsi
-      await Future.delayed(const Duration(milliseconds: 50));
-
-      // 5. Verifica contesto di nuovo dopo il delay
-      if (!context.mounted) return;
-
-      // 6. Torna alla home
-      context.go('/home');
-
-      // 7. Mostra il modal login dopo un breve delay
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (context.mounted) {
-          showLoginModal(context);
-        }
-      });
+      // 3. Torna alla home e mostra login
+      if (context.mounted) {
+        context.go('/home');
+        // Piccolo delay per far sì che la navigazione completi
+        Future.delayed(const Duration(milliseconds: 150), () {
+          if (context.mounted) {
+            showLoginModal(context);
+          }
+        });
+      }
     } catch (e) {
       AppLogger.error('Errore durante logout', e);
       if (context.mounted) {

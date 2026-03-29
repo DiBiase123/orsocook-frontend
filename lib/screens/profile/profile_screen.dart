@@ -53,19 +53,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Logout'),
         content: const Text('Sei sicuro di voler effettuare il logout?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Annulla'),
           ),
           TextButton(
             onPressed: () async {
-              // Chiudi il dialog
-              Navigator.of(context).pop();
-              // Esegui il logout
+              // Chiudi il dialog usando il contesto del dialog
+              Navigator.of(dialogContext).pop();
+              // Usa il contesto originale dello scaffold per il logout
               await LogoutManager.performLogout(context);
             },
             child: const Text('Logout', style: TextStyle(color: Colors.red)),
