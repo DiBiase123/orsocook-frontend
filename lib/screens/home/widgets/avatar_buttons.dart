@@ -28,10 +28,10 @@ class AvatarIconButton extends StatelessWidget {
         onPressed: onTap,
         tooltip: tooltip,
         color: Colors.white,
-        padding: const EdgeInsets.all(4),
+        padding: EdgeInsets.zero,
         constraints: BoxConstraints(
-          minWidth: iconSize + 8,
-          minHeight: iconSize + 8,
+          minWidth: iconSize,
+          minHeight: iconSize,
         ),
       ),
     );
@@ -151,6 +151,7 @@ class AvatarBuilder {
     VoidCallback onTap, {
     bool isInAppBar = false,
     double? size,
+    double? loggedSize,
   }) {
     if (!authService.isLoggedIn) {
       return AvatarIconButton(
@@ -168,12 +169,13 @@ class AvatarBuilder {
 
     final String? avatarUrl = authService.avatarUrl;
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      final finalSize = loggedSize ?? size;
       return AvatarImageButton(
         avatarUrl: avatarUrl,
         tooltip: tooltip,
         onTap: onTap,
         isInAppBar: isInAppBar,
-        size: size,
+        size: finalSize,
       );
     }
 

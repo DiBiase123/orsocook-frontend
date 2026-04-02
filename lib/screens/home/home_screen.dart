@@ -6,7 +6,9 @@ import 'package:orsocook/screens/auth/login.dart';
 import 'package:orsocook/screens/home/viewmodels/home_viewmodel.dart';
 import 'package:orsocook/screens/home/components/home_loading_screen.dart';
 import 'package:orsocook/screens/home/components/home_carousel_section.dart';
-import 'package:orsocook/screens/home/widgets/index.dart';
+import 'package:orsocook/screens/home/widgets/home_app_bar.dart';
+import 'package:orsocook/screens/home/widgets/home_body.dart';
+import 'package:orsocook/screens/home/widgets/categories_scroll_bar.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/category_service.dart';
@@ -64,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToProfile() {
     final authService = context.read<AuthService>();
     if (!authService.isLoggedIn) {
-      AppLogger.debug('🔍 [HOME] Chiamo showLoginModal');
       showLoginModal(context);
       return;
     }
@@ -133,37 +134,83 @@ class _HomeScreenState extends State<HomeScreen> {
 
           final carouselRecipes = viewModel.recipes.take(6).toList();
           final screenWidth = MediaQuery.of(context).size.width;
-          final isDesktop = screenWidth > 768;
+          final isDesktop = screenWidth >= 900;
 
+          // Desktop: AppBar fissa, niente scroll hide
+          if (isDesktop) {
+            return Scaffold(
+              body: Column(
+                children: [
+                  HomeAppBar(
+                    onProfileTap: _navigateToProfile,
+                    onCreateRecipeTap: _navigateToCreateRecipe,
+                    searchController: _searchController,
+                    onSearchChanged: viewModel.onSearchChanged,
+                  ),
+                  Expanded(
+                    child: ListView(
+                      controller: _scrollController,
+                      children: [
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height - 64,
+                          child: HomeCarouselSection(
+                            recipes: carouselRecipes,
+                            onRecipeTap: _navigateToRecipeDetail,
+                          ),
+                        ),
+                        CategoriesScrollBar(
+                          onCategorySelected: (slug) {
+                            if (slug != null) context.push('/category/$slug');
+                          },
+                          selectedCategorySlug: null,
+                        ),
+                        HomeBody(
+                          onCreateRecipeTap: _navigateToCreateRecipe,
+                          searchController: _searchController,
+                          onRecipeTap: _navigateToRecipeDetail,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Mobile/Tablet: scroll hide con SliverAppBar
           return Scaffold(
-            body: Column(
-              children: [
-                HomeAppBar(
-                  onProfileTap: _navigateToProfile,
-                  onCreateRecipeTap: _navigateToCreateRecipe,
-                  searchController: _searchController,
-                  onSearchChanged: viewModel.onSearchChanged,
+            body: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  backgroundColor: const Color(0xFF6750A4),
+                  elevation: 0,
+                  floating: true,
+                  snap: false,
+                  pinned: false,
+                  expandedHeight: screenWidth < 600 ? 130 : 135,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: HomeAppBar(
+                      onProfileTap: _navigateToProfile,
+                      onCreateRecipeTap: _navigateToCreateRecipe,
+                      searchController: _searchController,
+                      onSearchChanged: viewModel.onSearchChanged,
+                    ),
+                  ),
                 ),
-                Expanded(
-                  child: ListView(
-                    controller: _scrollController,
+                SliverToBoxAdapter(
+                  child: Column(
                     children: [
-                      if (isDesktop) const SizedBox(height: 32),
-                      isDesktop
-                          ? SizedBox(
-                              height: MediaQuery.of(context).size.height - 64,
-                              child: HomeCarouselSection(
-                                recipes: carouselRecipes,
-                                onRecipeTap: _navigateToRecipeDetail,
-                              ),
-                            )
-                          : SizedBox(
-                              height: 400,
-                              child: HomeCarouselSection(
-                                recipes: carouselRecipes,
-                                onRecipeTap: _navigateToRecipeDetail,
-                              ),
-                            ),
+                      SizedBox(
+                        height: 400,
+                        child: HomeCarouselSection(
+                          recipes: carouselRecipes,
+                          onRecipeTap: _navigateToRecipeDetail,
+                        ),
+                      ),
                       CategoriesScrollBar(
                         onCategorySelected: (slug) {
                           if (slug != null) context.push('/category/$slug');
