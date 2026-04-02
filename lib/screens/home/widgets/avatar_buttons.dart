@@ -1,48 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/services/auth_service.dart';
 
-// ========== WIDGET ICONA ==========
 class AvatarIconButton extends StatelessWidget {
   final IconData icon;
   final String tooltip;
   final VoidCallback? onTap;
+  final bool isInAppBar;
+  final double? size;
 
   const AvatarIconButton({
     super.key,
     required this.icon,
     required this.tooltip,
     this.onTap,
+    this.isInAppBar = false,
+    this.size,
   });
 
   @override
   Widget build(BuildContext context) {
+    final iconSize = size ?? (isInAppBar ? 32.0 : 44.0);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: IconButton(
-        icon: Icon(icon, size: 44),
+        icon: Icon(icon, size: iconSize),
         onPressed: onTap,
         tooltip: tooltip,
-        padding: const EdgeInsets.all(8),
-        constraints: const BoxConstraints(
-          minWidth: 52,
-          minHeight: 52,
+        color: Colors.white,
+        padding: const EdgeInsets.all(4),
+        constraints: BoxConstraints(
+          minWidth: iconSize + 8,
+          minHeight: iconSize + 8,
         ),
       ),
     );
   }
 }
 
-// ========== WIDGET IMMAGINE CON ANIMAZIONE ==========
 class AvatarImageButton extends StatefulWidget {
   final String avatarUrl;
   final String tooltip;
   final VoidCallback? onTap;
+  final bool isInAppBar;
+  final double? size;
 
   const AvatarImageButton({
     super.key,
     required this.avatarUrl,
     required this.tooltip,
     this.onTap,
+    this.isInAppBar = false,
+    this.size,
   });
 
   @override
@@ -84,6 +93,11 @@ class _AvatarImageButtonState extends State<AvatarImageButton>
 
   @override
   Widget build(BuildContext context) {
+    final avatarRadius = widget.size != null
+        ? widget.size! / 2
+        : (widget.isInAppBar ? 20.0 : 30.0);
+    final marginHorizontal = widget.isInAppBar ? 4.0 : 12.0;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
@@ -99,26 +113,19 @@ class _AvatarImageButtonState extends State<AvatarImageButton>
             builder: (context, child) => Transform.scale(
               scale: _scaleAnimation.value,
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12),
+                margin: EdgeInsets.symmetric(horizontal: marginHorizontal),
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: _isHovered
-                        ? Colors.orange
-                        : Colors.orange.withAlpha(100),
-                    width: _isHovered ? 3 : 2,
+                    color:
+                        _isHovered ? Colors.white : Colors.white.withAlpha(100),
+                    width: _isHovered ? 2 : 1,
                   ),
                   boxShadow: [
                     if (_isHovered)
                       BoxShadow(
-                        color: Colors.orange.withAlpha(80),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      )
-                    else
-                      BoxShadow(
-                        color: Colors.orange.withAlpha(60),
+                        color: Colors.white.withAlpha(80),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -126,8 +133,8 @@ class _AvatarImageButtonState extends State<AvatarImageButton>
                 ),
                 child: CircleAvatar(
                   backgroundImage: NetworkImage(widget.avatarUrl),
-                  radius: 30,
-                  backgroundColor: Colors.grey[200],
+                  radius: avatarRadius,
+                  backgroundColor: Colors.grey[300],
                 ),
               ),
             ),
@@ -138,27 +145,26 @@ class _AvatarImageButtonState extends State<AvatarImageButton>
   }
 }
 
-// ========== BUILDER PRINCIPALE ==========
 class AvatarBuilder {
-  static Widget buildAvatar(AuthService authService, VoidCallback onTap) {
+  static Widget buildAvatar(
+    AuthService authService,
+    VoidCallback onTap, {
+    bool isInAppBar = false,
+    double? size,
+  }) {
     if (!authService.isLoggedIn) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: AvatarIconButton(
-          icon: Icons.account_circle,
-          tooltip: 'Accedi al profilo',
-          onTap: onTap,
-        ),
+      return AvatarIconButton(
+        icon: Icons.account_circle,
+        tooltip: 'Accedi al profilo',
+        onTap: onTap,
+        isInAppBar: isInAppBar,
+        size: size,
       );
     }
 
     final String? username = authService.username;
-    final String tooltip;
-    if (username != null) {
-      tooltip = 'Profilo di $username';
-    } else {
-      tooltip = 'Profilo';
-    }
+    final String tooltip =
+        username != null ? 'Profilo di $username' : 'Profilo';
 
     final String? avatarUrl = authService.avatarUrl;
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
@@ -166,16 +172,17 @@ class AvatarBuilder {
         avatarUrl: avatarUrl,
         tooltip: tooltip,
         onTap: onTap,
+        isInAppBar: isInAppBar,
+        size: size,
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: AvatarIconButton(
-        icon: Icons.account_circle,
-        tooltip: 'Profilo',
-        onTap: onTap,
-      ),
+    return AvatarIconButton(
+      icon: Icons.account_circle,
+      tooltip: 'Profilo',
+      onTap: onTap,
+      isInAppBar: isInAppBar,
+      size: size,
     );
   }
 }

@@ -136,98 +136,49 @@ class _HomeScreenState extends State<HomeScreen> {
           final isDesktop = screenWidth > 768;
 
           return Scaffold(
-            appBar: AppBar(
-              titleSpacing: 0,
-              toolbarHeight: 64,
-              flexibleSpace: SafeArea(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
+            body: Column(
+              children: [
+                HomeAppBar(
+                  onProfileTap: _navigateToProfile,
+                  onCreateRecipeTap: _navigateToCreateRecipe,
+                  searchController: _searchController,
+                  onSearchChanged: viewModel.onSearchChanged,
+                ),
+                Expanded(
+                  child: ListView(
+                    controller: _scrollController,
                     children: [
-                      // Logo placeholder temporaneo
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(50),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.restaurant,
-                          size: 40,
-                          color: Colors.white,
-                        ),
+                      if (isDesktop) const SizedBox(height: 32),
+                      isDesktop
+                          ? SizedBox(
+                              height: MediaQuery.of(context).size.height - 64,
+                              child: HomeCarouselSection(
+                                recipes: carouselRecipes,
+                                onRecipeTap: _navigateToRecipeDetail,
+                              ),
+                            )
+                          : SizedBox(
+                              height: 400,
+                              child: HomeCarouselSection(
+                                recipes: carouselRecipes,
+                                onRecipeTap: _navigateToRecipeDetail,
+                              ),
+                            ),
+                      CategoriesScrollBar(
+                        onCategorySelected: (slug) {
+                          if (slug != null) context.push('/category/$slug');
+                        },
+                        selectedCategorySlug: null,
                       ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'OrsoCook',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Colors.white,
-                        ),
+                      HomeBody(
+                        onCreateRecipeTap: _navigateToCreateRecipe,
+                        searchController: _searchController,
+                        onRecipeTap: _navigateToRecipeDetail,
                       ),
-                      const SizedBox(width: 32),
-                      Expanded(
-                        child: RecipeSearchBar(
-                          controller: _searchController,
-                          onSearchChanged: viewModel.onSearchChanged,
-                          compact: true,
-                        ),
-                      ),
-                      const SizedBox(width: 24),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: _navigateToCreateRecipe,
-                        tooltip: 'Crea ricetta',
-                        padding: const EdgeInsets.all(8),
-                      ),
-                      GestureDetector(
-                        onTap: _navigateToProfile,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8, right: 4),
-                          child: AvatarBuilder.buildAvatar(
-                              authService, _navigateToProfile),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
-              ),
-            ),
-            body: ListView(
-              controller: _scrollController,
-              children: [
-                if (isDesktop) const SizedBox(height: 32),
-                isDesktop
-                    ? SizedBox(
-                        height: MediaQuery.of(context).size.height - 64,
-                        child: HomeCarouselSection(
-                          recipes: carouselRecipes,
-                          onRecipeTap: _navigateToRecipeDetail,
-                        ),
-                      )
-                    : SizedBox(
-                        height: 400,
-                        child: HomeCarouselSection(
-                          recipes: carouselRecipes,
-                          onRecipeTap: _navigateToRecipeDetail,
-                        ),
-                      ),
-                CategoriesScrollBar(
-                  onCategorySelected: (slug) {
-                    if (slug != null) context.push('/category/$slug');
-                  },
-                  selectedCategorySlug: null,
-                ),
-                HomeBody(
-                  onCreateRecipeTap: _navigateToCreateRecipe,
-                  searchController: _searchController,
-                  onRecipeTap: _navigateToRecipeDetail,
-                ),
-                const SizedBox(height: 24),
               ],
             ),
           );

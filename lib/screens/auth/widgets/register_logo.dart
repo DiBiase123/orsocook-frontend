@@ -15,22 +15,22 @@ class RegisterLogo extends StatelessWidget {
     double iconSize;
 
     if (screenWidth > 1200) {
-      logoSize = 190;
+      logoSize = 120;
       titleFontSize = 32;
       subtitleFontSize = 16;
       iconSize = 26;
     } else if (screenWidth > 800) {
-      logoSize = 172;
+      logoSize = 100;
       titleFontSize = 28;
       subtitleFontSize = 15;
       iconSize = 24;
     } else if (screenWidth > 600) {
-      logoSize = 165;
+      logoSize = 90;
       titleFontSize = 32;
       subtitleFontSize = 15;
       iconSize = 26;
     } else {
-      logoSize = 165;
+      logoSize = 80;
       titleFontSize = 35;
       subtitleFontSize = 16;
       iconSize = 28;
@@ -38,18 +38,13 @@ class RegisterLogo extends StatelessWidget {
 
     return Column(
       children: [
-        // Logo placeholder
-        Container(
-          width: logoSize,
-          height: logoSize,
-          decoration: BoxDecoration(
-            color: Colors.deepOrange.withAlpha(50),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.restaurant,
-            size: logoSize * 0.5,
-            color: Colors.deepOrange,
+        // Logo con immagine
+        ClipOval(
+          child: Image.asset(
+            'assets/images/OrsoCooK.png',
+            width: logoSize,
+            height: logoSize,
+            fit: BoxFit.cover,
           ),
         ),
         const SizedBox(height: 16),

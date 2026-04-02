@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/screens/legal/privacy_policy_screen.dart';
-import 'package:orsocook/screens/legal/cookie_policy_screen.dart';
+import 'package:orsocook/screens/auth/terms_modal/index.dart';
 
 class TermsCheckbox extends StatefulWidget {
   final bool value;
@@ -20,126 +19,9 @@ class TermsCheckbox extends StatefulWidget {
 }
 
 class _TermsCheckboxState extends State<TermsCheckbox> {
-  void _showTermsDialog() {
+  void _showTermsModal() {
     AppLogger.debug('📄 Apri termini e condizioni');
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Termini, Condizioni e Privacy'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Benvenuto in OrsoCook!\n\n'
-                '📋 **Termini di Utilizzo:**\n'
-                '• Le ricette devono essere originali o debitamente attribuite\n'
-                '• Non sono ammessi contenuti offensivi o illegali\n'
-                '• Rispetta la privacy degli altri utenti\n'
-                '• I contenuti pubblicati rimangono di proprietà degli autori\n'
-                '• Ci riserviamo il diritto di rimuovere contenuti inappropriati\n\n',
-                style: TextStyle(fontSize: 14),
-              ),
-              const Text(
-                '🔐 **Trattamento Dati Personali (GDPR):**\n'
-                'Per fornirti il servizio e garantire la sicurezza del tuo account, raccogliamo e trattiamo:\n'
-                '• Email e username (obbligatori per la registrazione)\n'
-                '• Indirizzo IP e dati dispositivo (per sicurezza e prevenzione frodi)\n'
-                '• Ricette, commenti e preferenze (funzionalità dell\'app)\n\n',
-                style: TextStyle(fontSize: 14),
-              ),
-              const Text(
-                '⚖️ **Basi Giuridiche:**\n'
-                '• Esecuzione contratto (fornitura servizio)\n'
-                '• Legittimo interesse (sicurezza account)\n'
-                '• Consenso (dove richiesto)\n\n',
-                style: TextStyle(fontSize: 14),
-              ),
-              const Text(
-                '👤 **I tuoi Diritti (GDPR):**\n'
-                'Hai diritto a:\n'
-                '• Accedere ai tuoi dati\n'
-                '• Correggere dati inesatti\n'
-                '• Cancellare il tuo account\n'
-                '• Opporti al trattamento\n'
-                '• Portabilità dei dati\n\n',
-                style: TextStyle(fontSize: 14),
-              ),
-              const Text(
-                '📚 **Documentazione Completa:**\n',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => _openPrivacyPolicy(context),
-                  child: const Text(
-                    '📄 Leggi la Privacy Policy completa',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      decoration: TextDecoration.underline,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => _openCookiePolicy(context),
-                  child: const Text(
-                    '🍪 Informativa Cookie',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      decoration: TextDecoration.underline,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('CHIUDI'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _openPrivacyPolicy(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => Dialog(
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.8,
-          child: const PrivacyPolicyScreen(),
-        ),
-      ),
-    );
-  }
-
-  void _openCookiePolicy(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => Dialog(
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.8,
-          child: const CookiePolicyScreen(),
-        ),
-      ),
-    );
+    showTermsModal(context);
   }
 
   @override
@@ -159,7 +41,7 @@ class _TermsCheckboxState extends State<TermsCheckbox> {
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: widget.isLoading ? null : _showTermsDialog,
+              onTap: widget.isLoading ? null : _showTermsModal,
               child: const Text(
                 'Accetto i termini, condizioni e privacy',
                 style: TextStyle(color: Colors.blue),

@@ -5,56 +5,54 @@ class RecipeSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onSearchChanged;
   final bool compact;
+  final Color? backgroundColor;
+  final double? height;
 
   const RecipeSearchBar({
     super.key,
     required this.controller,
     required this.onSearchChanged,
     this.compact = false,
+    this.backgroundColor,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
     AppLogger.debug('🔍 Building RecipeSearchBar');
 
-    if (compact) {
-      return TextField(
-        controller: controller,
-        onChanged: onSearchChanged,
-        decoration: InputDecoration(
-          hintText: 'Cerca...',
-          prefixIcon: const Icon(Icons.search, size: 18),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: Colors.grey[200],
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-          isDense: true,
+    final searchBar = TextField(
+      controller: controller,
+      onChanged: onSearchChanged,
+      decoration: InputDecoration(
+        hintText: compact ? 'Cerca...' : 'Cerca ricette, ingredienti...',
+        prefixIcon: Icon(Icons.search, size: compact ? 18 : 24),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(compact ? 20 : 12),
+          borderSide: BorderSide.none,
         ),
-        style: const TextStyle(fontSize: 14),
-      );
+        filled: true,
+        fillColor:
+            backgroundColor ?? (compact ? Colors.grey[200] : Colors.grey[100]),
+        contentPadding: compact
+            ? const EdgeInsets.symmetric(vertical: 0, horizontal: 12)
+            : const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+        isDense: true,
+      ),
+      style: TextStyle(fontSize: compact ? 14 : 16),
+    );
+
+    if (height != null) {
+      return SizedBox(height: height, child: searchBar);
+    }
+
+    if (compact) {
+      return searchBar;
     }
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: TextField(
-        controller: controller,
-        onChanged: onSearchChanged,
-        decoration: InputDecoration(
-          hintText: 'Cerca ricette, ingredienti...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          filled: true,
-          fillColor: Colors.grey[100],
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-        ),
-      ),
+      child: searchBar,
     );
   }
 }
