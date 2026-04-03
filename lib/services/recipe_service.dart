@@ -7,7 +7,6 @@ import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/config.dart';
 import 'package:orsocook/services/category_service.dart';
 
-// ==================== CLASSE RISULTATO PER CATEGORIA ====================
 class CategoryRecipesResult {
   final List<Recipe> recipes;
   final bool hasMore;
@@ -21,7 +20,7 @@ class CategoryRecipesResult {
 }
 
 class RecipeService extends ChangeNotifier {
-  final Dio _dio = Dio();
+  final Dio _dio;
   final AuthService _authService;
   final CategoryService _categoryService;
 
@@ -33,7 +32,7 @@ class RecipeService extends ChangeNotifier {
 
   static const int _pageLimit = 10;
 
-  RecipeService(this._authService, this._categoryService) {
+  RecipeService(this._authService, this._categoryService) : _dio = Dio() {
     _dio.options.baseUrl = Config.buildUrl('');
     _dio.options.connectTimeout = const Duration(seconds: 10);
     _dio.options.receiveTimeout = const Duration(seconds: 10);
@@ -46,7 +45,6 @@ class RecipeService extends ChangeNotifier {
   bool get hasMore => _hasMore;
   String? get lastError => _lastError;
 
-  // ==================== AUTH HEADERS ====================
   Future<Map<String, String>> _getAuthHeaders() =>
       _authService.getAuthHeaders();
 
@@ -119,10 +117,10 @@ class RecipeService extends ChangeNotifier {
           hasMore: data['hasMore'] ?? false,
           total: data['total'] ?? 0,
         );
-      } else {
-        throw Exception(response.data['message'] ??
-            'Errore caricamento ricette per categoria');
       }
+
+      throw Exception(response.data['message'] ??
+          'Errore caricamento ricette per categoria');
     } catch (e) {
       AppLogger.error('fetchRecipesByCategory error', e);
       throw Exception('Impossibile caricare le ricette: $e');
@@ -130,11 +128,9 @@ class RecipeService extends ChangeNotifier {
   }
 
   List<Recipe> _parseRecipes(dynamic data) {
-    final List<dynamic> recipesData = _extractRecipesData(data);
-
+    final recipesData = _extractRecipesData(data);
     return recipesData
         .map((json) => Recipe.fromJson(Map<String, dynamic>.from(json)))
-        .whereType<Recipe>()
         .toList();
   }
 
@@ -169,12 +165,9 @@ class RecipeService extends ChangeNotifier {
 
   // ==================== GET RECIPE BY ID ====================
   Future<Recipe?> getRecipeById(String id) async {
-    // Cerca in cache
     try {
       return _cachedRecipes.firstWhere((r) => r.id == id);
-    } catch (_) {
-      // Non trovato, procedi con API
-    }
+    } catch (_) {}
 
     try {
       final response = await _dio.get(
@@ -195,13 +188,12 @@ class RecipeService extends ChangeNotifier {
     return null;
   }
 
-  // ==================== CREATE RECIPE ====================
+  // ==================== CREATE/UPDATE/DELETE ====================
   Future<Recipe?> createRecipe(Recipe recipe) async {
     try {
-      final data = _prepareRecipeData(recipe);
       final response = await _dio.post(
         '/api/recipes',
-        data: data,
+        data: _prepareRecipeData(recipe),
         options: Options(headers: await _getAuthHeaders()),
       );
 
@@ -219,13 +211,11 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
-  // ==================== UPDATE RECIPE ====================
   Future<Recipe?> updateRecipe(String id, Recipe recipe) async {
     try {
-      final data = _prepareRecipeData(recipe);
       final response = await _dio.put(
         '/api/recipes/$id',
-        data: data,
+        data: _prepareRecipeData(recipe),
         options: Options(headers: await _getAuthHeaders()),
       );
 
@@ -242,26 +232,6 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
-  Map<String, dynamic> _prepareRecipeData(Recipe recipe) {
-    final data = recipe.toJson();
-
-    if (data['category'] is Map) {
-      data['categoryId'] = data['category']['id'];
-      data.remove('category');
-    }
-
-    return data;
-  }
-
-  void _updateCachedRecipe(String id, Recipe updatedRecipe) {
-    final index = _cachedRecipes.indexWhere((r) => r.id == id);
-    if (index != -1) {
-      _cachedRecipes[index] = updatedRecipe;
-      _notify();
-    }
-  }
-
-  // ==================== DELETE RECIPE ====================
   Future<bool> deleteRecipe(String id) async {
     try {
       final response = await _dio.delete(
@@ -273,8 +243,6 @@ class RecipeService extends ChangeNotifier {
 
       _cachedRecipes.removeWhere((recipe) => recipe.id == id);
       _notify();
-
-      // Refresh categorie in background
       _categoryService.refreshCategories().catchError((e) {
         AppLogger.error('refreshCategories after delete error', e);
       });
@@ -286,12 +254,10 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
-  // ==================== REMOVE IMAGE ====================
   Future<bool> removeRecipeImage(String recipeId) async {
     try {
       final authHeaders = await _getAuthHeaders();
       final token = authHeaders['Authorization']?.replaceFirst('Bearer ', '');
-
       if (token == null) return false;
 
       final response = await _dio.delete(
@@ -309,22 +275,12 @@ class RecipeService extends ChangeNotifier {
     }
   }
 
-  void _updateRecipeImage(String recipeId, String imageUrl) {
-    final index = _cachedRecipes.indexWhere((r) => r.id == recipeId);
-    if (index != -1) {
-      _cachedRecipes[index] =
-          _cachedRecipes[index].copyWith(imageUrl: imageUrl);
-      _notify();
-    }
-  }
-
-  // ==================== LOAD MORE ====================
-  Future<void> loadMoreRecipes() async {
+  // ==================== UTILITY ====================
+  void loadMoreRecipes() async {
     if (_isLoading || !_hasMore) return;
     await fetchRecipes(page: _currentPage + 1);
   }
 
-  // ==================== UPDATE STATUS ====================
   void updateRecipeLikedStatus(String recipeId, bool isLiked) {
     _updateRecipeField(recipeId, (r) => r.copyWith(isFavorite: isLiked));
   }
@@ -334,16 +290,39 @@ class RecipeService extends ChangeNotifier {
   }
 
   void _updateRecipeField(String recipeId, Recipe Function(Recipe) update) {
-    AppLogger.debug('📝 [RECIPE] _updateRecipeField per $recipeId');
     final index = _cachedRecipes.indexWhere((r) => r.id == recipeId);
     if (index != -1) {
       _cachedRecipes[index] = update(_cachedRecipes[index]);
-      AppLogger.debug('✅ [RECIPE] Ricetta aggiornata, notifico');
       _notify();
     }
   }
 
-  // ==================== UTILITY ====================
+  Map<String, dynamic> _prepareRecipeData(Recipe recipe) {
+    final data = recipe.toJson();
+    if (data['category'] is Map) {
+      data['categoryId'] = data['category']['id'];
+      data.remove('category');
+    }
+    return data;
+  }
+
+  void _updateCachedRecipe(String id, Recipe updatedRecipe) {
+    final index = _cachedRecipes.indexWhere((r) => r.id == id);
+    if (index != -1) {
+      _cachedRecipes[index] = updatedRecipe;
+      _notify();
+    }
+  }
+
+  void _updateRecipeImage(String recipeId, String imageUrl) {
+    final index = _cachedRecipes.indexWhere((r) => r.id == recipeId);
+    if (index != -1) {
+      _cachedRecipes[index] =
+          _cachedRecipes[index].copyWith(imageUrl: imageUrl);
+      _notify();
+    }
+  }
+
   void _setLoading(bool loading) {
     if (_isLoading == loading) return;
     _isLoading = loading;

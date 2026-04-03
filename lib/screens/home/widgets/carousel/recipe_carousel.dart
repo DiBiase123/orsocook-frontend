@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'carousel_desktop.dart';
 import 'carousel_mobile.dart';
+import 'carousel_tablet.dart';
 
 class RecipeCarousel extends StatefulWidget {
   final List<Recipe> recipes;
@@ -22,26 +23,27 @@ class RecipeCarousel extends StatefulWidget {
 }
 
 class _RecipeCarouselState extends State<RecipeCarousel> {
-  bool _isMobile = false;
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    _isMobile = screenWidth < 768;
 
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: Colors.grey.shade200,
-      child: _isMobile
-          ? CarouselMobile(
-              recipes: widget.recipes,
-              onRecipeTap: widget.onRecipeTap,
-            )
-          : CarouselDesktop(
-              recipes: widget.recipes,
-              onRecipeTap: widget.onRecipeTap,
-            ),
-    );
+    if (screenWidth < 768) {
+      return CarouselMobile(
+        recipes: widget.recipes,
+        onRecipeTap: widget.onRecipeTap,
+      );
+    } else if (screenWidth < 1200) {
+      // Tablet: mostra solo card centrale + colonna destra (senza peek)
+      return CarouselTablet(
+        recipes: widget.recipes,
+        onRecipeTap: widget.onRecipeTap,
+      );
+    } else {
+      // Desktop: effetto peek completo
+      return CarouselDesktop(
+        recipes: widget.recipes,
+        onRecipeTap: widget.onRecipeTap,
+      );
+    }
   }
 }

@@ -15,26 +15,25 @@ class HomeCarouselSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth > 768;
+    final isDesktop = screenWidth > 1200; // Desktop solo sopra 1200px
+    final isTablet = screenWidth >= 768 && screenWidth <= 1200;
 
-    // Desktop: altezza piena schermo
-    // Mobile: altezza fissa 400px
-    return isDesktop
-        ? SizedBox(
-            height: MediaQuery.of(context).size.height - 64,
-            child: RecipeCarousel(
-              recipes: recipes,
-              title: '',
-              onRecipeTap: onRecipeTap,
-            ),
-          )
-        : SizedBox(
-            height: 400,
-            child: RecipeCarousel(
-              recipes: recipes,
-              title: '',
-              onRecipeTap: onRecipeTap,
-            ),
-          );
+    double height;
+    if (isDesktop) {
+      height = MediaQuery.of(context).size.height - 64;
+    } else if (isTablet) {
+      height = MediaQuery.of(context).size.height - 100;
+    } else {
+      height = 400;
+    }
+
+    return SizedBox(
+      height: height,
+      child: RecipeCarousel(
+        recipes: recipes,
+        title: '',
+        onRecipeTap: onRecipeTap,
+      ),
+    );
   }
 }

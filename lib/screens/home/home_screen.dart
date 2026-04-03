@@ -9,11 +9,13 @@ import 'package:orsocook/screens/home/components/home_carousel_section.dart';
 import 'package:orsocook/screens/home/widgets/home_app_bar.dart';
 import 'package:orsocook/screens/home/widgets/home_body.dart';
 import 'package:orsocook/screens/home/widgets/categories_scroll_bar.dart';
+import 'package:orsocook/screens/home/widgets/category_section.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/widgets/shimmer_effect.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -108,6 +110,37 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  String _formatSlugToTitle(String slug) {
+    return slug
+        .replaceAll('-', ' ')
+        .split(' ')
+        .map((word) => word.isNotEmpty
+            ? '${word[0].toUpperCase()}${word.substring(1)}'
+            : word)
+        .join(' ');
+  }
+
+  Widget _buildSections(HomeViewModel viewModel, bool isDesktop) {
+    if (viewModel.isLoadingSections) {
+      return ShimmerCategorySection(isDesktop: isDesktop);
+    }
+
+    return Column(
+      children: viewModel.sectionRecipes.entries.map((entry) {
+        final categoryName =
+            entry.value.isNotEmpty && entry.value.first.category != null
+                ? entry.value.first.category!.name
+                : _formatSlugToTitle(entry.key);
+
+        return CategorySection(
+          title: categoryName,
+          categorySlug: entry.key,
+          recipes: entry.value,
+        );
+      }).toList(),
+    );
+  }
+
   @override
   void dispose() {
     _viewModel.disposeViewModel();
@@ -132,44 +165,56 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
 
-          final carouselRecipes = viewModel.recipes.take(6).toList();
           final screenWidth = MediaQuery.of(context).size.width;
           final isDesktop = screenWidth >= 900;
+          final carouselRecipes = viewModel.recipes.take(6).toList();
 
-          // Desktop: AppBar fissa, niente scroll hide
+          final appBar = HomeAppBar(
+            onProfileTap: _navigateToProfile,
+            onCreateRecipeTap: _navigateToCreateRecipe,
+            searchController: _searchController,
+            onSearchChanged: viewModel.onSearchChanged,
+          );
+
+          final categoriesBar = CategoriesScrollBar(
+            onCategorySelected: (slug) => viewModel.onCategorySelected(slug),
+            selectedCategorySlug: viewModel.selectedCategory,
+          );
+
+          final mainContent = viewModel.hasActiveFilter
+              ? HomeBody(
+                  onCreateRecipeTap: _navigateToCreateRecipe,
+                  searchController: _searchController,
+                  onRecipeTap: _navigateToRecipeDetail,
+                )
+              : Column(
+                  children: [
+                    if (carouselRecipes.isNotEmpty)
+                      SizedBox(
+                        height: isDesktop ? 500 : 350,
+                        child: HomeCarouselSection(
+                          recipes: carouselRecipes,
+                          onRecipeTap: _navigateToRecipeDetail,
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    _buildSections(viewModel, isDesktop),
+                  ],
+                );
+
           if (isDesktop) {
             return Scaffold(
               body: Column(
                 children: [
-                  HomeAppBar(
-                    onProfileTap: _navigateToProfile,
-                    onCreateRecipeTap: _navigateToCreateRecipe,
-                    searchController: _searchController,
-                    onSearchChanged: viewModel.onSearchChanged,
-                  ),
+                  appBar,
                   Expanded(
                     child: ListView(
                       controller: _scrollController,
                       children: [
-                        const SizedBox(height: 32),
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height - 64,
-                          child: HomeCarouselSection(
-                            recipes: carouselRecipes,
-                            onRecipeTap: _navigateToRecipeDetail,
-                          ),
-                        ),
-                        CategoriesScrollBar(
-                          onCategorySelected: (slug) {
-                            if (slug != null) context.push('/category/$slug');
-                          },
-                          selectedCategorySlug: null,
-                        ),
-                        HomeBody(
-                          onCreateRecipeTap: _navigateToCreateRecipe,
-                          searchController: _searchController,
-                          onRecipeTap: _navigateToRecipeDetail,
-                        ),
+                        const SizedBox(height: 16),
+                        categoriesBar,
+                        const SizedBox(height: 16),
+                        mainContent,
                         const SizedBox(height: 24),
                       ],
                     ),
@@ -179,7 +224,6 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
 
-          // Mobile/Tablet: scroll hide con SliverAppBar
           return Scaffold(
             body: CustomScrollView(
               controller: _scrollController,
@@ -192,36 +236,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   snap: false,
                   pinned: false,
                   expandedHeight: screenWidth < 600 ? 130 : 135,
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: HomeAppBar(
-                      onProfileTap: _navigateToProfile,
-                      onCreateRecipeTap: _navigateToCreateRecipe,
-                      searchController: _searchController,
-                      onSearchChanged: viewModel.onSearchChanged,
-                    ),
-                  ),
+                  flexibleSpace: FlexibleSpaceBar(background: appBar),
                 ),
                 SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      SizedBox(
-                        height: 400,
-                        child: HomeCarouselSection(
-                          recipes: carouselRecipes,
-                          onRecipeTap: _navigateToRecipeDetail,
-                        ),
-                      ),
-                      CategoriesScrollBar(
-                        onCategorySelected: (slug) {
-                          if (slug != null) context.push('/category/$slug');
-                        },
-                        selectedCategorySlug: null,
-                      ),
-                      HomeBody(
-                        onCreateRecipeTap: _navigateToCreateRecipe,
-                        searchController: _searchController,
-                        onRecipeTap: _navigateToRecipeDetail,
-                      ),
+                      const SizedBox(height: 8),
+                      categoriesBar,
+                      const SizedBox(height: 16),
+                      mainContent,
                       const SizedBox(height: 24),
                     ],
                   ),

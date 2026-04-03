@@ -17,6 +17,8 @@ class HomeViewModel extends ChangeNotifier {
   bool _isLoadingFilters = false;
   bool _isFirstLoad = true;
   Timer? _searchDebounce;
+  final Map<String, List<Recipe>> _sectionRecipes = {};
+  bool _isLoadingSections = false;
 
   static const String _prefKeySelectedCategory = 'selected_category';
 
@@ -27,6 +29,12 @@ class HomeViewModel extends ChangeNotifier {
   bool get isFirstLoad => _isFirstLoad;
   List<Recipe> get recipes => _recipeService.cachedRecipes;
   bool get isRecipesLoading => _recipeService.isLoading;
+  List<CategoryModel> get categories => _categoryService.categories;
+  Map<String, List<Recipe>> get sectionRecipes => _sectionRecipes;
+  bool get isLoadingSections => _isLoadingSections;
+  bool get hasActiveFilter =>
+      _selectedCategory != null ||
+      (_searchQuery != null && _searchQuery!.isNotEmpty);
 
   HomeViewModel({
     required RecipeService recipeService,
@@ -82,6 +90,7 @@ class HomeViewModel extends ChangeNotifier {
 
       final recipeIds = _recipeService.cachedRecipes.map((r) => r.id).toList();
       _likeService.preloadLikesCount(recipeIds);
+      await _loadSections();
 
       _isFirstLoad = false;
       notifyListeners();
@@ -92,14 +101,52 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
+  // ========== CARICAMENTO SEZIONI ==========
+  Future<void> _loadSections() async {
+    if (_isLoadingSections) return;
+
+    _isLoadingSections = true;
+    notifyListeners();
+
+    try {
+      _sectionRecipes.clear();
+
+      for (final category in _categoryService.categories) {
+        try {
+          final result = await _recipeService.fetchRecipesByCategory(
+            categorySlug: category.slug,
+            page: 1,
+            limit: 6,
+          );
+
+          if (result.recipes.isNotEmpty) {
+            _sectionRecipes[category.slug] = result.recipes;
+          }
+        } catch (e) {
+          AppLogger.error('Errore caricamento sezione ${category.name}', e);
+        }
+      }
+    } finally {
+      _isLoadingSections = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> refreshSections() async {
+    if (hasActiveFilter) {
+      if (_sectionRecipes.isNotEmpty) {
+        _sectionRecipes.clear();
+        notifyListeners();
+      }
+      return;
+    }
+    await _loadSections();
+  }
+
   Future<void> _checkAndResetEmptyCategory() async {
     if (_recipeService.cachedRecipes.isEmpty && _selectedCategory != null) {
-      AppLogger.debug(
-          'Nessuna ricetta per categoria $_selectedCategory, reset a Tutte');
-
       _selectedCategory = null;
       await saveCategoryPreference(null);
-
       await _recipeService.fetchRecipes(
         forceRefresh: true,
         page: 1,
@@ -116,7 +163,6 @@ class HomeViewModel extends ChangeNotifier {
 
     _selectedCategory = effectiveSlug;
     notifyListeners();
-
     saveCategoryPreference(effectiveSlug);
     loadRecipesWithFilters();
   }
@@ -147,6 +193,7 @@ class HomeViewModel extends ChangeNotifier {
 
       final recipeIds = _recipeService.cachedRecipes.map((r) => r.id).toList();
       _likeService.preloadLikesCount(recipeIds);
+      await refreshSections();
     } catch (e) {
       AppLogger.error('Errore nel caricamento filtri', e);
     } finally {

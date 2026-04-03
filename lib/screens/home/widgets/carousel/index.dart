@@ -1,5 +1,11 @@
-export 'recipe_carousel.dart';
+export 'carousel_desktop.dart';
+export 'carousel_mobile.dart';
+export 'carousel_tablet.dart';
 export 'carousel_card.dart';
-export 'carousel_previous_button.dart';
+export 'carousel_card_content.dart';
+export 'carousel_card_gradient.dart';
+export 'carousel_card_image.dart';
 export 'carousel_next_button.dart';
+export 'carousel_previous_button.dart';
 export 'hover_card.dart';
+export 'recipe_carousel.dart';
