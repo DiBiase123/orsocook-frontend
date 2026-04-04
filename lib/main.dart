@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/activity_tracker.dart';
@@ -19,6 +20,17 @@ final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Imposta l'icona della finestra per desktop (Windows/Linux/macOS)
+  if (!kIsWeb) {
+    // Imposta il titolo e l'icona della finestra
+    SystemChrome.setApplicationSwitcherDescription(
+      const ApplicationSwitcherDescription(
+        label: 'OrsoCook',
+        primaryColor: 0xFF6750A4,
+      ),
+    );
+  }
 
   // Configura logger in base all'ambiente
   if (kReleaseMode) {

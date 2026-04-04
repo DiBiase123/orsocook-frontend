@@ -1,12 +1,9 @@
-// lib/config.dart - CONFIGURAZIONE DINAMICA
-
 import 'package:flutter/foundation.dart';
 
 class Config {
-  // 🔧 AMBIENTE DINAMICO (cambia in base a debug/production/web)
   static String get environment {
     if (kIsWeb) {
-      return 'prod'; // ← per web usa Render
+      return 'prod';
     }
     if (kDebugMode) {
       return 'local';
@@ -17,7 +14,7 @@ class Config {
   static const Map<String, String> apiUrls = {
     'dev': 'http://10.0.2.2:5000',
     'local': 'http://localhost:5000',
-    'prod': 'https://orsocook-api.onrender.com',
+    'prod': 'https://orsocook-backend.onrender.com', // ← URL corretto di Render
   };
 
   static String? _cachedApiBaseUrl;
