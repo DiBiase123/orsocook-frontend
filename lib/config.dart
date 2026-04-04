@@ -12,9 +12,9 @@ class Config {
   }
 
   static const Map<String, String> apiUrls = {
-    'dev': 'http://10.0.2.2:5000',
-    'local': 'http://localhost:5000',
-    'prod': 'https://orsocook-backend.onrender.com', // ← URL corretto di Render
+    'dev': 'http://10.0.2.2:5000', // Emulatore Android
+    'local': 'http://localhost:5000', // Sviluppo locale (backend locale)
+    'prod': 'https://orsocook-api.onrender.com', // Produzione (Render)
   };
 
   static String? _cachedApiBaseUrl;
