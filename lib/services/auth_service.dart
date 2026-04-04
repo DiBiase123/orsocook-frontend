@@ -12,6 +12,7 @@ class AuthService extends ChangeNotifier {
 
   bool _isLoading = false;
   bool _initialized = false;
+  bool _isRefreshing = false;
 
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _tokenManager.isAuthenticated;
@@ -105,7 +106,7 @@ class AuthService extends ChangeNotifier {
           username: user['username'] as String? ?? user['email'] as String,
           avatarUrl: user['avatarUrl'] as String?,
           isVerified: user['isVerified'] as bool? ?? true,
-          tokenExpiry: DateTime.now().add(const Duration(minutes: 14)),
+          tokenExpiry: DateTime.now().add(const Duration(hours: 6)),
         );
 
         await _tokenManager.saveAuthData(authData);
@@ -148,7 +149,7 @@ class AuthService extends ChangeNotifier {
           username: user['username'] as String? ?? email,
           avatarUrl: user['avatarUrl'] as String?,
           isVerified: user['isVerified'] as bool? ?? true,
-          tokenExpiry: DateTime.now().add(const Duration(minutes: 14)),
+          tokenExpiry: DateTime.now().add(const Duration(hours: 6)),
         );
 
         await _tokenManager.saveAuthData(authData);
@@ -172,15 +173,26 @@ class AuthService extends ChangeNotifier {
   }
 
   // ==================== REFRESH TOKEN ====================
-  /// Metodo per refresh periodico (chiamato da ActivityTracker)
   Future<bool> refreshToken() async {
+    // Solo se l'utente è loggato
     if (!isLoggedIn) {
       AppLogger.debug('⏭️ [AUTH] Refresh saltato: utente non loggato');
       return false;
     }
 
+    if (_isRefreshing) {
+      AppLogger.debug('⏭️ [AUTH] Refresh già in corso, salto');
+      return false;
+    }
+
     AppLogger.debug('🔄 [AUTH] Refresh token periodico');
-    return await _tokenManager.refreshToken();
+    _isRefreshing = true;
+
+    try {
+      return await _tokenManager.refreshToken();
+    } finally {
+      _isRefreshing = false;
+    }
   }
 
   // ==================== LOGOUT ====================
@@ -194,8 +206,6 @@ class AuthService extends ChangeNotifier {
     }
 
     await _tokenManager.clearAuthData();
-
-    // NOTIFICA TUTTI I SERVICE (saranno chiamati da chi ascolta)
     notifyListeners();
 
     if (kDebugMode) {
@@ -252,13 +262,10 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> updateAvatar(String newAvatarUrl) async {
-    AppLogger.debug(
-        '🔄 AuthService.updateAvatar: $newAvatarUrl'); // <-- AGGIUNGI
+    AppLogger.debug('🔄 AuthService.updateAvatar: $newAvatarUrl');
 
     await _tokenManager.updateAvatar(newAvatarUrl);
     notifyListeners();
-    AppLogger.debug(
-        '✅ TokenManager updated, calling notifyListeners()'); // <-- AGGIUNGI
 
     if (kDebugMode) {
       AppLogger.success('✅ Avatar aggiornato');

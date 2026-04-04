@@ -11,6 +11,8 @@ class TokenManager {
 
   AuthData? _currentAuthData;
   Timer? _tokenRefreshTimer;
+  bool _isRefreshing = false;
+  bool _refreshFailed = false;
 
   TokenManager({
     required AuthStorage storage,
@@ -26,7 +28,6 @@ class TokenManager {
   Future<AuthData?> getAuthData() async {
     _currentAuthData ??= await _storage.loadAuthData();
 
-    // Se il token è scaduto, prova a refresharlo
     if (_currentAuthData != null && _currentAuthData!.isTokenExpired) {
       AppLogger.debug('🔄 [TOKEN] Token scaduto, tentativo refresh');
       final refreshed = await refreshToken();
@@ -40,10 +41,24 @@ class TokenManager {
   }
 
   Future<bool> refreshToken() async {
+    // Se già in errore, non riprovare
+    if (_refreshFailed) {
+      AppLogger.debug('⏭️ [TOKEN] Refresh già fallito, salto');
+      return false;
+    }
+
+    // Se già in corso, salta
+    if (_isRefreshing) {
+      AppLogger.debug('⏭️ [TOKEN] Refresh già in corso, salto');
+      return false;
+    }
+
     if (_currentAuthData == null || !_currentAuthData!.canRefresh) {
       AppLogger.debug('⏭️ [TOKEN] Impossibile refresh: no refresh token');
       return false;
     }
+
+    _isRefreshing = true;
 
     try {
       AppLogger.debug('🔄 [TOKEN] Tentativo refresh token');
@@ -53,11 +68,9 @@ class TokenManager {
       if (response.success && response.data != null) {
         final tokenPair = TokenPair.fromApiResponse(response.data!);
 
-        // Aggiorna AuthData con nuovo token
         final updatedAuthData = AuthData(
           token: tokenPair.accessToken,
-          refreshToken: _currentAuthData!
-              .refreshToken, // Mantieni lo stesso refresh token
+          refreshToken: tokenPair.refreshToken,
           userId: _currentAuthData!.userId,
           username: _currentAuthData!.username,
           avatarUrl: _currentAuthData!.avatarUrl,
@@ -66,19 +79,23 @@ class TokenManager {
         );
 
         await saveAuthData(updatedAuthData);
+        _refreshFailed = false;
         AppLogger.success('✅ [TOKEN] Token refreshato con successo');
         return true;
       }
 
+      _refreshFailed = true;
       AppLogger.error('❌ [TOKEN] Refresh fallito: ${response.message}');
       return false;
     } catch (e) {
+      _refreshFailed = true;
       AppLogger.error('❌ [TOKEN] Errore refresh', e);
       return false;
+    } finally {
+      _isRefreshing = false;
     }
   }
 
-  // 👈 NUOVO METODO
   Future<void> updateTokens(
       String newAccessToken, String newRefreshToken) async {
     if (_currentAuthData != null) {
@@ -89,9 +106,10 @@ class TokenManager {
         username: _currentAuthData!.username,
         avatarUrl: _currentAuthData!.avatarUrl,
         isVerified: _currentAuthData!.isVerified,
-        tokenExpiry: DateTime.now().add(const Duration(minutes: 14)),
+        tokenExpiry: DateTime.now().add(const Duration(hours: 6)),
       );
       await saveAuthData(updated);
+      _refreshFailed = false;
       AppLogger.success('✅ [TOKEN] Token aggiornati manualmente');
     }
   }
@@ -99,12 +117,14 @@ class TokenManager {
   Future<void> saveAuthData(AuthData authData) async {
     await _storage.saveAuthData(authData);
     _currentAuthData = authData;
+    _refreshFailed = false;
     _setupTokenRefreshTimer();
   }
 
   Future<void> clearAuthData() async {
     await _storage.clearAuthData();
     _currentAuthData = null;
+    _refreshFailed = false;
     _cancelTokenRefreshTimer();
     AppLogger.debug('🧹 [TOKEN] Auth data cancellati');
   }
@@ -134,24 +154,27 @@ class TokenManager {
   void _setupTokenRefreshTimer() {
     _cancelTokenRefreshTimer();
 
+    if (_refreshFailed) {
+      AppLogger.debug('⏭️ [TOKEN] Refresh fallito, timer non avviato');
+      return;
+    }
+
     if (_currentAuthData == null || _currentAuthData!.isTokenExpired) {
       return;
     }
 
-    // Calcola quando refreshare (5 minuti prima della scadenza)
     final refreshTime = _currentAuthData!.tokenExpiry
-        .subtract(const Duration(minutes: 5))
+        .subtract(const Duration(hours: 1))
         .difference(DateTime.now());
 
     if (refreshTime.isNegative) {
-      // Se già meno di 5 minuti, refresh immediato
       Timer.run(() => refreshToken());
       return;
     }
 
     _tokenRefreshTimer = Timer(refreshTime, () async {
       await refreshToken();
-      _setupTokenRefreshTimer(); // Ricalcola per il prossimo refresh
+      _setupTokenRefreshTimer();
     });
   }
 

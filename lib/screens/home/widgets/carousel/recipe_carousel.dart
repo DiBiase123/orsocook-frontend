@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:orsocook/models/recipe.dart';
-import 'carousel_card.dart';
+import 'package:orsocook/utils/logger.dart';
+import 'carousel_desktop.dart';
+import 'carousel_mobile.dart';
+import 'carousel_tablet.dart';
 
 class RecipeCarousel extends StatefulWidget {
   final List<Recipe> recipes;
@@ -25,47 +27,29 @@ class _RecipeCarouselState extends State<RecipeCarousel> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth > 1200;
-    final isTablet = screenWidth >= 768 && screenWidth <= 1200;
-    final enableInfinite = widget.recipes.length >= 3;
 
-    double viewportFraction;
-    double cardWidth;
-    double cardHeight;
+    AppLogger.debug('🔍 [RECIPECAROUSEL] screenWidth: $screenWidth');
+    AppLogger.debug(
+        '🔍 [RECIPECAROUSEL] Numero ricette: ${widget.recipes.length}');
 
-    if (isDesktop) {
-      viewportFraction = 0.6;
-      cardWidth = 280;
-      cardHeight = 500;
-    } else if (isTablet) {
-      viewportFraction = 0.7;
-      cardWidth = 260;
-      cardHeight = 450;
+    if (screenWidth > 1200) {
+      // Desktop: effetto peek + colonna destra + frecce laterali
+      return CarouselDesktop(
+        recipes: widget.recipes,
+        onRecipeTap: widget.onRecipeTap,
+      );
+    } else if (screenWidth >= 768) {
+      // Tablet: colonna centrale + colonna destra + frecce laterali (senza peek)
+      return CarouselTablet(
+        recipes: widget.recipes,
+        onRecipeTap: widget.onRecipeTap,
+      );
     } else {
-      viewportFraction = 0.85;
-      cardWidth = 220;
-      cardHeight = 350;
+      // Mobile: card singola + dots
+      return CarouselMobile(
+        recipes: widget.recipes,
+        onRecipeTap: widget.onRecipeTap,
+      );
     }
-
-    return CarouselSlider(
-      options: CarouselOptions(
-        height: cardHeight,
-        viewportFraction: viewportFraction,
-        enlargeCenterPage: isDesktop ? true : false,
-        enlargeFactor: 0.25,
-        enableInfiniteScroll: enableInfinite,
-        autoPlay: false,
-      ),
-      items: widget.recipes.map((recipe) {
-        return Container(
-          width: cardWidth,
-          margin: const EdgeInsets.symmetric(horizontal: 8),
-          child: CarouselCard.buildMainCard(
-            recipe,
-            () => widget.onRecipeTap(recipe),
-          ),
-        );
-      }).toList(),
-    );
   }
 }

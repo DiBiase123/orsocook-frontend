@@ -2,75 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 
-class CategorySection extends StatelessWidget {
+class CategorySectionDesktop extends StatelessWidget {
   final String title;
   final String categorySlug;
   final List<Recipe> recipes;
   final VoidCallback? onSeeAllTap;
+  final Color categoryColor;
 
-  const CategorySection({
+  const CategorySectionDesktop({
     super.key,
     required this.title,
     required this.categorySlug,
     required this.recipes,
     this.onSeeAllTap,
+    required this.categoryColor,
   });
-
-  Color _getCategoryColor(String slug) {
-    final colors = {
-      'antipasti': const Color(0xFF7B1FA2),
-      'primi-piatti': const Color(0xFF9C27B0),
-      'secondi-piatti': const Color(0xFFAB47BC),
-      'contorni': const Color(0xFFBA68C8),
-      'dolci': const Color(0xFFCE93D8),
-      'pane-e-pizza': const Color(0xFF8E24AA),
-      'zuppe-e-minestre': const Color(0xFF6A1B9A),
-      'insalate': const Color(0xFFB39DDB),
-      'salse-e-condimenti': const Color(0xFF9575CD),
-      'bevande': const Color(0xFF7E57C2),
-      'colazioni-e-brunch': const Color(0xFF673AB7),
-      'piatti-unici': const Color(0xFF5E35B1),
-    };
-    return colors[slug] ?? const Color(0xFF6750A4);
-  }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth > 1200;
-    final isTablet = screenWidth >= 768 && screenWidth <= 1200;
-    final enableInfinite = recipes.length >= 3;
-
-    if (recipes.isEmpty) return const SizedBox.shrink();
-
-    double cardWidth;
-    double cardHeight;
-    double viewportFraction;
-    double horizontalMargin;
-
-    if (isDesktop) {
-      cardWidth = 280;
-      cardHeight = 320;
-      viewportFraction = 0.3;
-      horizontalMargin = 96;
-    } else if (isTablet) {
-      cardWidth = 260;
-      cardHeight = 300;
-      viewportFraction = 0.5;
-      horizontalMargin = 64;
-    } else {
-      cardWidth = 220;
-      cardHeight = 260;
-      viewportFraction = 0.8;
-      horizontalMargin = 40;
-    }
-
-    final categoryColor = _getCategoryColor(categorySlug);
+    final cardWidth = 280.0;
+    final cardHeight = 320.0;
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: horizontalMargin, vertical: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 96, vertical: 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -85,6 +40,7 @@ class CategorySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
@@ -100,8 +56,8 @@ class CategorySection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: TextStyle(
-                      fontSize: isDesktop ? 24 : 20,
+                    style: const TextStyle(
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       letterSpacing: 0.5,
@@ -134,29 +90,30 @@ class CategorySection extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: CarouselSlider(
-              options: CarouselOptions(
-                height: cardHeight,
-                viewportFraction: viewportFraction,
-                enlargeCenterPage: false,
-                enableInfiniteScroll: enableInfinite,
-                autoPlay: false,
-              ),
-              items: recipes.map((recipe) {
+          // Spazio tra header e card
+          const SizedBox(height: 24),
+          // ListView orizzontale
+          SizedBox(
+            height: cardHeight,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: recipes.length,
+              itemBuilder: (context, index) {
+                final recipe = recipes[index];
                 return Container(
                   width: cardWidth,
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  margin: const EdgeInsets.only(right: 24),
                   child: RecipeCard(
                     recipe: recipe,
                     onTap: () => context.push('/recipe/detail/${recipe.id}',
                         extra: recipe),
                   ),
                 );
-              }).toList(),
+              },
             ),
           ),
+          const SizedBox(height: 24),
         ],
       ),
     );

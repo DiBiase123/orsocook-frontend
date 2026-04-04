@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/screens/recipe/widgets/favorite_button.dart';
+import 'package:orsocook/utils/logger.dart';
 import 'hover_card.dart';
 import 'carousel_card_image.dart';
 import 'carousel_card_gradient.dart';
@@ -9,6 +10,7 @@ import 'carousel_card_content.dart';
 class CarouselCard {
   // Card grande per desktop e mobile
   static Widget buildMainCard(Recipe recipe, VoidCallback onTap) {
+    AppLogger.debug('🔍 [CAROUSELCARD] buildMainCard: ${recipe.title}');
     return HoverCard(
       onTap: onTap,
       borderRadius: 0,
@@ -35,6 +37,7 @@ class CarouselCard {
 
   // Card piccola
   static Widget buildSmallCard(Recipe recipe, VoidCallback onTap) {
+    AppLogger.debug('🔍 [CAROUSELCARD] buildSmallCard: ${recipe.title}');
     return HoverCard(
       onTap: onTap,
       borderRadius: 0,

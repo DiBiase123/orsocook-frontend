@@ -97,9 +97,14 @@ class DetailRecipeViewModel extends ChangeNotifier {
       final currentUserId = _authService.userId;
       final authorId = RecipeHelpers.extractAuthorId(_recipe!.author);
 
+      AppLogger.debug('🔍 currentUserId: $currentUserId');
+      AppLogger.debug('🔍 authorId: $authorId');
+
       final isOwner = currentUserId != null &&
           authorId != null &&
           currentUserId.trim().toLowerCase() == authorId.trim().toLowerCase();
+
+      AppLogger.debug('🔍 isOwner: $isOwner');
 
       if (isOwner) {
         AppLogger.debug('👑 Utente è proprietario della ricetta');

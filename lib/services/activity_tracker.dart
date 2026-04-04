@@ -37,7 +37,11 @@ class ActivityTracker extends ChangeNotifier {
   }
 
   Future<void> _refreshToken() async {
-    if (!_authService.isLoggedIn) return;
+    // Solo se l'utente è loggato
+    if (!_authService.isLoggedIn) {
+      AppLogger.debug('⏭️ [ACTIVITY] Refresh saltato: utente non loggato');
+      return;
+    }
     AppLogger.debug('🔄 Refresh automatico token');
     await _authService.refreshToken();
   }
@@ -50,7 +54,7 @@ class ActivityTracker extends ChangeNotifier {
     final context = _navigatorKey.currentContext;
 
     if (context != null && context.mounted) {
-      LogoutManager.performLogout(context);
+      await LogoutManager.performLogout(context);
     } else {
       await _authService.logout();
       goRouter.go('/login');

@@ -20,12 +20,14 @@ class CarouselTablet extends StatefulWidget {
 
 class _CarouselTabletState extends State<CarouselTablet> {
   late PageController _pageController;
-  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.85);
+    _pageController = PageController(
+      viewportFraction: 1.0,
+      initialPage: 1000,
+    );
   }
 
   @override
@@ -35,21 +37,17 @@ class _CarouselTabletState extends State<CarouselTablet> {
   }
 
   void _nextPage() {
-    if (_currentIndex < widget.recipes.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    }
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _previousPage() {
-    if (_currentIndex > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    }
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -63,16 +61,12 @@ class _CarouselTabletState extends State<CarouselTablet> {
         children: [
           PageView.builder(
             controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            itemCount: widget.recipes.length,
+            itemCount: 1000000,
             itemBuilder: (context, index) {
-              final recipe = widget.recipes[index];
-              final nextIndex = (index + 1) % widget.recipes.length;
-              final nextNextIndex = (index + 2) % widget.recipes.length;
+              final realIndex = index % widget.recipes.length;
+              final recipe = widget.recipes[realIndex];
+              final nextIndex = (realIndex + 1) % widget.recipes.length;
+              final nextNextIndex = (realIndex + 2) % widget.recipes.length;
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -119,11 +113,8 @@ class _CarouselTabletState extends State<CarouselTablet> {
             top: 0,
             bottom: 0,
             child: Center(
-              child: Opacity(
-                opacity: _currentIndex == 0 ? 0.3 : 1.0,
-                child: CarouselPreviousButton(
-                  onTap: _currentIndex > 0 ? _previousPage : () {},
-                ),
+              child: CarouselPreviousButton(
+                onTap: _previousPage,
               ),
             ),
           ),
@@ -133,13 +124,8 @@ class _CarouselTabletState extends State<CarouselTablet> {
             top: 0,
             bottom: 0,
             child: Center(
-              child: Opacity(
-                opacity: _currentIndex == widget.recipes.length - 1 ? 0.3 : 1.0,
-                child: CarouselNextButton(
-                  onTap: _currentIndex < widget.recipes.length - 1
-                      ? _nextPage
-                      : () {},
-                ),
+              child: CarouselNextButton(
+                onTap: _nextPage,
               ),
             ),
           ),
