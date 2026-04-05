@@ -9,7 +9,7 @@ import 'package:orsocook/screens/home/components/home_carousel_section.dart';
 import 'package:orsocook/screens/home/widgets/home_app_bar.dart';
 import 'package:orsocook/screens/home/widgets/home_body.dart';
 import 'package:orsocook/screens/home/widgets/categories_scroll_bar.dart';
-import 'package:orsocook/screens/home/widgets/category_section/category_section.dart';
+import 'package:orsocook/screens/home/widgets/category_section/index.dart';
 import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/category_service.dart';
@@ -125,6 +125,10 @@ class _HomeScreenState extends State<HomeScreen> {
       return ShimmerCategorySection(isDesktop: isDesktop);
     }
 
+    if (viewModel.sectionRecipes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       children: viewModel.sectionRecipes.entries.map((entry) {
         final categoryName =
@@ -168,15 +172,6 @@ class _HomeScreenState extends State<HomeScreen> {
           final screenWidth = MediaQuery.of(context).size.width;
           final isDesktop = screenWidth >= 900;
           final carouselRecipes = viewModel.recipes.take(6).toList();
-
-          AppLogger.debug(
-              '🔍 [CAROUSEL] Ricette totali: ${viewModel.recipes.length}');
-          AppLogger.debug(
-              '🔍 [CAROUSEL] Ricette nel carousel: ${carouselRecipes.length}');
-          for (var i = 0; i < viewModel.recipes.length; i++) {
-            AppLogger.debug(
-                '🔍 [CAROUSEL] Ricetta ${i + 1}: ${viewModel.recipes[i].title}');
-          }
 
           final appBar = HomeAppBar(
             onProfileTap: _navigateToProfile,

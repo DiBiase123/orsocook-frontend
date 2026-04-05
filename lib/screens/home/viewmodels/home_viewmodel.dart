@@ -20,6 +20,9 @@ class HomeViewModel extends ChangeNotifier {
   final Map<String, List<Recipe>> _sectionRecipes = {};
   bool _isLoadingSections = false;
 
+  int _loadRetryCount = 0;
+  static const int _maxRetries = 3;
+
   static const String _prefKeySelectedCategory = 'selected_category';
 
   // Getters
@@ -46,7 +49,6 @@ class HomeViewModel extends ChangeNotifier {
     _loadSavedCategory();
   }
 
-  // ========== CATEGORIA SALVATA ==========
   Future<void> _loadSavedCategory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -73,7 +75,6 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  // ========== CARICAMENTO INIZIALE ==========
   Future<void> loadInitialRecipes() async {
     try {
       if (_categoryService.categories.isEmpty) {
@@ -92,16 +93,37 @@ class HomeViewModel extends ChangeNotifier {
       _likeService.preloadLikesCount(recipeIds);
       await _loadSections();
 
+      if (_recipeService.cachedRecipes.isEmpty &&
+          _loadRetryCount < _maxRetries) {
+        _loadRetryCount++;
+        AppLogger.debug(
+            '🔄 Ricette vuote, tentativo $_loadRetryCount di $_maxRetries');
+        await Future.delayed(Duration(seconds: _loadRetryCount));
+        await loadInitialRecipes();
+        return;
+      }
+
+      _loadRetryCount = 0;
       _isFirstLoad = false;
       notifyListeners();
     } catch (e) {
       AppLogger.error('Errore caricamento ricette iniziali', e);
+
+      if (_loadRetryCount < _maxRetries) {
+        _loadRetryCount++;
+        AppLogger.debug(
+            '🔄 Errore, tentativo $_loadRetryCount di $_maxRetries');
+        await Future.delayed(Duration(seconds: _loadRetryCount));
+        await loadInitialRecipes();
+        return;
+      }
+
+      _loadRetryCount = 0;
       _isFirstLoad = false;
       notifyListeners();
     }
   }
 
-  // ========== CARICAMENTO SEZIONI ==========
   Future<void> _loadSections() async {
     if (_isLoadingSections) return;
 
@@ -156,7 +178,6 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  // ========== FILTRI ==========
   void onCategorySelected(String? categorySlug) {
     final effectiveSlug = categorySlug?.isEmpty == true ? null : categorySlug;
     if (_selectedCategory == effectiveSlug) return;
@@ -202,7 +223,6 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  // ========== UTILITY ==========
   void disposeViewModel() {
     _searchDebounce?.cancel();
   }

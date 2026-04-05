@@ -30,7 +30,6 @@ class CategorySectionMobile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
@@ -77,13 +76,12 @@ class CategorySectionMobile extends StatelessWidget {
               ],
             ),
           ),
-          // Spazio tra header e card
           const SizedBox(height: 16),
-          // ListView orizzontale
           SizedBox(
             height: cardHeight,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: recipes.length,
               itemBuilder: (context, index) {

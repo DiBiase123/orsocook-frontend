@@ -62,6 +62,8 @@ class _CarouselTabletState extends State<CarouselTablet> {
           PageView.builder(
             controller: _pageController,
             itemCount: 1000000,
+            scrollDirection: Axis.horizontal,
+            physics: const AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final realIndex = index % widget.recipes.length;
               final recipe = widget.recipes[realIndex];
@@ -107,7 +109,6 @@ class _CarouselTabletState extends State<CarouselTablet> {
               );
             },
           ),
-          // Freccia sinistra
           Positioned(
             left: 8,
             top: 0,
@@ -118,7 +119,6 @@ class _CarouselTabletState extends State<CarouselTablet> {
               ),
             ),
           ),
-          // Freccia destra
           Positioned(
             right: 8,
             top: 0,

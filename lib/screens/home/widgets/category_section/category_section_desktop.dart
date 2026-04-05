@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
@@ -40,7 +41,6 @@ class CategorySectionDesktop extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
@@ -90,13 +90,12 @@ class CategorySectionDesktop extends StatelessWidget {
               ],
             ),
           ),
-          // Spazio tra header e card
           const SizedBox(height: 24),
-          // ListView orizzontale
           SizedBox(
             height: cardHeight,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: recipes.length,
               itemBuilder: (context, index) {
