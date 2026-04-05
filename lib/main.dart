@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/activity_tracker.dart';
@@ -17,6 +18,17 @@ import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/utils/logger.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.invertedStylus,
+      };
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -104,6 +116,7 @@ class MyApp extends StatelessWidget {
               theme: AppTheme.lightTheme,
               routerConfig: goRouter,
               debugShowCheckedModeBanner: false,
+              scrollBehavior: MyCustomScrollBehavior(),
             ),
           );
         },
