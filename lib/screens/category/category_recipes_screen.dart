@@ -23,6 +23,29 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
   late CategoryRecipesViewModel _viewModel;
   final ScrollController _scrollController = ScrollController();
 
+  Color _getCategoryColor(String slug) {
+    final colors = {
+      'antipasti': const Color(0xFF7B1FA2),
+      'primi-piatti': const Color(0xFF9C27B0),
+      'secondi-piatti': const Color(0xFFAB47BC),
+      'contorni': const Color(0xFFBA68C8),
+      'dolci': const Color(0xFFCE93D8),
+      'pane-e-pizza': const Color(0xFF8E24AA),
+      'zuppe-e-minestre': const Color(0xFF6A1B9A),
+      'insalate': const Color(0xFFB39DDB),
+      'salse-e-condimenti': const Color(0xFF9575CD),
+      'bevande': const Color(0xFF7E57C2),
+      'colazioni-e-brunch': const Color(0xFF673AB7),
+      'piatti-unici': const Color(0xFF5E35B1),
+    };
+    return colors[slug] ?? const Color(0xFF6750A4);
+  }
+
+  String _formatCategoryName(String slug) {
+    final name = slug.replaceAll('-', ' ');
+    return name[0].toUpperCase() + name.substring(1);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -48,10 +71,14 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final categoryColor = _getCategoryColor(widget.categorySlug);
+
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: categoryColor,
+          foregroundColor: Colors.white,
           title: Consumer<CategoryRecipesViewModel>(
             builder: (context, viewModel, child) {
               return Text(
@@ -63,13 +90,12 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
             },
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => context.pop(),
           ),
         ),
         body: Consumer<CategoryRecipesViewModel>(
           builder: (context, viewModel, child) {
-            // Loading iniziale con shimmer
             if (viewModel.isLoading && viewModel.recipes.isEmpty) {
               return ShimmerGrid(count: 6);
             }
@@ -134,7 +160,6 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
               itemCount: viewModel.recipes.length + (viewModel.hasMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index >= viewModel.recipes.length) {
-                  // Loader per infinite scroll
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(16),
@@ -154,11 +179,6 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
         ),
       ),
     );
-  }
-
-  String _formatCategoryName(String slug) {
-    final name = slug.replaceAll('-', ' ');
-    return name[0].toUpperCase() + name.substring(1);
   }
 
   @override

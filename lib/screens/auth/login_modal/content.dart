@@ -194,6 +194,7 @@ class _LoginModalContentState extends State<LoginModalContent> {
       formKey: _formKey,
       onClose: widget.onClose,
       showCloseButton: widget.showCloseButton,
+      title: 'Accedi',
       children: [
         const LoginLogo(),
         const SizedBox(height: 24),

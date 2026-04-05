@@ -21,23 +21,67 @@ class HomeAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 900;
-    final isSmall = screenWidth < 600;
+    final isDesktop = screenWidth >= 900;
+    final isTablet = screenWidth >= 600 && screenWidth < 900;
 
-    final logoSize = isMobile ? (isSmall ? 44.0 : 55.0) : 80.0;
-    final avatarSize = logoSize;
-    final iconSize = isMobile ? (isSmall ? 36.0 : 42.0) : 48.0;
-    final titleSize = isMobile ? (isSmall ? 24.0 : 28.0) : 34.0;
-    final vPadding = isMobile ? (isSmall ? 8.0 : 10.0) : 16.0;
-    final gap = isMobile ? (isSmall ? 8.0 : 10.0) : 20.0;
+    double logoSize;
+    double avatarSize;
+    double iconSize;
+    double titleSize;
+    double vPadding;
+    double gap;
+
+    if (isDesktop) {
+      logoSize = 80.0;
+      avatarSize = 80.0;
+      iconSize = 48.0;
+      titleSize = 34.0;
+      vPadding = 16.0;
+      gap = 20.0;
+    } else if (isTablet) {
+      logoSize = 55.0;
+      avatarSize = 55.0;
+      iconSize = 42.0;
+      titleSize = 28.0;
+      vPadding = 10.0;
+      gap = 10.0;
+    } else {
+      logoSize = 44.0;
+      avatarSize = 44.0;
+      iconSize = 36.0;
+      titleSize = 24.0;
+      vPadding = 8.0;
+      gap = 8.0;
+    }
 
     return Container(
-      color: const Color(0xFF6750A4), // RIPRISTINATO il colore viola
+      color: const Color(0xFF6750A4),
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: gap, vertical: vPadding),
-          child: isMobile
-              ? Column(
+          child: (isDesktop || isTablet)
+              ? Row(
+                  children: [
+                    _buildLogo(logoSize),
+                    SizedBox(width: gap),
+                    _buildTitle(titleSize),
+                    SizedBox(width: gap * 2),
+                    Expanded(
+                      child: RecipeSearchBar(
+                        controller: searchController,
+                        onSearchChanged: onSearchChanged,
+                        compact: true,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    SizedBox(width: gap),
+                    _buildAddButton(iconSize),
+                    SizedBox(width: gap * 0.5),
+                    _buildAvatar(avatarSize, iconSize),
+                    SizedBox(width: gap * 0.5),
+                  ],
+                )
+              : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
@@ -64,27 +108,6 @@ class HomeAppBar extends StatelessWidget {
                         backgroundColor: Colors.white,
                       ),
                     ),
-                  ],
-                )
-              : Row(
-                  children: [
-                    _buildLogo(logoSize),
-                    SizedBox(width: gap),
-                    _buildTitle(titleSize),
-                    SizedBox(width: gap * 2),
-                    Expanded(
-                      child: RecipeSearchBar(
-                        controller: searchController,
-                        onSearchChanged: onSearchChanged,
-                        compact: true,
-                        backgroundColor: Colors.white,
-                      ),
-                    ),
-                    SizedBox(width: gap),
-                    _buildAddButton(iconSize),
-                    SizedBox(width: gap * 0.5),
-                    _buildAvatar(avatarSize, iconSize),
-                    SizedBox(width: gap * 0.5),
                   ],
                 ),
         ),

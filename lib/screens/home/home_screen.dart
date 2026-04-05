@@ -202,6 +202,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     const SizedBox(height: 16),
+                    // CategoriesScrollBar spostato QUI, sotto il carousel
+                    categoriesBar,
+                    const SizedBox(height: 16),
                     _buildSections(viewModel, isDesktop),
                   ],
                 );
@@ -216,8 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       controller: _scrollController,
                       children: [
                         const SizedBox(height: 16),
-                        categoriesBar,
-                        const SizedBox(height: 16),
+                        // categoriesBar rimosso da qui
                         mainContent,
                         const SizedBox(height: 24),
                       ],
@@ -246,8 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 8),
-                      categoriesBar,
-                      const SizedBox(height: 16),
+                      // categoriesBar rimosso da qui
                       mainContent,
                       const SizedBox(height: 24),
                     ],

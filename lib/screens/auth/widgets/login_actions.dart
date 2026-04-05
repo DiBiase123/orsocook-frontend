@@ -21,6 +21,7 @@ class LoginActions extends StatelessWidget {
       onPressed: isLoading ? null : onLoginPressed,
       style: ElevatedButton.styleFrom(
         minimumSize: const Size(double.infinity, 50),
+        backgroundColor: const Color(0xFF6750A4), // Viola
       ),
       child: isLoading
           ? const SizedBox(
@@ -28,11 +29,15 @@ class LoginActions extends StatelessWidget {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
+                color: Colors.white,
               ),
             )
           : const Text(
               'ACCEDI',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
     );
   }

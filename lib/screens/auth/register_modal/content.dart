@@ -198,6 +198,7 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
       formKey: _formKey,
       onClose: widget.onClose,
       showCloseButton: widget.showCloseButton,
+      title: 'Registrati',
       children: [
         const RegisterLogo(),
         const SizedBox(height: 24),
