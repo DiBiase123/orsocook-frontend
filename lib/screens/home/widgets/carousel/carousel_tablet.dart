@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'carousel_card.dart';
 import 'carousel_previous_button.dart';
@@ -64,6 +65,7 @@ class _CarouselTabletState extends State<CarouselTablet> {
             itemCount: 1000000,
             scrollDirection: Axis.horizontal,
             physics: const AlwaysScrollableScrollPhysics(),
+            dragStartBehavior: DragStartBehavior.down,
             itemBuilder: (context, index) {
               final realIndex = index % widget.recipes.length;
               final recipe = widget.recipes[realIndex];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
@@ -95,6 +96,7 @@ class CategorySectionTablet extends StatelessWidget {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const AlwaysScrollableScrollPhysics(),
+              dragStartBehavior: DragStartBehavior.down,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: recipes.length,
               itemBuilder: (context, index) {

@@ -35,6 +35,14 @@ class _HomeScreenState extends State<HomeScreen> {
     _initializeViewModel();
   }
 
+  @override
+  void dispose() {
+    _viewModel.disposeViewModel();
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   void _initializeViewModel() {
     _viewModel = HomeViewModel(
       recipeService: context.read<RecipeService>(),
@@ -143,14 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }).toList(),
     );
-  }
-
-  @override
-  void dispose() {
-    _viewModel.disposeViewModel();
-    _searchController.dispose();
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override

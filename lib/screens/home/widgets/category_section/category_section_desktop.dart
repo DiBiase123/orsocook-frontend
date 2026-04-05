@@ -96,6 +96,7 @@ class CategorySectionDesktop extends StatelessWidget {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const AlwaysScrollableScrollPhysics(),
+              dragStartBehavior: DragStartBehavior.down,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: recipes.length,
               itemBuilder: (context, index) {
