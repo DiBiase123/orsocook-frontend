@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class ShimmerEffect extends StatelessWidget {
   final Widget child;
@@ -126,7 +128,10 @@ class ShimmerCategorySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveValues.gapMedium(context),
+            vertical: ResponsiveValues.gapMedium(context),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -139,16 +144,18 @@ class ShimmerCategorySection extends StatelessWidget {
           height: cardHeight,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveValues.gapMedium(context)),
             itemCount: 4,
             itemBuilder: (_, __) => Container(
               width: cardWidth,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
+              margin: EdgeInsets.symmetric(
+                  horizontal: ResponsiveValues.gapSmall(context)),
               child: ShimmerRecipeCard(height: cardHeight),
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: ResponsiveValues.gapLarge(context)),
       ],
     );
   }
@@ -161,18 +168,23 @@ class ShimmerGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveBreakpoints.isDesktop(context);
+    final crossAxisCount =
+        isDesktop ? 4 : (ResponsiveBreakpoints.isTablet(context) ? 3 : 2);
+    final spacing = ResponsiveValues.gapMedium(context);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+      padding: ResponsiveValues.screenPadding(context),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: spacing,
+        mainAxisSpacing: spacing,
         childAspectRatio: 0.75,
       ),
       itemCount: count,
-      itemBuilder: (_, __) => const ShimmerRecipeCard(height: 280),
+      itemBuilder: (_, __) => ShimmerRecipeCard(height: 280),
     );
   }
 }

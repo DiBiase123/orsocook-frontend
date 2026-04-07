@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/login.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
@@ -84,9 +85,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         });
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
-            // Vai alla home
             context.go('/home');
-            // Poi apri il modal login
             Future.delayed(const Duration(milliseconds: 100), () {
               if (mounted) {
                 showLoginModal(context);
@@ -124,7 +123,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return Column(
       children: [
         Icon(Icons.lock_open, size: 80, color: Theme.of(context).primaryColor),
-        const SizedBox(height: 16),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         const Text(
           'Nuova Password',
           style: TextStyle(
@@ -132,7 +131,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               fontWeight: FontWeight.bold,
               color: Colors.deepOrange),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         const Text(
           'Crea una nuova password per il tuo account',
           style: TextStyle(fontSize: 16, color: Colors.grey),
@@ -219,10 +218,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         Text('Forza password: $text',
             style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         LinearProgressIndicator(
             value: strength / 4,
             backgroundColor: Colors.grey[300],
@@ -235,7 +234,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (_errorMessage == null) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: ResponsiveValues.screenPadding(context),
       decoration: BoxDecoration(
           color: Colors.red[50], borderRadius: BorderRadius.circular(8)),
       child: Row(
@@ -254,7 +253,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (!_isSuccess) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: ResponsiveValues.screenPadding(context),
       decoration: BoxDecoration(
           color: Colors.green[50], borderRadius: BorderRadius.circular(8)),
       child: Column(
@@ -272,13 +271,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveValues.gapSmall(context)),
           Text(_successMessage ?? 'Password reimpostata con successo!',
               style: const TextStyle(color: Colors.green)),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveValues.gapSmall(context)),
           const Text('Verrai reindirizzato al login...',
               style: TextStyle(fontSize: 12, color: Colors.green)),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.green)),
         ],
@@ -290,7 +289,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return ElevatedButton(
       onPressed: _isLoading ? null : _submitResetPassword,
       style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 50),
+        minimumSize:
+            Size(double.infinity, ResponsiveValues.buttonHeight(context)),
         backgroundColor: Colors.deepOrange,
       ),
       child: _isLoading
@@ -363,34 +363,34 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: ResponsiveValues.screenPadding(context),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildLogo(),
-                const SizedBox(height: 40),
+                SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
                 _buildPasswordField(),
                 _buildPasswordStrength(),
-                const SizedBox(height: 16),
+                SizedBox(height: ResponsiveValues.gapMedium(context)),
                 _buildConfirmPasswordField(),
-                const SizedBox(height: 16),
+                SizedBox(height: ResponsiveValues.gapMedium(context)),
                 _buildErrorSection(),
                 _buildSuccessSection(),
-                const SizedBox(height: 24),
+                SizedBox(height: ResponsiveValues.gapLarge(context)),
                 _buildSubmitButton(),
-                const SizedBox(height: 24),
+                SizedBox(height: ResponsiveValues.gapLarge(context)),
                 _buildLoginLink(),
-                const SizedBox(height: 20),
+                SizedBox(height: ResponsiveValues.gapLarge(context)),
                 const Divider(),
-                const SizedBox(height: 16),
+                SizedBox(height: ResponsiveValues.gapMedium(context)),
                 const Text(
                   'Requisiti password:',
                   style: TextStyle(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: ResponsiveValues.gapMedium(context)),
                 _buildRequirementItem('Almeno 8 caratteri'),
                 _buildRequirementItem('Almeno una lettera maiuscola'),
                 _buildRequirementItem('Almeno un numero'),

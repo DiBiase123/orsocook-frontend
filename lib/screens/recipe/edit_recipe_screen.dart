@@ -8,6 +8,7 @@ import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/viewmodels/edit_recipe_viewmodel.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/widgets/edit_app_bar.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/widgets/edit_form.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
@@ -71,10 +72,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       if (!mounted) return;
 
       if (updatedRecipe != null) {
-        // Forza il refresh delle ricette
         await recipeService.fetchRecipes(forceRefresh: true, page: 1);
-
-        // Aggiorna le categorie
         await categoryService.fetchCategories(forceRefresh: true);
 
         scaffoldMessenger.showSnackBar(
@@ -112,13 +110,13 @@ class _UploadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Caricamento immagine in corso...'),
+          const CircularProgressIndicator(),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
+          const Text('Caricamento immagine in corso...'),
         ],
       ),
     );

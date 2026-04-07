@@ -4,6 +4,7 @@ import 'package:orsocook/services/comment_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/models/comment.dart';
 import 'package:orsocook/screens/recipe/detail_recipe/widgets/comment_item_widget.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 @immutable
 class CommentsListWidget extends StatelessWidget {
@@ -48,14 +49,11 @@ class CommentsListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<AuthService, CommentService>(
       builder: (context, authService, commentService, child) {
-        // 🎯 ANIMAZIONE: CrossFade per transizione smooth tra stati
         return AnimatedCrossFade(
           duration: const Duration(milliseconds: 300),
           crossFadeState: _getCrossFadeState(),
-          firstChild: _buildLoadingOrEmptyState(),
-          secondChild: _buildContentState(authService, commentService),
-          // RIMUOVI COMPLETAMENTE il layoutBuilder personalizzato!
-          // AnimatedCrossFade userà il suo layoutBuilder di default
+          firstChild: _buildLoadingOrEmptyState(context),
+          secondChild: _buildContentState(authService, commentService, context),
         );
       },
     );
@@ -77,22 +75,21 @@ class CommentsListWidget extends StatelessWidget {
     return CrossFadeState.showSecond;
   }
 
-  Widget _buildLoadingOrEmptyState() {
+  Widget _buildLoadingOrEmptyState(BuildContext context) {
     if (!initialLoadComplete && comments.isEmpty) {
-      return _buildLoadingState();
+      return _buildLoadingState(context);
     }
     if (isLoading && error == null) {
-      return _buildLoadingState();
+      return _buildLoadingState(context);
     }
     if (error != null) {
-      return _buildErrorState();
+      return _buildErrorState(context);
     }
-    return _buildEmptyState();
+    return _buildEmptyState(context);
   }
 
-  Widget _buildContentState(
-      AuthService authService, CommentService commentService) {
-    // 🎯 ANIMAZIONE: AnimatedSwitcher per transizione lista
+  Widget _buildContentState(AuthService authService,
+      CommentService commentService, BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       transitionBuilder: (child, animation) {
@@ -105,18 +102,18 @@ class CommentsListWidget extends StatelessWidget {
           ),
         );
       },
-      child: _buildCommentsList(),
+      child: _buildCommentsList(context),
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
+        padding: EdgeInsets.symmetric(
+            vertical: ResponsiveValues.gapExtraLarge(context)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 🎯 ANIMAZIONE: RotationTransition per loading spinner
             RotationTransition(
               turns: const AlwaysStoppedAnimation(0.5),
               child: SizedBox(
@@ -130,7 +127,7 @@ class CommentsListWidget extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveValues.gapMedium(context)),
             AnimatedOpacity(
               duration: const Duration(milliseconds: 500),
               opacity: 1.0,
@@ -145,14 +142,14 @@ class CommentsListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
+        padding: EdgeInsets.symmetric(
+            vertical: ResponsiveValues.gapExtraLarge(context)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 🎯 ANIMAZIONE: Scale + fade per icona errore
             ScaleTransition(
               scale: CurvedAnimation(
                 parent: const AlwaysStoppedAnimation(1.0),
@@ -164,7 +161,7 @@ class CommentsListWidget extends StatelessWidget {
                 color: Colors.red.withAlpha(204),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveValues.gapMedium(context)),
             AnimatedOpacity(
               duration: const Duration(milliseconds: 500),
               opacity: 1.0,
@@ -176,8 +173,7 @@ class CommentsListWidget extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            // 🎯 ANIMAZIONE: Pulsante con scale
+            SizedBox(height: ResponsiveValues.gapMedium(context)),
             AnimatedScale(
               duration: const Duration(milliseconds: 200),
               scale: isRefreshing ? 0.95 : 1.0,
@@ -186,6 +182,8 @@ class CommentsListWidget extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.withAlpha(26),
                   foregroundColor: Colors.red,
+                  minimumSize:
+                      Size(100, ResponsiveValues.buttonHeight(context)),
                 ),
                 child: isRefreshing
                     ? SizedBox(
@@ -212,14 +210,14 @@ class CommentsListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
+        padding: EdgeInsets.symmetric(
+            vertical: ResponsiveValues.gapExtraLarge(context)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 🎯 ANIMAZIONE: Bounce per icona empty
             AnimatedContainer(
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeOutBack,
@@ -229,8 +227,7 @@ class CommentsListWidget extends StatelessWidget {
                 color: Colors.grey.withAlpha(153),
               ),
             ),
-            const SizedBox(height: 20),
-            // 🎯 ANIMAZIONE: Staggered text fade in
+            SizedBox(height: ResponsiveValues.gapLarge(context)),
             AnimatedOpacity(
               duration: const Duration(milliseconds: 600),
               opacity: 1.0,
@@ -244,7 +241,7 @@ class CommentsListWidget extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: ResponsiveValues.gapSmall(context)),
                   AnimatedOpacity(
                     duration: const Duration(milliseconds: 800),
                     opacity: 1.0,
@@ -265,11 +262,10 @@ class CommentsListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCommentsList() {
+  Widget _buildCommentsList(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 400),
       transitionBuilder: (child, animation) {
-        // 🎯 ANIMAZIONE: Slide + fade per inserimento nuovi commenti
         final offsetAnimation = Tween<Offset>(
           begin: const Offset(0, 0.3),
           end: Offset.zero,
@@ -287,25 +283,24 @@ class CommentsListWidget extends StatelessWidget {
         );
       },
       child: ListView.builder(
-        key: ValueKey(
-            'comments_list_${comments.length}'), // 🎯 Key per animazione
+        key: ValueKey('comments_list_${comments.length}'),
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: comments.length,
         itemBuilder: (context, index) {
           final comment = comments[index];
 
-          // 🎯 ANIMAZIONE: Delay crescente per items della lista
           return AnimatedContainer(
             duration: Duration(milliseconds: 200 + (index * 50)),
             curve: Curves.easeOut,
             margin: EdgeInsets.only(
-              top: index == 0 ? 0 : 8,
-              bottom: index == comments.length - 1 ? 0 : 8,
+              top: index == 0 ? 0 : ResponsiveValues.gapSmall(context),
+              bottom: index == comments.length - 1
+                  ? 0
+                  : ResponsiveValues.gapSmall(context),
             ),
             child: CommentItemWidget(
-              key: ValueKey(
-                  'comment_${comment.id}'), // 🎯 Key univoca per animazioni
+              key: ValueKey('comment_${comment.id}'),
               comment: comment,
               isEditing: editCommentId == comment.id,
               isSubmitting: isSubmitting,

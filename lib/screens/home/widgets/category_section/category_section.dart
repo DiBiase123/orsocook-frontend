@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
 import 'category_section_mobile.dart';
 import 'category_section_tablet.dart';
 import 'category_section_desktop.dart';
@@ -38,9 +39,8 @@ class CategorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
-    final isTablet = screenWidth >= 768 && screenWidth <= 1200;
+    final isMobile = ResponsiveBreakpoints.isMobile(context);
+    final isTablet = ResponsiveBreakpoints.isTablet(context);
     final categoryColor = _getCategoryColor(categorySlug);
 
     if (recipes.isEmpty) return const SizedBox.shrink();

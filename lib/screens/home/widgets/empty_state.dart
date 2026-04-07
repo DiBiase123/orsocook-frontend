@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/recipe_service.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class EmptyState extends StatelessWidget {
   final String? searchQuery;
@@ -42,13 +43,13 @@ class _LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Caricamento ricette...'),
+          const CircularProgressIndicator(),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
+          const Text('Caricamento ricette...'),
         ],
       ),
     );
@@ -71,20 +72,23 @@ class _ErrorState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           const Text(
             'Errore nel caricamento',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveValues.gapSmall(context)),
           Text(
             error,
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.grey),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           ElevatedButton(
             onPressed: onRetry,
+            style: ElevatedButton.styleFrom(
+              minimumSize: Size(120, ResponsiveValues.buttonHeight(context)),
+            ),
             child: const Text('RIPROVA'),
           ),
         ],
@@ -105,12 +109,12 @@ class _EmptySearchState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.search_off, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           const Text(
             'Nessuna ricetta trovata',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveValues.gapSmall(context)),
           Text(
             'Nessun risultato per "$searchQuery"',
             style: const TextStyle(color: Colors.grey),
@@ -133,19 +137,22 @@ class _EmptyDefaultState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.restaurant_menu, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           const Text(
             'Nessuna ricetta disponibile',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveValues.gapSmall(context)),
           const Text(
             'Sii il primo a creare una ricetta!',
             style: TextStyle(color: Colors.grey),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           ElevatedButton(
             onPressed: onCreateRecipe,
+            style: ElevatedButton.styleFrom(
+              minimumSize: Size(200, ResponsiveValues.buttonHeight(context)),
+            ),
             child: const Text('CREA LA TUA PRIMA RICETTA'),
           ),
         ],

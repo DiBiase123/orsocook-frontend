@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/home/widgets/categories_skeleton.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class CategoriesBar extends StatefulWidget {
   final ValueChanged<String?>? onCategorySelected;
@@ -71,7 +72,10 @@ class _CategoriesBarState extends State<CategoriesBar> {
         final selectedName = _getSelectedCategoryName(allCategories);
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveValues.horizontalPadding(context).horizontal,
+            vertical: ResponsiveValues.gapSmall(context),
+          ),
           child: PopupMenuButton<String>(
             child: InputDecorator(
               decoration: InputDecoration(
@@ -85,15 +89,13 @@ class _CategoriesBarState extends State<CategoriesBar> {
               ),
               child: Text(
                 selectedName,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: ResponsiveValues.bodySize(context)),
               ),
             ),
             itemBuilder: (context) {
               return allCategories.map((category) {
                 return PopupMenuItem<String>(
-                  value: category.slug.isEmpty
-                      ? ''
-                      : category.slug, // MODIFICATO: null -> ''
+                  value: category.slug.isEmpty ? '' : category.slug,
                   child: Row(
                     children: [
                       Expanded(
@@ -123,7 +125,6 @@ class _CategoriesBarState extends State<CategoriesBar> {
               }).toList();
             },
             onSelected: (value) {
-              // MODIFICATO: se value è stringa vuota, passiamo null
               if (value == widget.selectedCategorySlug) return;
               widget.onCategorySelected?.call(value.isEmpty ? null : value);
             },

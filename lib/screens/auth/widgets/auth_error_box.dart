@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class AuthErrorBox extends StatelessWidget {
   final String message;
@@ -15,7 +16,7 @@ class AuthErrorBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: ResponsiveValues.screenPadding(context),
       decoration: BoxDecoration(
         color: color.withAlpha(20),
         borderRadius: BorderRadius.circular(8),
@@ -26,7 +27,13 @@ class AuthErrorBox extends StatelessWidget {
           Icon(icon, color: color),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(message, style: TextStyle(color: color)),
+            child: Text(
+              message,
+              style: TextStyle(
+                color: color,
+                fontSize: ResponsiveValues.bodySize(context),
+              ),
+            ),
           ),
         ],
       ),

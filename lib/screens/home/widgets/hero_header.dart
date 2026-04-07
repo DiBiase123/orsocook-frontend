@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class HeroHeader extends StatelessWidget {
   const HeroHeader({super.key});
@@ -9,7 +10,12 @@ class HeroHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+      padding: EdgeInsets.fromLTRB(
+        ResponsiveValues.gapLarge(context),
+        ResponsiveValues.gapLarge(context),
+        ResponsiveValues.gapLarge(context),
+        ResponsiveValues.gapLarge(context),
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -27,7 +33,6 @@ class HeroHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Logo / Brand
           Row(
             children: [
               Container(
@@ -43,10 +48,10 @@ class HeroHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'OrsoCook',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: ResponsiveValues.titleSize(context),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 0.5,
@@ -54,23 +59,21 @@ class HeroHeader extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          // Claim
-          const Text(
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
+          Text(
             'Le migliori ricette,\ndalla tua cucina alla tavola',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: ResponsiveValues.titleSize(context),
               fontWeight: FontWeight.w600,
               color: Colors.white,
               height: 1.3,
             ),
           ),
-          const SizedBox(height: 8),
-          // Sottotitolo
+          SizedBox(height: ResponsiveValues.gapSmall(context)),
           Text(
             'Scopri, crea e condividi',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: ResponsiveValues.bodySize(context),
               color: Colors.white.withAlpha(230),
               letterSpacing: 0.3,
             ),

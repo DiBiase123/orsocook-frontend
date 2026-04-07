@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/models/comment.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 @immutable
 class CommentItemWidget extends StatelessWidget {
@@ -37,7 +38,8 @@ class CommentItemWidget extends StatelessWidget {
             authService.userId != null && comment.isOwner(authService.userId!);
 
         return Container(
-          margin: const EdgeInsets.symmetric(vertical: 4),
+          margin: EdgeInsets.symmetric(
+              vertical: ResponsiveValues.gapSmall(context)),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -50,15 +52,12 @@ class CommentItemWidget extends StatelessWidget {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: ResponsiveValues.screenPadding(context),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // HEADER SEMPLICE
                 _buildHeader(context, isOwnComment, authService),
-                const SizedBox(height: 12),
-
-                // CONTENUTO O EDIT FORM
+                SizedBox(height: ResponsiveValues.gapMedium(context)),
                 _buildContent(context),
               ],
             ),
@@ -72,7 +71,6 @@ class CommentItemWidget extends StatelessWidget {
       BuildContext context, bool isOwnComment, AuthService authService) {
     return Row(
       children: [
-        // Avatar
         CircleAvatar(
           radius: 18,
           backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
@@ -84,8 +82,6 @@ class CommentItemWidget extends StatelessWidget {
               : null,
         ),
         const SizedBox(width: 12),
-
-        // Nome e data (EXPANDED per occupare spazio)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,15 +98,13 @@ class CommentItemWidget extends StatelessWidget {
               Text(
                 comment.timeAgo,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: ResponsiveValues.bodySize(context) - 1,
                   color: Colors.grey[600],
                 ),
               ),
             ],
           ),
         ),
-
-        // Menu azioni (solo se proprietario e non in editing)
         if (isOwnComment && !isEditing) _buildMenuButton(context),
       ],
     );
@@ -159,12 +153,12 @@ class CommentItemWidget extends StatelessWidget {
         content: const Text('Sei sicuro di voler eliminare questo commento?'),
         actions: [
           TextButton(
-            onPressed: () => context.pop(), // <-- MODIFICATO
+            onPressed: () => context.pop(),
             child: const Text('ANNULLA'),
           ),
           TextButton(
             onPressed: () {
-              context.pop(); // <-- MODIFICATO
+              context.pop();
               onDeleteComment(comment.id);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -176,7 +170,6 @@ class CommentItemWidget extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-    // Se è in modalità editing
     if (isEditing && editCommentId == comment.id) {
       return Column(
         children: [
@@ -191,7 +184,7 @@ class CommentItemWidget extends StatelessWidget {
               labelText: 'Modifica commento',
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -203,6 +196,9 @@ class CommentItemWidget extends StatelessWidget {
               ElevatedButton(
                 onPressed:
                     isSubmitting ? null : () => onUpdateComment(comment.id),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(80, ResponsiveValues.buttonHeight(context)),
+                ),
                 child: isSubmitting
                     ? const SizedBox(
                         width: 16,
@@ -217,13 +213,15 @@ class CommentItemWidget extends StatelessWidget {
       );
     }
 
-    // Contenuto normale
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           comment.content,
-          style: const TextStyle(fontSize: 14, height: 1.5),
+          style: TextStyle(
+            fontSize: ResponsiveValues.bodySize(context),
+            height: 1.5,
+          ),
         ),
         if (comment.isEdited)
           Padding(
@@ -231,7 +229,7 @@ class CommentItemWidget extends StatelessWidget {
             child: Text(
               '(modificato)',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: ResponsiveValues.bodySize(context) - 3,
                 color: Colors.grey[600],
                 fontStyle: FontStyle.italic,
               ),

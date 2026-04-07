@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class CategorySectionMobile extends StatelessWidget {
   final String title;
@@ -26,13 +27,16 @@ class CategorySectionMobile extends StatelessWidget {
     final cardHeight = 260.0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 32),
+      margin: EdgeInsets.only(bottom: ResponsiveValues.gapExtraLarge(context)),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveValues.gapLarge(context),
+              vertical: ResponsiveValues.gapMedium(context),
+            ),
             decoration: BoxDecoration(
               color: categoryColor,
               borderRadius: BorderRadius.zero,
@@ -43,8 +47,8 @@ class CategorySectionMobile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: ResponsiveValues.titleSize(context),
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       letterSpacing: 0.5,
@@ -61,8 +65,10 @@ class CategorySectionMobile extends StatelessWidget {
                         () => context.push('/category/$categorySlug'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveValues.gapMedium(context),
+                        vertical: ResponsiveValues.gapSmall(context),
+                      ),
                     ),
                     child: const Row(
                       children: [
@@ -77,20 +83,22 @@ class CategorySectionMobile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           SizedBox(
             height: cardHeight,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const AlwaysScrollableScrollPhysics(),
               dragStartBehavior: DragStartBehavior.down,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveValues.gapMedium(context)),
               itemCount: recipes.length,
               itemBuilder: (context, index) {
                 final recipe = recipes[index];
                 return Container(
                   width: cardWidth,
-                  margin: const EdgeInsets.only(right: 16),
+                  margin: EdgeInsets.only(
+                      right: ResponsiveValues.gapMedium(context)),
                   child: RecipeCard(
                     recipe: recipe,
                     onTap: () => context.push('/recipe/detail/${recipe.id}',
@@ -100,7 +108,7 @@ class CategorySectionMobile extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
         ],
       ),
     );

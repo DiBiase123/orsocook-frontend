@@ -6,6 +6,8 @@ import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/screens/category/viewmodels/category_recipes_viewmodel.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/widgets/shimmer_effect.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class CategoryRecipesScreen extends StatefulWidget {
   final String categorySlug;
@@ -72,6 +74,10 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
   @override
   Widget build(BuildContext context) {
     final categoryColor = _getCategoryColor(widget.categorySlug);
+    final isDesktop = ResponsiveBreakpoints.isDesktop(context);
+    final crossAxisCount =
+        isDesktop ? 4 : (ResponsiveBreakpoints.isTablet(context) ? 3 : 2);
+    final spacing = ResponsiveValues.gapMedium(context);
 
     return ChangeNotifierProvider.value(
       value: _viewModel,
@@ -107,18 +113,22 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
                   children: [
                     const Icon(Icons.error_outline,
                         size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
+                    SizedBox(height: ResponsiveValues.gapMedium(context)),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      padding: ResponsiveValues.horizontalPadding(context),
                       child: Text(
                         viewModel.error!,
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: ResponsiveValues.gapLarge(context)),
                     ElevatedButton(
                       onPressed: () =>
                           viewModel.loadCategoryRecipes(refresh: true),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize:
+                            Size(120, ResponsiveValues.buttonHeight(context)),
+                      ),
                       child: const Text('RIPROVA'),
                     ),
                   ],
@@ -133,14 +143,18 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
                   children: [
                     const Icon(Icons.restaurant_menu,
                         size: 64, color: Colors.grey),
-                    const SizedBox(height: 16),
+                    SizedBox(height: ResponsiveValues.gapMedium(context)),
                     const Text(
                       'Nessuna ricetta in questa categoria',
                       style: TextStyle(fontSize: 16),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: ResponsiveValues.gapLarge(context)),
                     ElevatedButton(
                       onPressed: () => context.pop(),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize:
+                            Size(160, ResponsiveValues.buttonHeight(context)),
+                      ),
                       child: const Text('TORNA ALLA HOME'),
                     ),
                   ],
@@ -150,11 +164,11 @@ class _CategoryRecipesScreenState extends State<CategoryRecipesScreen> {
 
             return GridView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+              padding: ResponsiveValues.screenPadding(context),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: spacing,
                 childAspectRatio: 0.75,
               ),
               itemCount: viewModel.recipes.length + (viewModel.hasMore ? 1 : 0),

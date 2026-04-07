@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/services/profile/profile_controller.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class ProfileErrorWidget extends StatelessWidget {
   final ProfileController controller;
@@ -9,8 +10,8 @@ class ProfileErrorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.all(16),
+      padding: ResponsiveValues.screenPadding(context),
+      margin: ResponsiveValues.horizontalPadding(context),
       decoration: BoxDecoration(
         color: Colors.red[50],
         borderRadius: BorderRadius.circular(12),
@@ -30,12 +31,13 @@ class ProfileErrorWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           ElevatedButton(
             onPressed: controller.retry,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red[700],
               foregroundColor: Colors.white,
+              minimumSize: Size(100, ResponsiveValues.buttonHeight(context)),
             ),
             child: const Text('Riprova'),
           ),

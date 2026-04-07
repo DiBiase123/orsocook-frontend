@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/home/widgets/home_app_bar.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class HomeLoadingScreen extends StatelessWidget {
   final AuthService authService;
@@ -29,14 +30,14 @@ class HomeLoadingScreen extends StatelessWidget {
             searchController: searchController,
             onSearchChanged: onSearchChanged,
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Caricamento ricette...'),
+                  const CircularProgressIndicator(),
+                  SizedBox(height: ResponsiveValues.gapMedium(context)),
+                  const Text('Caricamento ricette...'),
                 ],
               ),
             ),

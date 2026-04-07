@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/home/widgets/categories_skeleton.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class CategoriesScrollBar extends StatelessWidget {
   final ValueChanged<String?> onCategorySelected;
@@ -29,13 +30,13 @@ class CategoriesScrollBar extends StatelessWidget {
         return Container(
           width: double.infinity,
           color: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(
+              vertical: ResponsiveValues.gapMedium(context)),
           child: Wrap(
             alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
+            spacing: ResponsiveValues.gapSmall(context),
+            runSpacing: ResponsiveValues.gapSmall(context),
             children: [
-              // Categoria "Tutte"
               _buildCategoryChip(
                 context: context,
                 label: 'Tutte',
@@ -44,7 +45,6 @@ class CategoriesScrollBar extends StatelessWidget {
                 theme: theme,
                 slug: null,
               ),
-              // Altre categorie
               ...categories.map((category) {
                 final isSelected = selectedCategorySlug == category.slug;
                 return _buildCategoryChip(
@@ -82,7 +82,9 @@ class CategoriesScrollBar extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: isSelected ? 15 : 13,
+                fontSize: isSelected
+                    ? ResponsiveValues.bodySize(context) + 2
+                    : ResponsiveValues.bodySize(context),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),

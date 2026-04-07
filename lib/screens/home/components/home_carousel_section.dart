@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/screens/home/widgets/carousel/index.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
 
 class HomeCarouselSection extends StatelessWidget {
   final List<Recipe> recipes;
@@ -14,9 +15,8 @@ class HomeCarouselSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth > 1200; // Desktop solo sopra 1200px
-    final isTablet = screenWidth >= 768 && screenWidth <= 1200;
+    final isDesktop = ResponsiveBreakpoints.isDesktop(context);
+    final isTablet = ResponsiveBreakpoints.isTablet(context);
 
     double height;
     if (isDesktop) {

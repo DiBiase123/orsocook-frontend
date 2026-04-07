@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/services/auth_service.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
 
 class AvatarPickerWidget extends StatelessWidget {
   const AvatarPickerWidget({super.key});
@@ -72,15 +73,19 @@ class AvatarPickerWidget extends StatelessWidget {
     final controller = Provider.of<ProfileController>(context);
     final authService = Provider.of<AuthService>(context, listen: false);
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isLargeScreen = screenWidth > 600;
-    final avatarSize = isLargeScreen ? 100.0 : 80.0;
-    final iconSize = isLargeScreen ? 24.0 : 18.0;
-    final buttonSize = isLargeScreen ? 44.0 : 36.0;
+    final isDesktop = ResponsiveBreakpoints.isDesktop(context);
+    final avatarSize = isDesktop
+        ? 120.0
+        : (ResponsiveBreakpoints.isTablet(context) ? 100.0 : 80.0);
+    final iconSize = isDesktop
+        ? 28.0
+        : (ResponsiveBreakpoints.isTablet(context) ? 24.0 : 18.0);
+    final buttonSize = isDesktop
+        ? 48.0
+        : (ResponsiveBreakpoints.isTablet(context) ? 44.0 : 36.0);
 
     return Stack(
       children: [
-        // Avatar container
         Container(
           width: avatarSize,
           height: avatarSize,
@@ -99,8 +104,6 @@ class AvatarPickerWidget extends StatelessWidget {
                   child: _buildAvatarImage(controller, authService, context),
                 ),
         ),
-
-        // Pulsante cambia avatar
         Positioned(
           bottom: 0,
           right: 0,
@@ -136,7 +139,6 @@ class AvatarPickerWidget extends StatelessWidget {
     AuthService authService,
     BuildContext context,
   ) {
-    // Priorità 1: File temporaneo selezionato (XFile)
     if (controller.selectedAvatar != null) {
       return FutureBuilder(
         future: controller.selectedAvatar!.readAsBytes(),
@@ -153,7 +155,6 @@ class AvatarPickerWidget extends StatelessWidget {
       );
     }
 
-    // Priorità 2: Avatar dal profilo
     final profileAvatarUrl = controller.displayAvatarUrl;
     if (profileAvatarUrl != null && profileAvatarUrl.isNotEmpty) {
       return Image.network(
@@ -164,7 +165,6 @@ class AvatarPickerWidget extends StatelessWidget {
       );
     }
 
-    // Priorità 3: Avatar da AuthService (cache)
     final authAvatarUrl = authService.avatarUrl;
     if (authAvatarUrl != null && authAvatarUrl.isNotEmpty) {
       return Image.network(
@@ -175,14 +175,14 @@ class AvatarPickerWidget extends StatelessWidget {
       );
     }
 
-    // Fallback: icona placeholder
     return _buildPlaceholderIcon(context);
   }
 
   Widget _buildPlaceholderIcon(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isLargeScreen = screenWidth > 600;
-    final iconSize = isLargeScreen ? 50.0 : 40.0;
+    final isDesktop = ResponsiveBreakpoints.isDesktop(context);
+    final iconSize = isDesktop
+        ? 60.0
+        : (ResponsiveBreakpoints.isTablet(context) ? 50.0 : 40.0);
 
     return Icon(
       Icons.person,

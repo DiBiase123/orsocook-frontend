@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/comment_service.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 @immutable
 class CommentInputWidget extends StatelessWidget {
@@ -47,7 +48,8 @@ class CommentInputWidget extends StatelessWidget {
     final hasFocus = focusNode?.hasFocus ?? false;
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin:
+          EdgeInsets.symmetric(vertical: ResponsiveValues.gapSmall(context)),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: theme.colorScheme.surface,
@@ -65,11 +67,10 @@ class CommentInputWidget extends StatelessWidget {
         elevation: 0,
         color: Colors.transparent,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: ResponsiveValues.screenPadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Titolo sezione
               Row(
                 children: [
                   Icon(
@@ -87,13 +88,9 @@ class CommentInputWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-
-              // Campo testo
+              SizedBox(height: ResponsiveValues.gapMedium(context)),
               _buildCommentTextField(context, theme, hasFocus),
-              const SizedBox(height: 12),
-
-              // Footer con contatore e bottone
+              SizedBox(height: ResponsiveValues.gapMedium(context)),
               _buildFooter(context, theme, colors, commentService),
             ],
           ),
@@ -126,17 +123,16 @@ class CommentInputWidget extends StatelessWidget {
         textInputAction: TextInputAction.newline,
         keyboardType: TextInputType.multiline,
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.all(16),
+          contentPadding: ResponsiveValues.screenPadding(context),
           border: InputBorder.none,
           hintText: 'Condividi il tuo pensiero sulla ricetta...',
           hintStyle: TextStyle(
             color: theme.colorScheme.onSurface.withAlpha((0.5 * 255).round()),
-            fontSize: 15,
+            fontSize: ResponsiveValues.bodySize(context),
           ),
           suffixIcon: commentController.text.isNotEmpty
               ? Padding(
-                  padding:
-                      const EdgeInsets.only(right: 8.0), // 👈 PADDING AGGIUNTO
+                  padding: const EdgeInsets.only(right: 8.0),
                   child: IconButton(
                     icon: Icon(
                       Icons.clear,
@@ -149,14 +145,14 @@ class CommentInputWidget extends StatelessWidget {
                       (context as Element).markNeedsBuild();
                     },
                     splashRadius: 18,
-                    tooltip: 'Cancella testo', // 👈 TOOLTIP PER X
+                    tooltip: 'Cancella testo',
                   ),
                 )
               : null,
           counterStyle: const TextStyle(fontSize: 0),
         ),
         style: theme.textTheme.bodyMedium?.copyWith(
-          fontSize: 15,
+          fontSize: ResponsiveValues.bodySize(context),
           height: 1.5,
         ),
         onChanged: (value) {
@@ -179,7 +175,6 @@ class CommentInputWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Contatore caratteri
         Text(
           '$textLength/1000 caratteri',
           style: theme.textTheme.bodySmall?.copyWith(
@@ -188,10 +183,8 @@ class CommentInputWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-
-        // Bottone Invia con tooltip
         Tooltip(
-          message: 'Pubblica commento', // 👈 TOOLTIP AGGIUNTO
+          message: 'Pubblica commento',
           preferBelow: false,
           child: FloatingActionButton(
             onPressed: (!isValid || isSubmitting || textLength == 0)
@@ -256,8 +249,9 @@ class CommentInputWidget extends StatelessWidget {
         splashColor: theme.colorScheme.primary.withAlpha(64),
         highlightColor: theme.colorScheme.primary.withAlpha(32),
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.all(20),
+          margin: EdgeInsets.symmetric(
+              vertical: ResponsiveValues.gapSmall(context)),
+          padding: ResponsiveValues.screenPadding(context),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: theme.colorScheme.secondaryContainer,
@@ -274,7 +268,7 @@ class CommentInputWidget extends StatelessWidget {
                 size: 40,
                 color: theme.colorScheme.primary,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: ResponsiveValues.gapMedium(context)),
               Text(
                 'Accedi per commentare',
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -283,7 +277,7 @@ class CommentInputWidget extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: ResponsiveValues.gapSmall(context)),
               Text(
                 'Partecipa alla conversazione con la community',
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -292,7 +286,7 @@ class CommentInputWidget extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: ResponsiveValues.gapMedium(context)),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -327,7 +321,6 @@ class CommentInputWidget extends StatelessWidget {
   }
 
   void _navigateToLogin(BuildContext context) {
-    // MODIFICATO: usa context.go invece di pushNamed
     context.go('/login');
   }
 }

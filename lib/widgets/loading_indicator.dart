@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 @immutable
 class LoadingIndicator extends StatelessWidget {
@@ -14,7 +15,7 @@ class LoadingIndicator extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           if (message != null) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveValues.gapMedium(context)),
             Text(
               message!,
               style: const TextStyle(color: Colors.grey),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 import 'package:universal_html/html.dart' as html;
 
 class VerifyEmailScreen extends StatefulWidget {
@@ -39,14 +40,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   Future<String?> _getTokenFromStorage() async {
     if (kIsWeb) {
       try {
-        // Prova localStorage
         if (html.window.localStorage.containsKey('pendingVerificationToken')) {
           final token = html.window.localStorage['pendingVerificationToken'];
           html.window.localStorage.remove('pendingVerificationToken');
           return token;
         }
 
-        // Prova sessionStorage
         if (html.window.sessionStorage
             .containsKey('pendingVerificationToken')) {
           final token = html.window.sessionStorage['pendingVerificationToken'];
@@ -58,7 +57,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       }
     }
 
-    // Fallback su SharedPreferences
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('pendingVerificationToken');
@@ -118,13 +116,13 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   Widget _buildLoading() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 20),
-          Text('Verifica in corso...'),
+          const CircularProgressIndicator(),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
+          const Text('Verifica in corso...'),
         ],
       ),
     );
@@ -136,19 +134,19 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.check_circle, size: 80, color: Colors.green),
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           Text(
             _message ?? 'Account verificato con successo!',
-            style: const TextStyle(
-              fontSize: 20,
+            style: TextStyle(
+              fontSize: ResponsiveValues.titleSize(context),
               fontWeight: FontWeight.bold,
               color: Colors.green,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           const Text('Verrai reindirizzato al login...'),
-          const SizedBox(height: 32),
+          SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
           const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
           ),
@@ -163,17 +161,24 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.error_outline, size: 80, color: Colors.red),
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           Text(
             _errorMessage ?? 'Errore durante la verifica',
-            style: const TextStyle(fontSize: 18, color: Colors.red),
+            style: TextStyle(
+              fontSize: ResponsiveValues.bodySize(context) + 2,
+              color: Colors.red,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           const Text('Il link potrebbe essere scaduto o non valido.'),
-          const SizedBox(height: 32),
+          SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
           ElevatedButton(
             onPressed: _navigateToLogin,
+            style: ElevatedButton.styleFrom(
+              minimumSize:
+                  Size(double.infinity, ResponsiveValues.buttonHeight(context)),
+            ),
             child: const Text('Vai al Login'),
           ),
         ],
@@ -187,27 +192,32 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.mark_email_read, size: 80, color: Colors.blue),
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
+          Text(
             'Verifica il tuo account',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: ResponsiveValues.titleSize(context) + 4,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          const SizedBox(height: 16),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
+          Padding(
+            padding: ResponsiveValues.horizontalPadding(context),
+            child: const Text(
               'Clicca il pulsante qui sotto per verificare il tuo indirizzo email.',
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
           if (widget.token?.isNotEmpty ?? false)
             ElevatedButton(
               onPressed: () => _verifyEmail(widget.token!),
-              style: ElevatedButton.styleFrom(minimumSize: const Size(200, 50)),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(200, ResponsiveValues.buttonHeight(context)),
+              ),
               child: const Text('VERIFICA ACCOUNT'),
             ),
-          const SizedBox(height: 20),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           TextButton(
             onPressed: _navigateToLogin,
             child: const Text('Torna al Login'),
@@ -229,7 +239,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: ResponsiveValues.screenPadding(context),
           child: _isLoading
               ? _buildLoading()
               : _isSuccess

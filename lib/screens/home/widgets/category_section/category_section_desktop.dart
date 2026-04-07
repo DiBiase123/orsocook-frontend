@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class CategorySectionDesktop extends StatelessWidget {
   final String title;
@@ -26,7 +27,10 @@ class CategorySectionDesktop extends StatelessWidget {
     final cardHeight = 320.0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 96, vertical: 24),
+      margin: EdgeInsets.symmetric(
+        horizontal: ResponsiveValues.gapExtraLarge(context) * 2,
+        vertical: ResponsiveValues.gapLarge(context),
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -42,7 +46,10 @@ class CategorySectionDesktop extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveValues.gapLarge(context),
+              vertical: ResponsiveValues.gapMedium(context),
+            ),
             decoration: BoxDecoration(
               color: categoryColor,
               borderRadius: const BorderRadius.only(
@@ -56,8 +63,8 @@ class CategorySectionDesktop extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 24,
+                    style: TextStyle(
+                      fontSize: ResponsiveValues.titleSize(context),
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       letterSpacing: 0.5,
@@ -74,8 +81,10 @@ class CategorySectionDesktop extends StatelessWidget {
                         () => context.push('/category/$categorySlug'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveValues.gapMedium(context),
+                        vertical: ResponsiveValues.gapSmall(context),
+                      ),
                     ),
                     child: const Row(
                       children: [
@@ -90,20 +99,22 @@ class CategorySectionDesktop extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           SizedBox(
             height: cardHeight,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const AlwaysScrollableScrollPhysics(),
               dragStartBehavior: DragStartBehavior.down,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveValues.gapMedium(context)),
               itemCount: recipes.length,
               itemBuilder: (context, index) {
                 final recipe = recipes[index];
                 return Container(
                   width: cardWidth,
-                  margin: const EdgeInsets.only(right: 24),
+                  margin: EdgeInsets.only(
+                      right: ResponsiveValues.gapLarge(context)),
                   child: RecipeCard(
                     recipe: recipe,
                     onTap: () => context.push('/recipe/detail/${recipe.id}',
@@ -113,7 +124,7 @@ class CategorySectionDesktop extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
         ],
       ),
     );

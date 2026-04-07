@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/legal/privacy_policy_screen.dart';
 import 'package:orsocook/screens/legal/cookie_policy_screen.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class TermsModalContent extends StatelessWidget {
   final VoidCallback onClose;
@@ -22,11 +23,10 @@ class TermsModalContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(28),
+      padding: ResponsiveValues.screenPadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header con gradiente
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
@@ -40,19 +40,18 @@ class TermsModalContent extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 '📜 Termini & Privacy',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: ResponsiveValues.titleSize(context),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          // Sezione Termini
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           _buildSection(
             icon: Icons.description,
             title: 'Termini di Utilizzo',
@@ -63,9 +62,9 @@ class TermsModalContent extends StatelessWidget {
 • Rispetta la privacy degli altri utenti
 • I contenuti pubblicati rimangono di proprietà degli autori
 • Ci riserviamo il diritto di rimuovere contenuti inappropriati''',
+            context: context,
           ),
-          const SizedBox(height: 20),
-          // Sezione GDPR
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           _buildSection(
             icon: Icons.security,
             title: 'Trattamento Dati (GDPR)',
@@ -75,9 +74,9 @@ Per fornirti il servizio e garantire la sicurezza del tuo account, raccogliamo e
 • Email e username (obbligatori per la registrazione)
 • Indirizzo IP e dati dispositivo (per sicurezza)
 • Ricette, commenti e preferenze''',
+            context: context,
           ),
-          const SizedBox(height: 20),
-          // Sezione Diritti
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           _buildSection(
             icon: Icons.gavel,
             title: 'I tuoi Diritti (GDPR)',
@@ -89,11 +88,11 @@ Hai diritto a:
 • Cancellare il tuo account
 • Opporti al trattamento
 • Portabilità dei dati''',
+            context: context,
           ),
-          const SizedBox(height: 20),
-          // Documentazione
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: ResponsiveValues.screenPadding(context),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(12),
@@ -115,7 +114,7 @@ Hai diritto a:
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: ResponsiveValues.gapMedium(context)),
                 MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
@@ -163,28 +162,33 @@ Hai diritto a:
               ],
             ),
           ),
-          const SizedBox(height: 28),
-          // Bottone chiudi
+          SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
           Center(
             child: ElevatedButton(
               onPressed: onClose,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrange,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveValues.gapExtraLarge(context),
+                  vertical: ResponsiveValues.gapMedium(context),
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
                 elevation: 2,
+                minimumSize: Size(120, ResponsiveValues.buttonHeight(context)),
               ),
-              child: const Text(
+              child: Text(
                 'CHIUDI',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: ResponsiveValues.bodySize(context),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
         ],
       ),
     );
@@ -195,9 +199,10 @@ Hai diritto a:
     required String title,
     required Color color,
     required String content,
+    required BuildContext context,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: ResponsiveValues.screenPadding(context),
       decoration: BoxDecoration(
         color: color.withAlpha(26),
         borderRadius: BorderRadius.circular(12),
@@ -213,17 +218,20 @@ Hai diritto a:
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: ResponsiveValues.titleSize(context),
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           Text(
             content,
-            style: const TextStyle(fontSize: 14, height: 1.4),
+            style: TextStyle(
+              fontSize: ResponsiveValues.bodySize(context),
+              height: 1.4,
+            ),
           ),
         ],
       ),
