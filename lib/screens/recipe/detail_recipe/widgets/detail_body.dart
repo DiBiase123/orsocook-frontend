@@ -7,7 +7,7 @@ import 'package:orsocook/screens/recipe/detail_recipe/widgets/detail_ingredients
 import 'package:orsocook/screens/recipe/detail_recipe/widgets/detail_instructions_section.dart';
 import 'package:orsocook/screens/recipe/detail_recipe/widgets/detail_tags_section.dart';
 import 'package:orsocook/screens/recipe/detail_recipe/widgets/detail_comments_section.dart';
-import 'package:orsocook/screens/recipe/detail_recipe/constants.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class DetailBody extends StatelessWidget {
   final Recipe recipe;
@@ -29,7 +29,10 @@ class DetailBody extends StatelessWidget {
     );
 
     return SingleChildScrollView(
-      padding: DetailConstants.defaultPadding,
+      padding: EdgeInsets.symmetric(
+        horizontal: ResponsiveValues.screenPadding(context).horizontal,
+        vertical: ResponsiveValues.gapLarge(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -38,14 +41,14 @@ class DetailBody extends StatelessWidget {
               updatedRecipe.imageUrl!.isNotEmpty)
             DetailImageSection(recipe: updatedRecipe),
           DetailInfoSection(recipe: updatedRecipe),
-          const SizedBox(height: DetailConstants.xxlargeSpacing),
+          SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
           DetailIngredientsSection(recipe: updatedRecipe),
-          const SizedBox(height: DetailConstants.sectionSpacing),
+          SizedBox(height: ResponsiveValues.gapLarge(context)),
           DetailInstructionsSection(recipe: updatedRecipe),
           DetailTagsSection(recipe: updatedRecipe),
-          const SizedBox(height: DetailConstants.extraSectionSpacing),
+          SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
           DetailCommentsSection(recipeId: updatedRecipe.id),
-          const SizedBox(height: DetailConstants.extraSectionSpacing),
+          SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
         ],
       ),
     );

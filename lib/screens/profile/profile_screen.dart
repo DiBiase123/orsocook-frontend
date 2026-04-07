@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/profile_body.dart';
 import 'package:orsocook/services/logout_manager.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -63,9 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           TextButton(
             onPressed: () async {
-              // Chiudi il dialog usando il contesto del dialog
               Navigator.of(dialogContext).pop();
-              // Usa il contesto originale dello scaffold per il logout
               await LogoutManager.performLogout(context);
             },
             child: const Text('Logout', style: TextStyle(color: Colors.red)),
@@ -84,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: Row(
           children: [
             const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
+            SizedBox(width: ResponsiveValues.gapSmall(context)),
             Expanded(child: Text(message)),
           ],
         ),

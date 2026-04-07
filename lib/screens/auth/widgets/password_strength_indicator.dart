@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class PasswordStrengthIndicator extends StatelessWidget {
   final String password;
@@ -48,12 +49,12 @@ class PasswordStrengthIndicator extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         Text(
           'Forza password: $text',
           style: TextStyle(color: color, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         LinearProgressIndicator(
           value: strength / 4,
           backgroundColor: Colors.grey[300],

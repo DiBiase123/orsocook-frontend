@@ -4,6 +4,7 @@ import 'package:orsocook/screens/recipe/widgets/favorite_button.dart';
 import 'package:orsocook/screens/recipe/widgets/like_button.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/favorite_service.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 @immutable
 class RecipeCard extends StatelessWidget {
@@ -100,7 +101,6 @@ class RecipeCard extends StatelessWidget {
                   ),
           ),
         ),
-        // Badge tempo
         Positioned(
           top: 12,
           left: 12,
@@ -113,11 +113,7 @@ class RecipeCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.timer,
-                  size: 12,
-                  color: Colors.white,
-                ),
+                const Icon(Icons.timer, size: 12, color: Colors.white),
                 const SizedBox(width: 4),
                 Text(
                   '${recipe.totalTime} min',
@@ -131,7 +127,6 @@ class RecipeCard extends StatelessWidget {
             ),
           ),
         ),
-        // Pulsanti like/favorite
         Positioned(
           top: 12,
           right: 12,
@@ -191,7 +186,7 @@ class RecipeCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveValues.gapSmall(context)),
           Row(
             children: [
               _buildInfoChip(
@@ -208,7 +203,7 @@ class RecipeCard extends StatelessWidget {
             ],
           ),
           if (showAuthor && recipe.author.displayName != null) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: ResponsiveValues.gapMedium(context)),
             Row(
               children: [
                 CircleAvatar(
@@ -292,7 +287,6 @@ class RecipeCard extends StatelessWidget {
   }
 }
 
-// Widget con effetto hover leggero (solo overlay, senza scala)
 class _HoverCard extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
@@ -320,7 +314,6 @@ class _HoverCardState extends State<_HoverCard> {
         child: Stack(
           children: [
             widget.child,
-            // Overlay leggero all'hover
             AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
               opacity: _isHovered ? 0.08 : 0.0,

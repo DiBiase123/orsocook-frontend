@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/widgets/password_strength_indicator.dart';
 import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class RegisterFormFields extends StatefulWidget {
   final TextEditingController usernameController;
@@ -58,9 +59,10 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
     if (value == null || value.isEmpty) {
       return 'L\'email è obbligatoria';
     }
-    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)
-        ? null
-        : 'Inserisci un\'email valida';
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+      return 'Inserisci un\'email valida';
+    }
+    return null;
   }
 
   String? _validatePassword(String? value) {
@@ -83,9 +85,10 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
     if (value == null || value.isEmpty) {
       return 'Conferma la password';
     }
-    return value != widget.passwordController.text
-        ? 'Le password non corrispondono'
-        : null;
+    if (value != widget.passwordController.text) {
+      return 'Le password non corrispondono';
+    }
+    return null;
   }
 
   @override
@@ -106,7 +109,7 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
           validator: _validateUsername,
           onChanged: widget.onUsernameChanged,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         TextFormField(
           controller: widget.emailController,
           keyboardType: TextInputType.emailAddress,
@@ -122,7 +125,7 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
           validator: _validateEmail,
           onChanged: widget.onEmailChanged,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         TextFormField(
           controller: widget.passwordController,
           obscureText: _obscurePassword,
@@ -134,8 +137,9 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
               icon: Icon(
                 _obscurePassword ? Icons.visibility : Icons.visibility_off,
               ),
-              onPressed: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () {
+                setState(() => _obscurePassword = !_obscurePassword);
+              },
             ),
             border: const OutlineInputBorder(),
             filled: true,
@@ -151,7 +155,7 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
           },
         ),
         PasswordStrengthIndicator(password: widget.passwordController.text),
-        const SizedBox(height: 16),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         TextFormField(
           controller: widget.confirmPasswordController,
           obscureText: _obscureConfirmPassword,
@@ -165,8 +169,10 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
                     ? Icons.visibility
                     : Icons.visibility_off,
               ),
-              onPressed: () => setState(
-                  () => _obscureConfirmPassword = !_obscureConfirmPassword),
+              onPressed: () {
+                setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword);
+              },
             ),
             border: const OutlineInputBorder(),
             filled: true,
@@ -174,7 +180,7 @@ class _RegisterFormFieldsState extends State<RegisterFormFields> {
           validator: _validateConfirmPassword,
           onChanged: widget.onConfirmPasswordChanged,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         if (widget.errorMessage != null)
           AuthErrorBox(message: widget.errorMessage!),
       ],

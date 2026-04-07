@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/comment_service.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 import 'comment_input_widget.dart';
 import 'comments_list_widget.dart';
 import 'utils/comment_state_manager.dart';
@@ -183,12 +184,8 @@ class _DetailCommentsSectionState extends State<DetailCommentsSection>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header sezione commenti
-        _buildCommentsHeader(),
-
-        const SizedBox(height: 20),
-
-        // Lista commenti e input
+        _buildCommentsHeader(context),
+        SizedBox(height: ResponsiveValues.gapLarge(context)),
         Consumer<CommentService>(
           builder: (context, commentService, child) {
             AppLogger.debug(
@@ -197,7 +194,6 @@ class _DetailCommentsSectionState extends State<DetailCommentsSection>
             final comments = commentService.getCachedComments(widget.recipeId);
             AppLogger.debug('📊 Commenti in cache: ${comments.length}');
 
-            // Se forceRefresh è true, ricarica i commenti MA solo se non siamo già in refresh
             if (forceRefresh && !isRefreshing) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 AppLogger.debug('🔄 Forzando refresh dei commenti');
@@ -209,7 +205,6 @@ class _DetailCommentsSectionState extends State<DetailCommentsSection>
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Input per nuovo commento
                 CommentInputWidget(
                   recipeId: widget.recipeId,
                   commentController: commentController,
@@ -217,10 +212,7 @@ class _DetailCommentsSectionState extends State<DetailCommentsSection>
                   onSubmit: _submitComment,
                   focusNode: _commentFocusNode,
                 ),
-
-                const SizedBox(height: 20),
-
-                // Lista commenti con KEY OTTIMIZZATA
+                SizedBox(height: ResponsiveValues.gapLarge(context)),
                 CommentsListWidget(
                   key: ValueKey(
                       'comments_${widget.recipeId}_${comments.length}'),
@@ -251,9 +243,9 @@ class _DetailCommentsSectionState extends State<DetailCommentsSection>
     );
   }
 
-  Widget _buildCommentsHeader() {
+  Widget _buildCommentsHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: ResponsiveValues.gapMedium(context)),
       child: Row(
         children: [
           const Icon(Icons.comment, color: Colors.grey),
@@ -261,7 +253,7 @@ class _DetailCommentsSectionState extends State<DetailCommentsSection>
           Text(
             'Commenti',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: ResponsiveValues.titleSize(context),
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
@@ -273,8 +265,8 @@ class _DetailCommentsSectionState extends State<DetailCommentsSection>
                   commentService.getCachedComments(widget.recipeId);
               return Text(
                 '(${comments.length})',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: ResponsiveValues.bodySize(context),
                   color: Colors.grey,
                 ),
               );

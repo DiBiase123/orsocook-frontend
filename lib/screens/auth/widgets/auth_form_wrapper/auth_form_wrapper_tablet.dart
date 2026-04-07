@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class AuthFormWrapperTablet extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -27,7 +28,7 @@ class AuthFormWrapperTablet extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          width: 500,
+          width: ResponsiveValues.modalMaxWidth(context),
           constraints: BoxConstraints(
             maxHeight: screenHeight * 0.85,
           ),
@@ -44,16 +45,15 @@ class AuthFormWrapperTablet extends StatelessWidget {
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                    padding: ResponsiveValues.headerPadding(context),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         if (title != null)
                           Text(
                             title!,
-                            style: const TextStyle(
-                              fontSize: 18,
+                            style: TextStyle(
+                              fontSize: ResponsiveValues.titleSize(context),
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -74,7 +74,12 @@ class AuthFormWrapperTablet extends StatelessWidget {
               Flexible(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                  padding: EdgeInsets.fromLTRB(
+                    ResponsiveValues.gapMedium(context),
+                    ResponsiveValues.gapMedium(context),
+                    ResponsiveValues.gapMedium(context),
+                    ResponsiveValues.gapMedium(context),
+                  ),
                   child: Form(
                     key: formKey,
                     child: Column(

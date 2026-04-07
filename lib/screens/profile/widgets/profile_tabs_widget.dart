@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/widgets/profile_recipes_list_widget.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class ProfileTabs extends StatefulWidget {
   const ProfileTabs({super.key});
@@ -46,7 +47,6 @@ class _ProfileTabsState extends State<ProfileTabs>
             onTap: controller.selectTab,
           ),
         ),
-        // 👇 Sostituito Expanded con Container senza vincoli
         Container(
           constraints: BoxConstraints(
             minHeight: 200,
@@ -100,13 +100,13 @@ class _LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Caricamento dati...'),
+          const CircularProgressIndicator(),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
+          const Text('Caricamento dati...'),
         ],
       ),
     );
@@ -121,17 +121,17 @@ class _EmptyProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: ResponsiveValues.screenPadding(context),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.person_outline, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           const Text(
             'Nessun profilo caricato',
             style: TextStyle(fontSize: 18, color: Color(0xFF757575)),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           ElevatedButton(
             onPressed: controller.refreshProfile,
             child: const Text('Ricarica'),

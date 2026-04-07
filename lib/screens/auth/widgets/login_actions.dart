@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/utils/responsive_values.dart'; // AGGIUNTO
 
 class LoginActions extends StatelessWidget {
   final bool isLoading;
@@ -16,11 +17,13 @@ class LoginActions extends StatelessWidget {
     this.showSocialLogin = true,
   });
 
-  Widget _buildLoginButton() {
+  Widget _buildLoginButton(BuildContext context) {
+    // MODIFICATO: aggiunto context
     return ElevatedButton(
       onPressed: isLoading ? null : onLoginPressed,
       style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 50),
+        minimumSize: Size(double.infinity,
+            ResponsiveValues.buttonHeight(context)), // MODIFICATO
         backgroundColor: const Color(0xFF6750A4), // Viola
       ),
       child: isLoading
@@ -42,7 +45,8 @@ class LoginActions extends StatelessWidget {
     );
   }
 
-  Widget _buildRegisterSection() {
+  Widget _buildRegisterSection(BuildContext context) {
+    // MODIFICATO: aggiunto context
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
@@ -163,12 +167,12 @@ class LoginActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildLoginButton(),
-        const SizedBox(height: 24),
-        _buildRegisterSection(),
+        _buildLoginButton(context), // MODIFICATO: passato context
+        SizedBox(height: ResponsiveValues.gapLarge(context)), // MODIFICATO
+        _buildRegisterSection(context), // MODIFICATO: passato context
         _buildSocialLogin(),
         if (onContinueWithoutAuth != null) ...[
-          const SizedBox(height: 20),
+          SizedBox(height: ResponsiveValues.gapMedium(context)), // MODIFICATO
           TextButton(
             onPressed: onContinueWithoutAuth,
             child: const Text(

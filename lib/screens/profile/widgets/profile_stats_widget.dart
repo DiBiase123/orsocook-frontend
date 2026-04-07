@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:responsive_adaptive_ui/responsive_adaptive_ui.dart';
 import 'package:orsocook/models/user_profile.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class ProfileStatsWidget extends StatelessWidget {
   final UserStats stats;
@@ -15,13 +16,15 @@ class ProfileStatsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isSmallScreen = screenWidth <= 400;
+    final bool isSmallScreen = ResponsiveBreakpoints.isMobile(context) &&
+        ResponsiveBreakpoints.getWidth(context) <= 400;
+    final bool isDesktop = ResponsiveBreakpoints.isDesktop(context);
 
-    final double iconSize = isSmallScreen ? 28 : 32;
-    final double valueFontSize = isSmallScreen ? 18 : 20;
-    final double labelFontSize = isSmallScreen ? 10 : 12;
-    final double containerPadding = isSmallScreen ? 10 : 12;
+    final double iconSize = isSmallScreen ? 28 : (isDesktop ? 36 : 32);
+    final double valueFontSize = isSmallScreen ? 18 : (isDesktop ? 24 : 20);
+    final double labelFontSize = isSmallScreen ? 10 : (isDesktop ? 14 : 12);
+    final double containerPadding = isSmallScreen ? 10 : (isDesktop ? 16 : 12);
+    final double gapValue = ResponsiveValues.gapSmall(context);
 
     final valueStyle = TextStyle(
       fontSize: valueFontSize,
@@ -39,32 +42,25 @@ class ProfileStatsWidget extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 200),
       child: InputDecorator(
         decoration: InputDecoration(
-          label: ResponsiveText(
+          label: Text(
             'Statistiche',
-            min: 28,
-            max: 48,
             style: TextStyle(
+              fontSize: ResponsiveValues.titleSize(context),
               fontWeight: FontWeight.bold,
               color: primaryColor,
             ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Colors.grey[300]!,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: Colors.grey[300]!, width: 2),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Colors.grey[300]!,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: Colors.grey[300]!, width: 2),
           ),
           filled: true,
           fillColor: Colors.grey[50],
-          contentPadding: const EdgeInsets.all(16),
+          contentPadding: ResponsiveValues.screenPadding(context),
         ),
         child: Center(
           child: Row(
@@ -78,6 +74,7 @@ class ProfileStatsWidget extends StatelessWidget {
                 containerPadding: containerPadding,
                 valueStyle: valueStyle,
                 labelStyle: labelStyle,
+                gap: gapValue,
               ),
               _buildStatItem(
                 icon: Icons.favorite,
@@ -88,6 +85,7 @@ class ProfileStatsWidget extends StatelessWidget {
                 containerPadding: containerPadding,
                 valueStyle: valueStyle,
                 labelStyle: labelStyle,
+                gap: gapValue,
               ),
               _buildStatItem(
                 icon: Icons.visibility,
@@ -98,6 +96,7 @@ class ProfileStatsWidget extends StatelessWidget {
                 containerPadding: containerPadding,
                 valueStyle: valueStyle,
                 labelStyle: labelStyle,
+                gap: gapValue,
               ),
               _buildStatItem(
                 icon: Icons.trending_up,
@@ -108,6 +107,7 @@ class ProfileStatsWidget extends StatelessWidget {
                 containerPadding: containerPadding,
                 valueStyle: valueStyle,
                 labelStyle: labelStyle,
+                gap: gapValue,
               ),
             ],
           ),
@@ -125,6 +125,7 @@ class ProfileStatsWidget extends StatelessWidget {
     required double containerPadding,
     required TextStyle valueStyle,
     required TextStyle labelStyle,
+    required double gap,
   }) {
     return Expanded(
       child: Column(
@@ -136,23 +137,12 @@ class ProfileStatsWidget extends StatelessWidget {
               color: color.withAlpha(26),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: iconSize,
-            ),
+            child: Icon(icon, color: color, size: iconSize),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: valueStyle,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: labelStyle,
-            textAlign: TextAlign.center,
-          ),
+          SizedBox(height: gap),
+          Text(value, style: valueStyle),
+          SizedBox(height: gap),
+          Text(label, style: labelStyle, textAlign: TextAlign.center),
         ],
       ),
     );

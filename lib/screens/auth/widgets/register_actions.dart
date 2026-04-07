@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class RegisterActions extends StatelessWidget {
   final bool isLoading;
@@ -14,11 +15,12 @@ class RegisterActions extends StatelessWidget {
     this.showFeatures = true,
   });
 
-  Widget _buildRegisterButton() {
+  Widget _buildRegisterButton(BuildContext context) {
     return ElevatedButton(
       onPressed: isLoading ? null : onRegisterPressed,
       style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 50),
+        minimumSize:
+            Size(double.infinity, ResponsiveValues.buttonHeight(context)),
         backgroundColor: Colors.deepOrange,
       ),
       child: isLoading
@@ -97,8 +99,8 @@ class RegisterActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildRegisterButton(),
-        const SizedBox(height: 24),
+        _buildRegisterButton(context),
+        SizedBox(height: ResponsiveValues.gapLarge(context)),
         _buildLoginLink(),
         _buildFeaturesSection(),
       ],

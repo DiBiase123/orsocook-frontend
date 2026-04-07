@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/services/recipe_service.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class RecipeList extends StatefulWidget {
   final void Function(Recipe) onRecipeTap;
@@ -52,7 +53,7 @@ class _RecipeListState extends State<RecipeList> {
 
   Widget _buildLoadingMore() {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: ResponsiveValues.screenPadding(context),
       child: const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -100,7 +101,9 @@ class _RecipeListState extends State<RecipeList> {
       2 => 20.0,
       _ => 16.0,
     };
-    return EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16);
+    return EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: ResponsiveValues.gapMedium(context));
   }
 
   double _calculateSpacing(int crossAxisCount) {
@@ -186,7 +189,7 @@ class _RecipeListState extends State<RecipeList> {
                     ),
                     if (!recipeService.hasMore && recipes.isNotEmpty)
                       _buildEndOfList(),
-                    const SizedBox(height: 16),
+                    SizedBox(height: ResponsiveValues.gapMedium(context)),
                   ],
                 ),
               ),

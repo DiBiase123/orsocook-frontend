@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
 import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
@@ -112,24 +113,24 @@ class _ForgotPasswordModalContentState
       showCloseButton: widget.showCloseButton,
       children: [
         _buildLogo(),
-        const SizedBox(height: 24),
+        SizedBox(height: ResponsiveValues.gapLarge(context)),
         _buildEmailField(),
-        const SizedBox(height: 16),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         if (_errorMessage != null) AuthErrorBox(message: _errorMessage!),
         if (_isSuccess) _buildSuccessSection(),
-        const SizedBox(height: 24),
-        _buildSubmitButton(),
-        const SizedBox(height: 24),
+        SizedBox(height: ResponsiveValues.gapLarge(context)),
+        _buildSubmitButton(context),
+        SizedBox(height: ResponsiveValues.gapLarge(context)),
         _buildLoginLink(),
-        const SizedBox(height: 20),
+        SizedBox(height: ResponsiveValues.gapLarge(context)),
         const Divider(),
-        const SizedBox(height: 16),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         const Text(
           'Cosa succede dopo:',
           style: TextStyle(fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         _buildStepItem('Riceverai un\'email con un link di reset'),
         _buildStepItem('Clicca sul link (valido per 1 ora)'),
         _buildStepItem('Imposta una nuova password'),
@@ -142,7 +143,7 @@ class _ForgotPasswordModalContentState
         children: [
           Icon(Icons.lock_reset,
               size: 80, color: Theme.of(context).primaryColor),
-          const SizedBox(height: 16),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
           const Text(
             'Password dimenticata?',
             style: TextStyle(
@@ -151,7 +152,7 @@ class _ForgotPasswordModalContentState
               color: Colors.deepOrange,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveValues.gapSmall(context)),
           const Text(
             'Inserisci la tua email per reimpostare la password',
             style: TextStyle(fontSize: 16, color: Colors.grey),
@@ -177,7 +178,7 @@ class _ForgotPasswordModalContentState
       );
 
   Widget _buildSuccessSection() => Container(
-        padding: const EdgeInsets.all(16),
+        padding: ResponsiveValues.screenPadding(context),
         decoration: BoxDecoration(
           color: Colors.green[50],
           borderRadius: BorderRadius.circular(8),
@@ -197,19 +198,19 @@ class _ForgotPasswordModalContentState
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: ResponsiveValues.gapSmall(context)),
             Text(
               _successMessage ??
                   'Riceverai istruzioni per reimpostare la password.',
               style: const TextStyle(color: Colors.green),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveValues.gapMedium(context)),
             const Text('⚠️ Controlla la cartella spam',
                 style: TextStyle(fontSize: 12, color: Colors.orange)),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveValues.gapMedium(context)),
             const Text('Reindirizzamento al login...',
                 style: TextStyle(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 8),
+            SizedBox(height: ResponsiveValues.gapSmall(context)),
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
             ),
@@ -217,10 +218,11 @@ class _ForgotPasswordModalContentState
         ),
       );
 
-  Widget _buildSubmitButton() => ElevatedButton(
+  Widget _buildSubmitButton(BuildContext context) => ElevatedButton(
         onPressed: _isLoading ? null : _submitForgotPassword,
         style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50),
+          minimumSize:
+              Size(double.infinity, ResponsiveValues.buttonHeight(context)),
           backgroundColor: Colors.deepOrange,
         ),
         child: _isLoading

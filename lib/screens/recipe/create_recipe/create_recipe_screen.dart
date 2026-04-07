@@ -7,6 +7,7 @@ import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/recipe/create_recipe/viewmodels/create_recipe_viewmodel.dart';
 import 'package:orsocook/screens/recipe/create_recipe/widgets/recipe_app_bar.dart';
 import 'package:orsocook/screens/recipe/create_recipe/widgets/recipe_form.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class CreateRecipeScreen extends StatefulWidget {
   const CreateRecipeScreen({super.key});
@@ -53,10 +54,8 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
     if (!viewModel.validate(_formKey)) return;
 
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    // Ottieni il service PRIMA dell'async gap
     final categoryService =
         Provider.of<CategoryService>(context, listen: false);
-    // Ottieni il router PRIMA dell'async gap
     final goRouter = GoRouter.of(context);
 
     try {
@@ -65,7 +64,6 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
       if (!mounted) return;
 
       if (createdRecipe != null) {
-        // Mostra snackbar (usa context salvato in scaffoldMessenger)
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Ricetta creata con successo!'),
@@ -73,12 +71,9 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
           ),
         );
 
-        // Esegui fetch (non richiede context dopo)
         await categoryService.fetchCategories(forceRefresh: true);
 
         if (!mounted) return;
-
-        // Naviga alla home invece di fare pop()
         goRouter.go('/home');
       } else {
         if (!mounted) return;
@@ -106,13 +101,13 @@ class _UploadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Caricamento immagine in corso...'),
+          const CircularProgressIndicator(),
+          SizedBox(height: ResponsiveValues.gapMedium(context)),
+          const Text('Caricamento immagine in corso...'),
         ],
       ),
     );

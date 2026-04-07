@@ -15,6 +15,8 @@ import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 import 'package:orsocook/widgets/shimmer_effect.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -169,8 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
 
-          final screenWidth = MediaQuery.of(context).size.width;
-          final isDesktop = screenWidth >= 900;
+          final bool isDesktop = ResponsiveBreakpoints.isDesktop(context);
           final carouselRecipes = viewModel.recipes.take(6).toList();
 
           final appBar = HomeAppBar(
@@ -201,10 +202,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           onRecipeTap: _navigateToRecipeDetail,
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    // CategoriesScrollBar spostato QUI, sotto il carousel
+                    SizedBox(height: ResponsiveValues.gapMedium(context)),
                     categoriesBar,
-                    const SizedBox(height: 16),
+                    SizedBox(height: ResponsiveValues.gapMedium(context)),
                     _buildSections(viewModel, isDesktop),
                   ],
                 );
@@ -218,10 +218,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView(
                       controller: _scrollController,
                       children: [
-                        const SizedBox(height: 16),
-                        // categoriesBar rimosso da qui
+                        SizedBox(height: ResponsiveValues.gapMedium(context)),
                         mainContent,
-                        const SizedBox(height: 24),
+                        SizedBox(height: ResponsiveValues.gapLarge(context)),
                       ],
                     ),
                   ),
@@ -241,16 +240,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   floating: true,
                   snap: false,
                   pinned: false,
-                  expandedHeight: screenWidth < 600 ? 130 : 135,
+                  expandedHeight:
+                      ResponsiveBreakpoints.isMobile(context) ? 130 : 135,
                   flexibleSpace: FlexibleSpaceBar(background: appBar),
                 ),
                 SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      const SizedBox(height: 8),
-                      // categoriesBar rimosso da qui
+                      SizedBox(height: ResponsiveValues.gapSmall(context)),
                       mainContent,
-                      const SizedBox(height: 24),
+                      SizedBox(height: ResponsiveValues.gapLarge(context)),
                     ],
                   ),
                 ),

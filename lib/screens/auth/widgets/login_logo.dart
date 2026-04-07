@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class LoginLogo extends StatelessWidget {
   const LoginLogo({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Calcola le dimensioni in base alla larghezza dello schermo
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Dimensioni responsive
+    // Dimensioni responsive usando i breakpoint centralizzati
     double logoSize;
     double titleFontSize;
     double subtitleFontSize;
     double iconSize;
 
-    if (screenWidth > 1200) {
+    if (ResponsiveBreakpoints.isLargeDesktop(context)) {
       logoSize = 120;
       titleFontSize = 32;
       subtitleFontSize = 16;
       iconSize = 26;
-    } else if (screenWidth > 800) {
+    } else if (ResponsiveBreakpoints.isDesktop(context)) {
       logoSize = 100;
       titleFontSize = 28;
       subtitleFontSize = 15;
       iconSize = 24;
-    } else if (screenWidth > 600) {
+    } else if (ResponsiveBreakpoints.isTablet(context)) {
       logoSize = 90;
       titleFontSize = 32;
       subtitleFontSize = 15;
@@ -38,7 +37,6 @@ class LoginLogo extends StatelessWidget {
 
     return Column(
       children: [
-        // Logo con immagine
         ClipOval(
           child: Image.asset(
             'assets/images/OrsoCooK.png',
@@ -47,16 +45,12 @@ class LoginLogo extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        const SizedBox(height: 16),
-        // Titolo con icona responsive
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.restaurant_menu,
-              size: iconSize,
-              color: Colors.deepOrange,
-            ),
+            Icon(Icons.restaurant_menu,
+                size: iconSize, color: Colors.deepOrange),
             const SizedBox(width: 8),
             Text(
               'OrsoCook',
@@ -67,15 +61,11 @@ class LoginLogo extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(
-              Icons.restaurant_menu,
-              size: iconSize,
-              color: Colors.deepOrange,
-            ),
+            Icon(Icons.restaurant_menu,
+                size: iconSize, color: Colors.deepOrange),
           ],
         ),
-        const SizedBox(height: 8),
-        // Sottotitolo responsive
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         Text(
           'Accedi al tuo account',
           style: TextStyle(

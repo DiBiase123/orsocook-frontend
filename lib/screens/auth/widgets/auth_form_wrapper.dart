@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/app_theme.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart'; // AGGIUNGI QUESTO
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_desktop.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_tablet.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
@@ -32,10 +33,11 @@ class AuthFormWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    // RIMUOVI: final screenWidth = MediaQuery.of(context).size.width;
     final headerColor = _getHeaderColor();
 
-    if (screenWidth >= 900) {
+    if (ResponsiveBreakpoints.isDesktop(context)) {
+      // MODIFICATO
       return AuthFormWrapperDesktop(
         formKey: formKey,
         onClose: onClose,
@@ -44,7 +46,8 @@ class AuthFormWrapper extends StatelessWidget {
         headerColor: headerColor,
         children: children,
       );
-    } else if (screenWidth >= 600) {
+    } else if (ResponsiveBreakpoints.isTablet(context)) {
+      // MODIFICATO
       return AuthFormWrapperTablet(
         formKey: formKey,
         onClose: onClose,
