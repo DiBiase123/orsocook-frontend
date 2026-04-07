@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/screens/recipe/widgets/favorite_button.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'hover_card.dart';
-import 'carousel_card_image.dart';
-import 'carousel_card_gradient.dart';
-import 'carousel_card_content.dart';
+import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/screens/home/widgets/carousel/hover_card.dart';
+import 'package:orsocook/screens/home/widgets/carousel/carousel_card_image.dart';
+import 'package:orsocook/screens/home/widgets/carousel/carousel_card_gradient.dart';
+import 'package:orsocook/screens/home/widgets/carousel/carousel_card_content.dart';
 
 class CarouselCard {
-  // Card grande per desktop e mobile
-  static Widget buildMainCard(Recipe recipe, VoidCallback onTap) {
+  static Widget buildMainCard(
+      Recipe recipe, VoidCallback onTap, BuildContext context) {
     AppLogger.debug('🔍 [CAROUSELCARD] buildMainCard: ${recipe.title}');
     return HoverCard(
       onTap: onTap,
@@ -21,22 +22,24 @@ class CarouselCard {
           children: [
             CarouselCardImage.build(recipe.imageUrl, isLarge: true),
             CarouselCardGradient.buildMain(),
-            CarouselCardContent.buildMain(recipe),
-            _buildTimerBadge(recipe, 20, 18, 14),
-            _buildFavoriteButton(recipe, 20, 32),
+            CarouselCardContent.buildMain(recipe, context),
+            _buildTimerBadge(
+                recipe, ResponsiveValues.gapLarge(context), 18, 14, context),
+            _buildFavoriteButton(
+                recipe, ResponsiveValues.gapLarge(context), 32),
           ],
         ),
       ),
     );
   }
 
-  // Card grande per mobile (full width) - alias di buildMainCard
-  static Widget buildMainCardFullWidth(Recipe recipe, VoidCallback onTap) {
-    return buildMainCard(recipe, onTap);
+  static Widget buildMainCardFullWidth(
+      Recipe recipe, VoidCallback onTap, BuildContext context) {
+    return buildMainCard(recipe, onTap, context);
   }
 
-  // Card piccola
-  static Widget buildSmallCard(Recipe recipe, VoidCallback onTap) {
+  static Widget buildSmallCard(
+      Recipe recipe, VoidCallback onTap, BuildContext context) {
     AppLogger.debug('🔍 [CAROUSELCARD] buildSmallCard: ${recipe.title}');
     return HoverCard(
       onTap: onTap,
@@ -48,24 +51,29 @@ class CarouselCard {
           children: [
             CarouselCardImage.build(recipe.imageUrl, isLarge: false),
             CarouselCardGradient.buildSmall(),
-            CarouselCardContent.buildSmall(recipe),
-            _buildTimerBadge(recipe, 12, 12, 11),
-            _buildFavoriteButton(recipe, 12, 24),
+            CarouselCardContent.buildSmall(recipe, context),
+            _buildTimerBadge(
+                recipe, ResponsiveValues.gapMedium(context), 12, 11, context),
+            _buildFavoriteButton(
+                recipe, ResponsiveValues.gapMedium(context), 24),
           ],
         ),
       ),
     );
   }
 
-  static Widget _buildTimerBadge(
-      Recipe recipe, double top, double iconSize, double fontSize) {
+  static Widget _buildTimerBadge(Recipe recipe, double top, double iconSize,
+      double fontSize, BuildContext context) {
     return Positioned(
       top: top,
       left: top,
       child: SizedBox(
         height: 44,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveValues.gapMedium(context),
+            vertical: ResponsiveValues.gapSmall(context),
+          ),
           decoration: BoxDecoration(
             color: Colors.black.withAlpha(200),
             borderRadius: BorderRadius.circular(24),

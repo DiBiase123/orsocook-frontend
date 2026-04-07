@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class DetailTagsSection extends StatelessWidget {
   final Recipe recipe;
@@ -15,20 +16,25 @@ class DetailTagsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
-        const Text(
+        SizedBox(height: ResponsiveValues.gapLarge(context)),
+        Text(
           'Tag',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: ResponsiveValues.titleSize(context),
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: ResponsiveValues.gapSmall(context),
+          runSpacing: ResponsiveValues.gapSmall(context),
           children: recipe.tags.map((tag) {
             return Chip(
               label: Text(
-                tag.name, // 👈 DIRETTAMENTE tag.name
-                style: const TextStyle(fontSize: 14),
+                tag.name,
+                style: TextStyle(
+                  fontSize: ResponsiveValues.bodySize(context),
+                ),
               ),
               backgroundColor: Colors.orange[50],
               side: BorderSide(color: Colors.orange[300]!),

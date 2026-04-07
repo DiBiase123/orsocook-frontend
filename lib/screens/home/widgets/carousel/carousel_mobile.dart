@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
-import 'carousel_card.dart';
+import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/screens/home/widgets/carousel/carousel_card.dart';
 
 class CarouselMobile extends StatefulWidget {
   final List<Recipe> recipes;
@@ -51,18 +52,20 @@ class _CarouselMobileState extends State<CarouselMobile> {
               return CarouselCard.buildMainCardFullWidth(
                 widget.recipes[index],
                 () => widget.onRecipeTap(widget.recipes[index]),
+                context,
               );
             },
           ),
         ),
-        if (!isSingleCard) _buildDots(),
+        if (!isSingleCard) _buildDots(context),
       ],
     );
   }
 
-  Widget _buildDots() {
+  Widget _buildDots(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding:
+          EdgeInsets.symmetric(vertical: ResponsiveValues.gapLarge(context)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(

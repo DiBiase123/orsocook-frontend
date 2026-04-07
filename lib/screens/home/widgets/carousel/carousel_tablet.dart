@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:orsocook/models/recipe.dart';
-import 'carousel_card.dart';
-import 'carousel_previous_button.dart';
-import 'carousel_next_button.dart';
+import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/screens/home/widgets/carousel/carousel_card.dart';
 
 class CarouselTablet extends StatefulWidget {
   final List<Recipe> recipes;
@@ -21,14 +19,12 @@ class CarouselTablet extends StatefulWidget {
 
 class _CarouselTabletState extends State<CarouselTablet> {
   late PageController _pageController;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-      viewportFraction: 1.0,
-      initialPage: 1000,
-    );
+    _pageController = PageController(viewportFraction: 0.85);
   }
 
   @override
@@ -37,43 +33,29 @@ class _CarouselTabletState extends State<CarouselTablet> {
     super.dispose();
   }
 
-  void _nextPage() {
-    _pageController.nextPage(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  void _previousPage() {
-    _pageController.previousPage(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final carouselHeight = screenHeight - 80;
+    final isSingleCard = widget.recipes.length == 1;
 
-    return SizedBox(
-      height: carouselHeight,
-      child: Stack(
-        children: [
-          PageView.builder(
+    return Column(
+      children: [
+        Expanded(
+          child: PageView.builder(
             controller: _pageController,
-            itemCount: 1000000,
-            scrollDirection: Axis.horizontal,
-            physics: const AlwaysScrollableScrollPhysics(),
-            dragStartBehavior: DragStartBehavior.down,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemCount: widget.recipes.length,
             itemBuilder: (context, index) {
-              final realIndex = index % widget.recipes.length;
-              final recipe = widget.recipes[realIndex];
-              final nextIndex = (realIndex + 1) % widget.recipes.length;
-              final nextNextIndex = (realIndex + 2) % widget.recipes.length;
+              final recipe = widget.recipes[index];
+              final nextIndex = (index + 1) % widget.recipes.length;
+              final nextNextIndex = (index + 2) % widget.recipes.length;
 
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveValues.gapSmall(context)),
                 child: Row(
                   children: [
                     Expanded(
@@ -81,9 +63,10 @@ class _CarouselTabletState extends State<CarouselTablet> {
                       child: CarouselCard.buildMainCard(
                         recipe,
                         () => widget.onRecipeTap(recipe),
+                        context,
                       ),
                     ),
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 16),
                     Expanded(
                       flex: 8,
                       child: Column(
@@ -93,14 +76,16 @@ class _CarouselTabletState extends State<CarouselTablet> {
                               widget.recipes[nextIndex],
                               () =>
                                   widget.onRecipeTap(widget.recipes[nextIndex]),
+                              context,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
                           Expanded(
                             child: CarouselCard.buildSmallCard(
                               widget.recipes[nextNextIndex],
                               () => widget
                                   .onRecipeTap(widget.recipes[nextNextIndex]),
+                              context,
                             ),
                           ),
                         ],
@@ -111,27 +96,42 @@ class _CarouselTabletState extends State<CarouselTablet> {
               );
             },
           ),
-          Positioned(
-            left: 8,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: CarouselPreviousButton(
-                onTap: _previousPage,
+        ),
+        if (!isSingleCard) _buildDots(context),
+      ],
+    );
+  }
+
+  Widget _buildDots(BuildContext context) {
+    return Padding(
+      padding:
+          EdgeInsets.symmetric(vertical: ResponsiveValues.gapLarge(context)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          widget.recipes.length,
+          (index) => GestureDetector(
+            onTap: () {
+              _pageController.animateToPage(
+                index,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+              );
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: _currentIndex == index ? 36 : 14,
+              height: 6,
+              margin: const EdgeInsets.symmetric(horizontal: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: _currentIndex == index
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey.withAlpha(150),
               ),
             ),
           ),
-          Positioned(
-            right: 8,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: CarouselNextButton(
-                onTap: _nextPage,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class DetailInfoSection extends StatelessWidget {
   final Recipe recipe;
 
   const DetailInfoSection({super.key, required this.recipe});
 
-  // Helper per creare un'icona con testo
-  Widget _buildInfoItem(IconData icon, String text) {
+  Widget _buildInfoItem(IconData icon, String text, BuildContext context) {
     return Column(
       children: [
         Icon(icon, color: Colors.orange),
-        const SizedBox(height: 4),
-        Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
+        Text(
+          text,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: ResponsiveValues.bodySize(context),
+          ),
+        ),
       ],
     );
   }
 
-  // Helper per convertire Difficulty in stringa leggibile
   String _getDifficultyString(Difficulty difficulty) {
     switch (difficulty) {
       case Difficulty.easy:
@@ -33,23 +38,17 @@ class DetailInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: ResponsiveValues.screenPadding(context),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // Tempo totale (preparazione + cottura)
+            _buildInfoItem(Icons.timer,
+                '${recipe.prepTime + recipe.cookTime} min', context),
+            _buildInfoItem(Icons.people, '${recipe.servings} pers.', context),
+            _buildInfoItem(Icons.bar_chart,
+                _getDifficultyString(recipe.difficulty), context),
             _buildInfoItem(
-                Icons.timer, '${recipe.prepTime + recipe.cookTime} min'),
-
-            // Numero di persone
-            _buildInfoItem(Icons.people, '${recipe.servings} pers.'),
-
-            // Difficoltà (convertita in stringa)
-            _buildInfoItem(
-                Icons.bar_chart, _getDifficultyString(recipe.difficulty)),
-
-            // Visualizzazioni
-            _buildInfoItem(Icons.visibility, '${recipe.views} visual.'),
+                Icons.visibility, '${recipe.views} visual.', context),
           ],
         ),
       ),

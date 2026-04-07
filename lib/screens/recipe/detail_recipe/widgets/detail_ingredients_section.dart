@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class DetailIngredientsSection extends StatelessWidget {
   final Recipe recipe;
@@ -29,16 +30,17 @@ class DetailIngredientsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Titolo sezione
-        const Text(
+        Text(
           'Ingredienti',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: ResponsiveValues.titleSize(context),
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: 12),
-
-        // Lista ingredienti
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         ...recipe.ingredients.map((ingredient) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding:
+                  EdgeInsets.only(bottom: ResponsiveValues.gapSmall(context)),
               child: Row(
                 children: [
                   const Icon(Icons.circle, size: 8),
@@ -46,7 +48,9 @@ class DetailIngredientsSection extends StatelessWidget {
                   Expanded(
                     child: Text(
                       _formatIngredient(ingredient),
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(
+                        fontSize: ResponsiveValues.bodySize(context),
+                      ),
                     ),
                   ),
                 ],

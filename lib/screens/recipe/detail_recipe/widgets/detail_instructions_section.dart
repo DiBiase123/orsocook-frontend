@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class DetailInstructionsSection extends StatelessWidget {
   final Recipe recipe;
@@ -11,22 +12,22 @@ class DetailInstructionsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Titolo sezione
-        const Text(
+        Text(
           'Procedimento',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: ResponsiveValues.titleSize(context),
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: 12),
-
-        // Lista istruzioni (passi)
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         ...recipe.instructions.map((instruction) => Card(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin:
+                  EdgeInsets.only(bottom: ResponsiveValues.gapMedium(context)),
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: ResponsiveValues.screenPadding(context),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Numero passo
                     Container(
                       width: 30,
                       height: 30,
@@ -45,12 +46,12 @@ class DetailInstructionsSection extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-
-                    // Descrizione passo
                     Expanded(
                       child: Text(
                         instruction.description,
-                        style: const TextStyle(fontSize: 16),
+                        style: TextStyle(
+                          fontSize: ResponsiveValues.bodySize(context),
+                        ),
                       ),
                     ),
                   ],

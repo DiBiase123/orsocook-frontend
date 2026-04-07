@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class DetailImageSection extends StatelessWidget {
   final Recipe recipe;
@@ -9,7 +10,10 @@ class DetailImageSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, top: 8),
+      margin: EdgeInsets.only(
+        bottom: ResponsiveValues.gapMedium(context),
+        top: ResponsiveValues.gapSmall(context),
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         boxShadow: [

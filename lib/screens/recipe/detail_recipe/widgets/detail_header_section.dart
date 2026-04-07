@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 
 class DetailHeaderSection extends StatelessWidget {
   final Recipe recipe;
@@ -8,24 +9,20 @@ class DetailHeaderSection extends StatelessWidget {
   const DetailHeaderSection({super.key, required this.recipe});
 
   String _getAuthorDisplayName() {
-    // Prova displayName se non è null e non è vuoto
     if (recipe.author.displayName != null &&
         recipe.author.displayName!.isNotEmpty) {
       return recipe.author.displayName!;
     }
 
-    // Altrimenti prova username (non nullable)
     if (recipe.author.username.isNotEmpty) {
       return recipe.author.username;
     }
 
-    // Fallback
     return 'Autore sconosciuto';
   }
 
   @override
   Widget build(BuildContext context) {
-    // 👈 LOG PER DEBUG con AppLogger
     AppLogger.debug('DetailHeaderSection - category: ${recipe.category}');
     AppLogger.debug(
         'DetailHeaderSection - category name: ${recipe.category?.name}');
@@ -33,17 +30,14 @@ class DetailHeaderSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Titolo
         Text(
           recipe.title,
-          style: const TextStyle(
-            fontSize: 24,
+          style: TextStyle(
+            fontSize: ResponsiveValues.titleSize(context),
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 8),
-
-        // Autore e categoria
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         Row(
           children: [
             const Icon(Icons.person, size: 16, color: Colors.grey),
@@ -61,15 +55,13 @@ class DetailHeaderSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-
-        // Descrizione (se presente)
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         if (recipe.description.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: Text(
               recipe.description,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: ResponsiveValues.bodySize(context)),
             ),
           ),
       ],

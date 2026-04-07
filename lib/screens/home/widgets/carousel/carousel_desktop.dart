@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/utils/responsive_values.dart';
 import 'carousel_card.dart';
 import 'carousel_previous_button.dart';
 import 'carousel_next_button.dart';
@@ -62,10 +63,9 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
               autoPlay: false,
             ),
             items: widget.recipes.map((recipe) {
-              return _buildCardWithPeek(recipe);
+              return _buildCardWithPeek(recipe, context);
             }).toList(),
           ),
-          // Freccia sinistra
           Positioned(
             left: 8,
             top: 0,
@@ -76,7 +76,6 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
               ),
             ),
           ),
-          // Freccia destra
           Positioned(
             right: 8,
             top: 0,
@@ -92,25 +91,25 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
     );
   }
 
-  Widget _buildCardWithPeek(Recipe recipe) {
+  Widget _buildCardWithPeek(Recipe recipe, BuildContext context) {
     final index = widget.recipes.indexOf(recipe);
     final nextIndex = (index + 1) % widget.recipes.length;
     final nextNextIndex = (index + 2) % widget.recipes.length;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding:
+          EdgeInsets.symmetric(horizontal: ResponsiveValues.gapSmall(context)),
       child: Row(
         children: [
-          // Card grande (60%)
           Expanded(
             flex: 12,
             child: CarouselCard.buildMainCard(
               recipe,
               () => widget.onRecipeTap(recipe),
+              context,
             ),
           ),
-          const SizedBox(width: 24), // Aumentato da 16 a 24
-          // Card piccole impilate (40%)
+          const SizedBox(width: 24),
           Expanded(
             flex: 8,
             child: Column(
@@ -119,13 +118,15 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
                   child: CarouselCard.buildSmallCard(
                     widget.recipes[nextIndex],
                     () => widget.onRecipeTap(widget.recipes[nextIndex]),
+                    context,
                   ),
                 ),
-                const SizedBox(height: 24), // Aumentato da 16 a 24
+                const SizedBox(height: 24),
                 Expanded(
                   child: CarouselCard.buildSmallCard(
                     widget.recipes[nextNextIndex],
                     () => widget.onRecipeTap(widget.recipes[nextNextIndex]),
+                    context,
                   ),
                 ),
               ],
