@@ -47,34 +47,18 @@ class ForgotPasswordModal extends StatelessWidget {
         constraints: ForgotPasswordModalStyle.constraints,
         margin: const EdgeInsets.symmetric(vertical: 40),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius:
-              BorderRadius.circular(ForgotPasswordModalStyle.borderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(40),
-              blurRadius: ForgotPasswordModalStyle.shadowBlur,
-              offset: Offset(0, ForgotPasswordModalStyle.shadowOffsetY),
-            ),
-            BoxShadow(
-              color: Colors.black.withAlpha(20),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: Colors.black.withAlpha(30),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
             ),
           ],
-          border: Border.all(
-            color: Colors.grey.withAlpha(50),
-            width: 1,
-          ),
         ),
-        child: ClipRRect(
-          borderRadius:
-              BorderRadius.circular(ForgotPasswordModalStyle.borderRadius),
-          child: ForgotPasswordModalContent(
-            onClose: closeCallback,
-            showCloseButton: true,
-            onNavigateToLogin: onNavigateToLogin,
-          ),
+        child: ForgotPasswordModalContent(
+          onClose: closeCallback,
+          showCloseButton: true,
+          onNavigateToLogin: onNavigateToLogin,
         ),
       ),
     );

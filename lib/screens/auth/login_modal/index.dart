@@ -50,33 +50,19 @@ class LoginModal extends StatelessWidget {
         constraints: LoginModalStyle.constraints,
         margin: const EdgeInsets.symmetric(vertical: 40),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(LoginModalStyle.borderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(40),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
-            ),
-            BoxShadow(
-              color: Colors.black.withAlpha(20),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: Colors.black.withAlpha(30),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
             ),
           ],
-          border: Border.all(
-            color: Colors.grey.withAlpha(50),
-            width: 1,
-          ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(LoginModalStyle.borderRadius),
-          child: LoginModalContent(
-            onClose: closeCallback,
-            showCloseButton: true,
-            onNavigateToRegister: onNavigateToRegister,
-            onNavigateToForgotPassword: onNavigateToForgotPassword,
-          ),
+        child: LoginModalContent(
+          onClose: closeCallback,
+          showCloseButton: true,
+          onNavigateToRegister: onNavigateToRegister,
+          onNavigateToForgotPassword: onNavigateToForgotPassword,
         ),
       ),
     );

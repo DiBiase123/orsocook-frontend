@@ -27,35 +27,37 @@ class AuthFormWrapperDesktop extends StatelessWidget {
       alignment: Alignment.topCenter,
       child: Material(
         color: Colors.transparent,
-        child: Container(
-          width: ResponsiveValues.modalMaxWidth(context),
-          constraints: BoxConstraints(
-            maxHeight: screenHeight * 0.85,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (showCloseButton)
-                Container(
-                  decoration: BoxDecoration(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: ResponsiveValues.modalMaxWidth(context),
+            constraints: BoxConstraints(
+              maxHeight: screenHeight * 0.85,
+            ),
+            color: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showCloseButton)
+                  Container(
+                    width: double.infinity,
                     color: headerColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveValues.gapLarge(context),
+                      vertical: ResponsiveValues.gapMedium(context),
                     ),
-                  ),
-                  child: Padding(
-                    padding: ResponsiveValues.headerPadding(context),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         if (title != null)
-                          Text(
-                            title!,
-                            style: TextStyle(
-                              fontSize: ResponsiveValues.titleSize(context),
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          Expanded(
+                            child: Text(
+                              title!,
+                              style: TextStyle(
+                                fontSize: ResponsiveValues.titleSize(context),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           )
                         else
@@ -70,26 +72,26 @@ class AuthFormWrapperDesktop extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
-              Flexible(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(
-                    ResponsiveValues.gapMedium(context),
-                    ResponsiveValues.gapLarge(context),
-                    ResponsiveValues.gapMedium(context),
-                    ResponsiveValues.gapMedium(context),
-                  ),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: children,
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(
+                      ResponsiveValues.gapMedium(context),
+                      ResponsiveValues.gapLarge(context),
+                      ResponsiveValues.gapMedium(context),
+                      ResponsiveValues.gapMedium(context),
+                    ),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: children,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

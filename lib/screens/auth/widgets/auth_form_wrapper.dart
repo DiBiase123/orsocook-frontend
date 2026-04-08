@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/app_theme.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart'; // AGGIUNGI QUESTO
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_desktop.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_tablet.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
+import 'package:orsocook/utils/responsive_breakpoints.dart';
 
 class AuthFormWrapper extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -23,48 +20,101 @@ class AuthFormWrapper extends StatelessWidget {
 
   Color _getHeaderColor() {
     if (title == 'Accedi') {
-      return AppColors.primary; // viola
+      return AppColors.primary;
     }
     if (title == 'Registrati') {
-      return Colors.deepOrange.shade200; // arancione chiaro
+      return Colors.deepOrange.shade200;
     }
-    return Colors.deepOrange; // fallback
+    return Colors.deepOrange;
   }
 
   @override
   Widget build(BuildContext context) {
-    // RIMUOVI: final screenWidth = MediaQuery.of(context).size.width;
     final headerColor = _getHeaderColor();
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isDesktop = ResponsiveBreakpoints.isDesktop(context);
+    final isTablet = ResponsiveBreakpoints.isTablet(context);
 
-    if (ResponsiveBreakpoints.isDesktop(context)) {
-      // MODIFICATO
-      return AuthFormWrapperDesktop(
-        formKey: formKey,
-        onClose: onClose,
-        showCloseButton: showCloseButton,
-        title: title,
-        headerColor: headerColor,
-        children: children,
-      );
-    } else if (ResponsiveBreakpoints.isTablet(context)) {
-      // MODIFICATO
-      return AuthFormWrapperTablet(
-        formKey: formKey,
-        onClose: onClose,
-        showCloseButton: showCloseButton,
-        title: title,
-        headerColor: headerColor,
-        children: children,
-      );
+    // Larghezza dinamica
+    double modalWidth;
+    if (isDesktop) {
+      modalWidth = 550;
+    } else if (isTablet) {
+      modalWidth = 500;
     } else {
-      return AuthFormWrapperMobile(
-        formKey: formKey,
-        onClose: onClose,
-        showCloseButton: showCloseButton,
-        title: title,
-        headerColor: headerColor,
-        children: children,
-      );
+      modalWidth = MediaQuery.of(context).size.width * 0.95;
     }
+
+    // Padding dinamico
+    final horizontalPadding = isDesktop ? 32.0 : (isTablet ? 24.0 : 16.0);
+    final verticalPadding = isDesktop ? 32.0 : (isTablet ? 24.0 : 16.0);
+    final titleFontSize = isDesktop ? 24.0 : (isTablet ? 22.0 : 20.0);
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Material(
+        color: Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: modalWidth,
+            constraints: BoxConstraints(
+              maxHeight: screenHeight * 0.85,
+            ),
+            color: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showCloseButton)
+                  Container(
+                    width: double.infinity,
+                    color: headerColor,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (title != null)
+                          Text(
+                            title!,
+                            style: TextStyle(
+                              fontSize: titleFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          )
+                        else
+                          const SizedBox.shrink(),
+                        IconButton(
+                          icon: const Icon(Icons.close,
+                              size: 24, color: Colors.white),
+                          onPressed: onClose,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.all(verticalPadding),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: children,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

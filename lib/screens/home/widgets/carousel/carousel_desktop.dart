@@ -43,10 +43,19 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
     );
   }
 
+  double _getViewportFraction(double width) {
+    if (width < 1000) return 0.75;
+    if (width < 1200) return 0.7;
+    if (width < 1400) return 0.65;
+    return 0.6;
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     final carouselHeight = screenHeight - 80;
+    final viewportFraction = _getViewportFraction(screenWidth);
 
     return SizedBox(
       height: carouselHeight,
@@ -56,7 +65,7 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
             carouselController: _carouselController,
             options: CarouselOptions(
               height: carouselHeight,
-              viewportFraction: 0.6,
+              viewportFraction: viewportFraction,
               enlargeCenterPage: true,
               enlargeFactor: 0.25,
               enableInfiniteScroll: true,
@@ -95,10 +104,15 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
     final index = widget.recipes.indexOf(recipe);
     final nextIndex = (index + 1) % widget.recipes.length;
     final nextNextIndex = (index + 2) % widget.recipes.length;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Riduci il gap quando lo schermo è più stretto
+    final horizontalGap =
+        screenWidth < 1000 ? 12.0 : ResponsiveValues.gapSmall(context);
+    final verticalGap = screenWidth < 1000 ? 16.0 : 24.0;
 
     return Padding(
-      padding:
-          EdgeInsets.symmetric(horizontal: ResponsiveValues.gapSmall(context)),
+      padding: EdgeInsets.symmetric(horizontal: horizontalGap),
       child: Row(
         children: [
           Expanded(
@@ -109,7 +123,7 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
               context,
             ),
           ),
-          const SizedBox(width: 24),
+          SizedBox(width: verticalGap),
           Expanded(
             flex: 8,
             child: Column(
@@ -121,7 +135,7 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
                     context,
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: verticalGap),
                 Expanded(
                   child: CarouselCard.buildSmallCard(
                     widget.recipes[nextNextIndex],

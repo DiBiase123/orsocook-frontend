@@ -49,7 +49,6 @@ class RegisterModal extends StatelessWidget {
       );
     }
 
-    // Desktop: modal con effetto glass
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -68,34 +67,18 @@ class RegisterModal extends StatelessWidget {
               constraints: RegisterModalStyle.constraints,
               margin: const EdgeInsets.symmetric(vertical: 40),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(RegisterModalStyle.borderRadius),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(40),
-                    blurRadius: 40,
-                    offset: const Offset(0, 20),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withAlpha(20),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    color: Colors.black.withAlpha(30),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
                 ],
-                border: Border.all(
-                  color: Colors.grey.withAlpha(50),
-                  width: 1,
-                ),
               ),
-              child: ClipRRect(
-                borderRadius:
-                    BorderRadius.circular(RegisterModalStyle.borderRadius),
-                child: RegisterModalContent(
-                  onClose: closeCallback,
-                  showCloseButton: true,
-                  onNavigateToLogin: onNavigateToLogin,
-                ),
+              child: RegisterModalContent(
+                onClose: closeCallback,
+                showCloseButton: true,
+                onNavigateToLogin: onNavigateToLogin,
               ),
             ),
           ),
