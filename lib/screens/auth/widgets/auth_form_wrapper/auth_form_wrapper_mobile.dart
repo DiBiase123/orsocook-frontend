@@ -57,6 +57,7 @@ class AuthFormWrapperMobile extends StatelessWidget {
               ),
             ),
           Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16), // 👈 AGGIUNTO
             width: double.infinity,
             color: Colors.white,
             padding: const EdgeInsets.all(24),
@@ -64,12 +65,7 @@ class AuthFormWrapperMobile extends StatelessWidget {
               key: formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: children
-                    .map((child) => SizedBox(
-                          width: double.infinity,
-                          child: child,
-                        ))
-                    .toList(),
+                children: children,
               ),
             ),
           ),

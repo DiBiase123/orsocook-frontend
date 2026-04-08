@@ -5,6 +5,7 @@ import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/utils/responsive_values.dart';
 import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
+import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
 import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
 
 class ForgotPasswordModalContent extends StatefulWidget {
@@ -107,35 +108,50 @@ class _ForgotPasswordModalContentState
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
+    final children = [
+      _buildLogo(),
+      SizedBox(height: ResponsiveValues.gapLarge(context)),
+      _buildEmailField(),
+      SizedBox(height: ResponsiveValues.gapMedium(context)),
+      if (_errorMessage != null) AuthErrorBox(message: _errorMessage!),
+      if (_isSuccess) _buildSuccessSection(),
+      SizedBox(height: ResponsiveValues.gapLarge(context)),
+      _buildSubmitButton(context),
+      SizedBox(height: ResponsiveValues.gapLarge(context)),
+      _buildLoginLink(),
+      SizedBox(height: ResponsiveValues.gapLarge(context)),
+      const Divider(),
+      SizedBox(height: ResponsiveValues.gapMedium(context)),
+      const Text(
+        'Cosa succede dopo:',
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+      SizedBox(height: ResponsiveValues.gapMedium(context)),
+      _buildStepItem('Riceverai un\'email con un link di reset'),
+      _buildStepItem('Clicca sul link (valido per 1 ora)'),
+      _buildStepItem('Imposta una nuova password'),
+      _buildStepItem('Accedi con la nuova password'),
+    ];
+
+    if (isMobile) {
+      return AuthFormWrapperMobile(
+        formKey: _formKey,
+        onClose: widget.onClose,
+        showCloseButton: widget.showCloseButton,
+        title: null,
+        headerColor: Colors.deepOrange,
+        children: children,
+      );
+    }
+
     return AuthFormWrapper(
       formKey: _formKey,
       onClose: widget.onClose,
       showCloseButton: widget.showCloseButton,
-      children: [
-        _buildLogo(),
-        SizedBox(height: ResponsiveValues.gapLarge(context)),
-        _buildEmailField(),
-        SizedBox(height: ResponsiveValues.gapMedium(context)),
-        if (_errorMessage != null) AuthErrorBox(message: _errorMessage!),
-        if (_isSuccess) _buildSuccessSection(),
-        SizedBox(height: ResponsiveValues.gapLarge(context)),
-        _buildSubmitButton(context),
-        SizedBox(height: ResponsiveValues.gapLarge(context)),
-        _buildLoginLink(),
-        SizedBox(height: ResponsiveValues.gapLarge(context)),
-        const Divider(),
-        SizedBox(height: ResponsiveValues.gapMedium(context)),
-        const Text(
-          'Cosa succede dopo:',
-          style: TextStyle(fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: ResponsiveValues.gapMedium(context)),
-        _buildStepItem('Riceverai un\'email con un link di reset'),
-        _buildStepItem('Clicca sul link (valido per 1 ora)'),
-        _buildStepItem('Imposta una nuova password'),
-        _buildStepItem('Accedi con la nuova password'),
-      ],
+      children: children,
     );
   }
 
