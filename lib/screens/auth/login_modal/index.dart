@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/login_modal/style.dart';
 import 'package:orsocook/screens/auth/login_modal/content.dart';
+import 'package:orsocook/utils/device_classifier.dart';
 
 class LoginModal extends StatelessWidget {
   final VoidCallback? onNavigateToRegister;
@@ -16,10 +17,7 @@ class LoginModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final shortestSide = mediaQuery.size.shortestSide;
-    final isMobile = shortestSide < 600;
-
+    final isMobile = DeviceClassifier.isMobile(context);
     final closeCallback = onClose ?? () => Navigator.of(context).pop();
 
     if (isMobile) {
@@ -37,16 +35,14 @@ class LoginModal extends StatelessWidget {
             onPressed: closeCallback,
           ),
         ),
-        body: SingleChildScrollView(
-          child: SizedBox(
-            height: availableHeight,
-            child: Center(
-              child: LoginModalContent(
-                onClose: closeCallback,
-                showCloseButton: false,
-                onNavigateToRegister: onNavigateToRegister,
-                onNavigateToForgotPassword: onNavigateToForgotPassword,
-              ),
+        body: SizedBox(
+          height: availableHeight,
+          child: SingleChildScrollView(
+            child: LoginModalContent(
+              onClose: closeCallback,
+              showCloseButton: false,
+              onNavigateToRegister: onNavigateToRegister,
+              onNavigateToForgotPassword: onNavigateToForgotPassword,
             ),
           ),
         ),
@@ -54,15 +50,15 @@ class LoginModal extends StatelessWidget {
     }
 
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxHeight: double.infinity,
-        ),
+      child: Material(
+        color: Colors.transparent,
         child: Container(
           width: LoginModalStyle.cardWidth,
           constraints: LoginModalStyle.constraints,
           margin: const EdgeInsets.symmetric(vertical: 40),
           decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha(30),
@@ -71,11 +67,17 @@ class LoginModal extends StatelessWidget {
               ),
             ],
           ),
-          child: LoginModalContent(
-            onClose: closeCallback,
-            showCloseButton: true,
-            onNavigateToRegister: onNavigateToRegister,
-            onNavigateToForgotPassword: onNavigateToForgotPassword,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Material(
+              color: Colors.white,
+              child: LoginModalContent(
+                onClose: closeCallback,
+                showCloseButton: true,
+                onNavigateToRegister: onNavigateToRegister,
+                onNavigateToForgotPassword: onNavigateToForgotPassword,
+              ),
+            ),
           ),
         ),
       ),
