@@ -33,32 +33,41 @@ class ForgotPasswordModal extends StatelessWidget {
             onPressed: onNavigateToLogin ?? closeCallback,
           ),
         ),
-        body: ForgotPasswordModalContent(
-          onClose: closeCallback,
-          showCloseButton: false,
-          onNavigateToLogin: onNavigateToLogin,
+        body: Center(
+          child: SingleChildScrollView(
+            child: ForgotPasswordModalContent(
+              onClose: closeCallback,
+              showCloseButton: false,
+              onNavigateToLogin: onNavigateToLogin,
+            ),
+          ),
         ),
       );
     }
 
     return Center(
-      child: Container(
-        width: ForgotPasswordModalStyle.cardWidth,
-        constraints: ForgotPasswordModalStyle.constraints,
-        margin: const EdgeInsets.symmetric(vertical: 40),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(30),
-              blurRadius: 30,
-              offset: const Offset(0, 10),
-            ),
-          ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: double.infinity,
         ),
-        child: ForgotPasswordModalContent(
-          onClose: closeCallback,
-          showCloseButton: true,
-          onNavigateToLogin: onNavigateToLogin,
+        child: Container(
+          width: ForgotPasswordModalStyle.cardWidth,
+          constraints: ForgotPasswordModalStyle.constraints,
+          margin: const EdgeInsets.symmetric(vertical: 40),
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(30),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: ForgotPasswordModalContent(
+            onClose: closeCallback,
+            showCloseButton: true,
+            onNavigateToLogin: onNavigateToLogin,
+          ),
         ),
       ),
     );

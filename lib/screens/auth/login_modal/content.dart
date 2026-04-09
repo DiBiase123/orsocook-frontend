@@ -4,8 +4,8 @@ import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/widgets/login_logo.dart';
 import 'package:orsocook/screens/auth/widgets/login_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/login_actions.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
+import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
 import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
 
 class LoginModalContent extends StatefulWidget {
@@ -193,7 +193,29 @@ class _LoginModalContentState extends State<LoginModalContent> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    // In mobile usa AuthFormWrapperMobile direttamente
+    final children = [
+      const LoginLogo(),
+      const SizedBox(height: 16),
+      LoginFormFields(
+        emailController: _emailController,
+        passwordController: _passwordController,
+        errorMessage: _errorMessage,
+        onEmailChanged: (_) => _clearErrorOnChange(),
+        onPasswordChanged: (_) => _clearErrorOnChange(),
+        onForgotPasswordPressed: _isLoading ? null : _navigateToForgotPassword,
+        onSubmitted: _submitLogin,
+        isLoading: _isLoading,
+      ),
+      const SizedBox(height: 16),
+      LoginActions(
+        isLoading: _isLoading,
+        onLoginPressed: _submitLogin,
+        onRegisterPressed: _isLoading ? null : _navigateToRegister,
+        onContinueWithoutAuth: widget.onClose,
+        showSocialLogin: true,
+      ),
+    ];
+
     if (isMobile) {
       return AuthFormWrapperMobile(
         formKey: _formKey,
@@ -201,63 +223,16 @@ class _LoginModalContentState extends State<LoginModalContent> {
         showCloseButton: widget.showCloseButton,
         title: 'Accedi',
         headerColor: const Color(0xFF7E69AB),
-        children: [
-          const LoginLogo(),
-          const SizedBox(height: 24),
-          LoginFormFields(
-            emailController: _emailController,
-            passwordController: _passwordController,
-            errorMessage: _errorMessage,
-            onEmailChanged: (_) => _clearErrorOnChange(),
-            onPasswordChanged: (_) => _clearErrorOnChange(),
-            onForgotPasswordPressed:
-                _isLoading ? null : _navigateToForgotPassword,
-            onSubmitted: _submitLogin,
-            isLoading: _isLoading,
-          ),
-          const SizedBox(height: 24),
-          LoginActions(
-            isLoading: _isLoading,
-            onLoginPressed: _submitLogin,
-            onRegisterPressed: _isLoading ? null : _navigateToRegister,
-            onContinueWithoutAuth: widget.onClose,
-            showSocialLogin: true,
-          ),
-          const SizedBox(height: 16),
-        ],
+        children: children,
       );
     }
 
-    // Desktop/Tablet usa AuthFormWrapper normale
     return AuthFormWrapper(
       formKey: _formKey,
       onClose: widget.onClose,
       showCloseButton: widget.showCloseButton,
       title: 'Accedi',
-      children: [
-        const LoginLogo(),
-        const SizedBox(height: 24),
-        LoginFormFields(
-          emailController: _emailController,
-          passwordController: _passwordController,
-          errorMessage: _errorMessage,
-          onEmailChanged: (_) => _clearErrorOnChange(),
-          onPasswordChanged: (_) => _clearErrorOnChange(),
-          onForgotPasswordPressed:
-              _isLoading ? null : _navigateToForgotPassword,
-          onSubmitted: _submitLogin,
-          isLoading: _isLoading,
-        ),
-        const SizedBox(height: 24),
-        LoginActions(
-          isLoading: _isLoading,
-          onLoginPressed: _submitLogin,
-          onRegisterPressed: _isLoading ? null : _navigateToRegister,
-          onContinueWithoutAuth: widget.onClose,
-          showSocialLogin: true,
-        ),
-        const SizedBox(height: 16),
-      ],
+      children: children,
     );
   }
 }

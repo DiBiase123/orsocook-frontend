@@ -58,23 +58,31 @@ class _AuthDialogState extends State<AuthDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-            child: Container(
-              color: Colors.black.withAlpha(60),
-              width: double.infinity,
-              height: double.infinity,
-            ),
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
+    return Stack(
+      children: [
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            color: Colors.black.withAlpha(60),
+            width: double.infinity,
+            height: double.infinity,
           ),
+        ),
+        // Per mobile: nessun SingleChildScrollView (è già gestito internamente)
+        // Per tablet/desktop: SingleChildScrollView per evitare overflow
+        if (isMobile)
           Center(
             child: _currentScreen,
+          )
+        else
+          Center(
+            child: SingleChildScrollView(
+              child: _currentScreen,
+            ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
@@ -84,6 +92,7 @@ Future<void> showLoginModal(BuildContext context) {
     context: context,
     barrierDismissible: true,
     barrierColor: Colors.transparent,
+    useSafeArea: false,
     builder: (context) => const AuthDialog(),
   );
 }

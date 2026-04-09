@@ -31,11 +31,9 @@ class AuthFormWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final headerColor = _getHeaderColor();
-    final screenHeight = MediaQuery.of(context).size.height;
     final isDesktop = ResponsiveBreakpoints.isDesktop(context);
     final isTablet = ResponsiveBreakpoints.isTablet(context);
 
-    // Larghezza dinamica
     double modalWidth;
     if (isDesktop) {
       modalWidth = 550;
@@ -45,11 +43,76 @@ class AuthFormWrapper extends StatelessWidget {
       modalWidth = MediaQuery.of(context).size.width * 0.95;
     }
 
-    // Padding dinamico
     final horizontalPadding = isDesktop ? 32.0 : (isTablet ? 24.0 : 16.0);
-    final verticalPadding = isDesktop ? 32.0 : (isTablet ? 24.0 : 16.0);
+    final verticalPadding = isDesktop ? 16.0 : (isTablet ? 20.0 : 16.0);
     final titleFontSize = isDesktop ? 24.0 : (isTablet ? 22.0 : 20.0);
 
+    // Desktop: senza scroll
+    if (isDesktop) {
+      return Align(
+        alignment: Alignment.topCenter,
+        child: Material(
+          color: Colors.transparent,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: modalWidth,
+              color: Colors.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (showCloseButton)
+                    Container(
+                      width: double.infinity,
+                      color: headerColor,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (title != null)
+                            Text(
+                              title!,
+                              style: TextStyle(
+                                fontSize: titleFontSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            )
+                          else
+                            const SizedBox.shrink(),
+                          IconButton(
+                            icon: const Icon(Icons.close,
+                                size: 24, color: Colors.white),
+                            onPressed: onClose,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Padding(
+                    padding: EdgeInsets.all(verticalPadding),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: children,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Tablet e Mobile: usa ListView per scroll nativo
     return Align(
       alignment: Alignment.topCenter,
       child: Material(
@@ -59,7 +122,7 @@ class AuthFormWrapper extends StatelessWidget {
           child: Container(
             width: modalWidth,
             constraints: BoxConstraints(
-              maxHeight: screenHeight * 0.85,
+              maxHeight: MediaQuery.of(context).size.height * 0.9,
             ),
             color: Colors.white,
             child: Column(
@@ -97,17 +160,18 @@ class AuthFormWrapper extends StatelessWidget {
                       ],
                     ),
                   ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
+                Expanded(
+                  child: ListView(
                     padding: EdgeInsets.all(verticalPadding),
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: children,
+                    children: [
+                      Form(
+                        key: formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: children,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/screens/auth/widgets/auth_compact_values.dart';
 
 class AuthFormWrapperDesktop extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -21,8 +22,6 @@ class AuthFormWrapperDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Align(
       alignment: Alignment.topCenter,
       child: Material(
@@ -31,21 +30,16 @@ class AuthFormWrapperDesktop extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Container(
             width: ResponsiveValues.modalMaxWidth(context),
-            constraints: BoxConstraints(
-              maxHeight: screenHeight * 0.85,
-            ),
             color: Colors.white,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (showCloseButton)
                   Container(
                     width: double.infinity,
                     color: headerColor,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: ResponsiveValues.gapLarge(context),
-                      vertical: ResponsiveValues.gapMedium(context),
-                    ),
+                    padding: AuthCompactValues.headerPadding(context),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -72,21 +66,14 @@ class AuthFormWrapperDesktop extends StatelessWidget {
                       ],
                     ),
                   ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(
-                      ResponsiveValues.gapMedium(context),
-                      ResponsiveValues.gapLarge(context),
-                      ResponsiveValues.gapMedium(context),
-                      ResponsiveValues.gapMedium(context),
-                    ),
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: children,
-                      ),
+                Padding(
+                  padding: AuthCompactValues.formPadding(context),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: children,
                     ),
                   ),
                 ),

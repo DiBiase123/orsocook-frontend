@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_values.dart'; // AGGIUNTO
+import 'package:orsocook/utils/responsive_values.dart';
 
 class LoginActions extends StatelessWidget {
   final bool isLoading;
@@ -7,6 +7,7 @@ class LoginActions extends StatelessWidget {
   final Function()? onRegisterPressed;
   final Function()? onContinueWithoutAuth;
   final bool showSocialLogin;
+  final bool isCompact; // 👈 NUOVO: per modalità compatta
 
   const LoginActions({
     super.key,
@@ -15,16 +16,16 @@ class LoginActions extends StatelessWidget {
     this.onRegisterPressed,
     this.onContinueWithoutAuth,
     this.showSocialLogin = true,
+    this.isCompact = false, // 👈 default false
   });
 
   Widget _buildLoginButton(BuildContext context) {
-    // MODIFICATO: aggiunto context
     return ElevatedButton(
       onPressed: isLoading ? null : onLoginPressed,
       style: ElevatedButton.styleFrom(
-        minimumSize: Size(double.infinity,
-            ResponsiveValues.buttonHeight(context)), // MODIFICATO
-        backgroundColor: const Color(0xFF6750A4), // Viola
+        minimumSize:
+            Size(double.infinity, ResponsiveValues.buttonHeight(context)),
+        backgroundColor: const Color(0xFF6750A4),
       ),
       child: isLoading
           ? const SizedBox(
@@ -46,7 +47,6 @@ class LoginActions extends StatelessWidget {
   }
 
   Widget _buildRegisterSection(BuildContext context) {
-    // MODIFICATO: aggiunto context
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
@@ -103,15 +103,18 @@ class LoginActions extends StatelessWidget {
   Widget _buildSocialLogin() {
     if (!showSocialLogin) return const SizedBox.shrink();
 
+    // In modalità compatta, nascondi la sezione social
+    if (isCompact) return const SizedBox.shrink();
+
     return Column(
       children: [
         const Divider(),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12), // ridotto da 16
         const Text(
           'Oppure accedi con',
           style: TextStyle(color: Colors.grey),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12), // ridotto da 16
         LayoutBuilder(
           builder: (context, constraints) {
             final availableWidth = constraints.maxWidth;
@@ -165,14 +168,22 @@ class LoginActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gapAfterButton = isCompact
+        ? ResponsiveValues.gapMedium(context) // ridotto
+        : ResponsiveValues.gapLarge(context);
+
+    final gapAfterRegister = isCompact
+        ? ResponsiveValues.gapSmall(context) // ridotto
+        : ResponsiveValues.gapMedium(context);
+
     return Column(
       children: [
-        _buildLoginButton(context), // MODIFICATO: passato context
-        SizedBox(height: ResponsiveValues.gapLarge(context)), // MODIFICATO
-        _buildRegisterSection(context), // MODIFICATO: passato context
-        _buildSocialLogin(),
+        _buildLoginButton(context),
+        SizedBox(height: gapAfterButton),
+        _buildRegisterSection(context),
+        if (!isCompact) _buildSocialLogin(), // solo in modalità normale
         if (onContinueWithoutAuth != null) ...[
-          SizedBox(height: ResponsiveValues.gapMedium(context)), // MODIFICATO
+          SizedBox(height: gapAfterRegister),
           TextButton(
             onPressed: onContinueWithoutAuth,
             child: const Text(

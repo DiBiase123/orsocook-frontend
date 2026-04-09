@@ -20,6 +20,10 @@ class AuthFormWrapperMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Padding superiore proporzionale all'altezza (es. 5% ma min 8, max 24)
+    final topPadding = (screenHeight * 0.05).clamp(8.0, 24.0);
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
@@ -57,10 +61,15 @@ class AuthFormWrapperMobile extends StatelessWidget {
               ),
             ),
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16), // 👈 AGGIUNTO
+            margin: const EdgeInsets.symmetric(horizontal: 16),
             width: double.infinity,
             color: Colors.white,
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              bottom: 24,
+              top: topPadding, // 👈 padding proporzionale
+            ),
             child: Form(
               key: formKey,
               child: Column(

@@ -41,10 +41,14 @@ class RegisterModal extends StatelessWidget {
             ),
           ],
         ),
-        body: RegisterModalContent(
-          onClose: closeCallback,
-          showCloseButton: false,
-          onNavigateToLogin: onNavigateToLogin,
+        body: Center(
+          child: SingleChildScrollView(
+            child: RegisterModalContent(
+              onClose: closeCallback,
+              showCloseButton: false,
+              onNavigateToLogin: onNavigateToLogin,
+            ),
+          ),
         ),
       );
     }
@@ -62,23 +66,28 @@ class RegisterModal extends StatelessWidget {
             ),
           ),
           Center(
-            child: Container(
-              width: RegisterModalStyle.cardWidth,
-              constraints: RegisterModalStyle.constraints,
-              margin: const EdgeInsets.symmetric(vertical: 40),
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(30),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: double.infinity,
               ),
-              child: RegisterModalContent(
-                onClose: closeCallback,
-                showCloseButton: true,
-                onNavigateToLogin: onNavigateToLogin,
+              child: Container(
+                width: RegisterModalStyle.cardWidth,
+                constraints: RegisterModalStyle.constraints,
+                margin: const EdgeInsets.symmetric(vertical: 40),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(30),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: RegisterModalContent(
+                  onClose: closeCallback,
+                  showCloseButton: true,
+                  onNavigateToLogin: onNavigateToLogin,
+                ),
               ),
             ),
           ),

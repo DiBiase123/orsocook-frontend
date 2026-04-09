@@ -35,34 +35,43 @@ class LoginModal extends StatelessWidget {
             onPressed: closeCallback,
           ),
         ),
-        body: LoginModalContent(
-          onClose: closeCallback,
-          showCloseButton: false,
-          onNavigateToRegister: onNavigateToRegister,
-          onNavigateToForgotPassword: onNavigateToForgotPassword,
+        body: Center(
+          child: SingleChildScrollView(
+            child: LoginModalContent(
+              onClose: closeCallback,
+              showCloseButton: false,
+              onNavigateToRegister: onNavigateToRegister,
+              onNavigateToForgotPassword: onNavigateToForgotPassword,
+            ),
+          ),
         ),
       );
     }
 
     return Center(
-      child: Container(
-        width: LoginModalStyle.cardWidth,
-        constraints: LoginModalStyle.constraints,
-        margin: const EdgeInsets.symmetric(vertical: 40),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(30),
-              blurRadius: 30,
-              offset: const Offset(0, 10),
-            ),
-          ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: double.infinity,
         ),
-        child: LoginModalContent(
-          onClose: closeCallback,
-          showCloseButton: true,
-          onNavigateToRegister: onNavigateToRegister,
-          onNavigateToForgotPassword: onNavigateToForgotPassword,
+        child: Container(
+          width: LoginModalStyle.cardWidth,
+          constraints: LoginModalStyle.constraints,
+          margin: const EdgeInsets.symmetric(vertical: 40),
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(30),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: LoginModalContent(
+            onClose: closeCallback,
+            showCloseButton: true,
+            onNavigateToRegister: onNavigateToRegister,
+            onNavigateToForgotPassword: onNavigateToForgotPassword,
+          ),
         ),
       ),
     );

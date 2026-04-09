@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/screens/auth/widgets/auth_compact_values.dart';
 
 class AuthFormWrapperTablet extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -21,8 +22,6 @@ class AuthFormWrapperTablet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Align(
       alignment: Alignment.topCenter,
       child: Material(
@@ -31,9 +30,6 @@ class AuthFormWrapperTablet extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Container(
             width: ResponsiveValues.modalMaxWidth(context),
-            constraints: BoxConstraints(
-              maxHeight: screenHeight * 0.85,
-            ),
             color: Colors.white,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -42,10 +38,7 @@ class AuthFormWrapperTablet extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     color: headerColor,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: ResponsiveValues.gapMedium(context),
-                      vertical: ResponsiveValues.gapMedium(context),
-                    ),
+                    padding: AuthCompactValues.headerPadding(context),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -75,8 +68,7 @@ class AuthFormWrapperTablet extends StatelessWidget {
                 Flexible(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding:
-                        EdgeInsets.all(ResponsiveValues.gapMedium(context)),
+                    padding: AuthCompactValues.formPadding(context),
                     child: Form(
                       key: formKey,
                       child: Column(
