@@ -17,15 +17,17 @@ class LoginModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    final orientation = mediaQuery.orientation;
     final shortestSide = mediaQuery.size.shortestSide;
-    final isLandscapeMobile =
-        orientation == Orientation.landscape && shortestSide < 600;
-    final isMobile = mediaQuery.size.width < 768 || isLandscapeMobile;
+    final isMobile = shortestSide < 600;
 
     final closeCallback = onClose ?? () => Navigator.of(context).pop();
 
     if (isMobile) {
+      final screenHeight = MediaQuery.of(context).size.height;
+      final appBarHeight = kToolbarHeight;
+      final topPadding = MediaQuery.of(context).padding.top;
+      final availableHeight = screenHeight - appBarHeight - topPadding;
+
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -35,13 +37,16 @@ class LoginModal extends StatelessWidget {
             onPressed: closeCallback,
           ),
         ),
-        body: Center(
-          child: SingleChildScrollView(
-            child: LoginModalContent(
-              onClose: closeCallback,
-              showCloseButton: false,
-              onNavigateToRegister: onNavigateToRegister,
-              onNavigateToForgotPassword: onNavigateToForgotPassword,
+        body: SingleChildScrollView(
+          child: SizedBox(
+            height: availableHeight,
+            child: Center(
+              child: LoginModalContent(
+                onClose: closeCallback,
+                showCloseButton: false,
+                onNavigateToRegister: onNavigateToRegister,
+                onNavigateToForgotPassword: onNavigateToForgotPassword,
+              ),
             ),
           ),
         ),

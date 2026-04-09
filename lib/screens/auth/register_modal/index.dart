@@ -16,11 +16,8 @@ class RegisterModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    final orientation = mediaQuery.orientation;
     final shortestSide = mediaQuery.size.shortestSide;
-    final isLandscapeMobile =
-        orientation == Orientation.landscape && shortestSide < 600;
-    final isMobile = mediaQuery.size.width < 768 || isLandscapeMobile;
+    final isMobile = shortestSide < 600;
 
     final closeCallback = onClose ?? () => Navigator.of(context).pop();
 
