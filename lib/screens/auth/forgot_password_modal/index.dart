@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/forgot_password_modal/style.dart';
 import 'package:orsocook/screens/auth/forgot_password_modal/content.dart';
+import 'package:orsocook/utils/device_classifier.dart';
 
 class ForgotPasswordModal extends StatelessWidget {
   final VoidCallback? onNavigateToLogin;
@@ -14,10 +15,7 @@ class ForgotPasswordModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final shortestSide = mediaQuery.size.shortestSide;
-    final isMobile = shortestSide < 600;
-
+    final isMobile = DeviceClassifier.isMobile(context);
     final closeCallback = onClose ?? () => Navigator.of(context).pop();
 
     if (isMobile) {
