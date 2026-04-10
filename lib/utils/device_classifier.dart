@@ -7,10 +7,8 @@ enum DeviceType {
 }
 
 class DeviceClassifier {
-  // Soglie basate su dati reali
-  static const double mobileMaxWidth = 900; // telefono landscape fino a 900px
-  static const double tabletMaxWidth =
-      1024; // tablet portrait (es. iPad Pro 12.9")
+  static const double mobileMaxWidth = 768;
+  static const double tabletMaxWidth = 1024;
 
   static DeviceType getDeviceType(BuildContext context) {
     final width = MediaQuery.of(context).size.width;

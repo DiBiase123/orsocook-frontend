@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/auth/login_modal/style.dart';
 import 'package:orsocook/screens/auth/login_modal/content.dart';
 import 'package:orsocook/utils/device_classifier.dart';
 
@@ -21,11 +20,6 @@ class LoginModal extends StatelessWidget {
     final closeCallback = onClose ?? () => Navigator.of(context).pop();
 
     if (isMobile) {
-      final screenHeight = MediaQuery.of(context).size.height;
-      final appBarHeight = kToolbarHeight;
-      final topPadding = MediaQuery.of(context).padding.top;
-      final availableHeight = screenHeight - appBarHeight - topPadding;
-
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -35,50 +29,37 @@ class LoginModal extends StatelessWidget {
             onPressed: closeCallback,
           ),
         ),
-        body: SizedBox(
-          height: availableHeight,
-          child: SingleChildScrollView(
-            child: LoginModalContent(
-              onClose: closeCallback,
-              showCloseButton: false,
-              onNavigateToRegister: onNavigateToRegister,
-              onNavigateToForgotPassword: onNavigateToForgotPassword,
-            ),
-          ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: Center(
+                  child: LoginModalContent(
+                    onClose: closeCallback,
+                    showCloseButton: false,
+                    onNavigateToRegister: onNavigateToRegister,
+                    onNavigateToForgotPassword: onNavigateToForgotPassword,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       );
     }
 
+    // Tablet e Desktop
     return Center(
       child: Material(
         color: Colors.transparent,
-        child: Container(
-          width: LoginModalStyle.cardWidth,
-          constraints: LoginModalStyle.constraints,
-          margin: const EdgeInsets.symmetric(vertical: 40),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(30),
-                blurRadius: 30,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Material(
-              color: Colors.white,
-              child: LoginModalContent(
-                onClose: closeCallback,
-                showCloseButton: true,
-                onNavigateToRegister: onNavigateToRegister,
-                onNavigateToForgotPassword: onNavigateToForgotPassword,
-              ),
-            ),
-          ),
+        child: LoginModalContent(
+          onClose: closeCallback,
+          showCloseButton: true,
+          onNavigateToRegister: onNavigateToRegister,
+          onNavigateToForgotPassword: onNavigateToForgotPassword,
         ),
       ),
     );

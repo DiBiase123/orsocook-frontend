@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_values.dart';
-import 'package:orsocook/screens/auth/widgets/auth_compact_values.dart';
 
 class AuthFormWrapperDesktop extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -15,31 +13,41 @@ class AuthFormWrapperDesktop extends StatelessWidget {
     required this.formKey,
     required this.children,
     required this.onClose,
-    this.showCloseButton = true,
+    required this.showCloseButton,
     this.title,
     required this.headerColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topCenter,
+    return Center(
       child: Material(
         color: Colors.transparent,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            width: ResponsiveValues.modalMaxWidth(context),
+        child: Container(
+          width: 520,
+          margin: const EdgeInsets.symmetric(vertical: 40),
+          decoration: BoxDecoration(
             color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(30),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (showCloseButton)
                   Container(
                     width: double.infinity,
                     color: headerColor,
-                    padding: AuthCompactValues.headerPadding(context),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -47,8 +55,8 @@ class AuthFormWrapperDesktop extends StatelessWidget {
                           Expanded(
                             child: Text(
                               title!,
-                              style: TextStyle(
-                                fontSize: ResponsiveValues.titleSize(context),
+                              style: const TextStyle(
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
@@ -66,12 +74,12 @@ class AuthFormWrapperDesktop extends StatelessWidget {
                       ],
                     ),
                   ),
-                Padding(
-                  padding: AuthCompactValues.formPadding(context),
+                SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.all(24),
                   child: Form(
                     key: formKey,
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: children,
                     ),

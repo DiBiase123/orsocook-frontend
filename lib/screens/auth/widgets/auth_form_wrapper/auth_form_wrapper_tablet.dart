@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_values.dart';
-import 'package:orsocook/screens/auth/widgets/auth_compact_values.dart';
 
 class AuthFormWrapperTablet extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -22,53 +20,64 @@ class AuthFormWrapperTablet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topCenter,
+    return Center(
       child: Material(
         color: Colors.transparent,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            width: ResponsiveValues.modalMaxWidth(context),
+        child: Container(
+          width: 500,
+          margin: const EdgeInsets.symmetric(vertical: 30),
+          decoration: BoxDecoration(
             color: Colors.white,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (showCloseButton)
-                  Container(
-                    width: double.infinity,
-                    color: headerColor,
-                    padding: AuthCompactValues.headerPadding(context),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (title != null)
-                          Expanded(
-                            child: Text(
-                              title!,
-                              style: TextStyle(
-                                fontSize: ResponsiveValues.titleSize(context),
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(25),
+                blurRadius: 25,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Material(
+              color: Colors.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (showCloseButton)
+                    Container(
+                      width: double.infinity,
+                      color: headerColor,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 14),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (title != null)
+                            Expanded(
+                              child: Text(
+                                title!,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          )
-                        else
-                          const SizedBox.shrink(),
-                        IconButton(
-                          icon: const Icon(Icons.close,
-                              size: 24, color: Colors.white),
-                          onPressed: onClose,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                      ],
+                            )
+                          else
+                            const SizedBox.shrink(),
+                          IconButton(
+                            icon: const Icon(Icons.close,
+                                size: 22, color: Colors.white),
+                            onPressed: onClose,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: AuthCompactValues.formPadding(context),
+                  Padding(
+                    padding: const EdgeInsets.all(24),
                     child: Form(
                       key: formKey,
                       child: Column(
@@ -77,8 +86,8 @@ class AuthFormWrapperTablet extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
