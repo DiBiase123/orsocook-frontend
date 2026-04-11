@@ -16,6 +16,7 @@ import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/navigation/go_router.dart';
 import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/utils/logger.dart';
+import 'package:orsocook/providers/theme_provider.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -100,9 +101,12 @@ class MyApp extends StatelessWidget {
             favoriteService: context.read<FavoriteService>(),
           ),
         ),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (context) => ThemeProvider(),
+        ),
       ],
-      child: Consumer<ActivityTracker>(
-        builder: (context, activityTracker, child) {
+      child: Consumer2<ActivityTracker, ThemeProvider>(
+        builder: (context, activityTracker, themeProvider, child) {
           return Listener(
             onPointerDown: (_) => activityTracker.reportUserActivity(),
             onPointerMove: (_) => activityTracker.reportUserActivity(),
@@ -110,6 +114,8 @@ class MyApp extends StatelessWidget {
             child: MaterialApp.router(
               title: 'OrsoCook',
               theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkHighContrastTheme,
+              themeMode: themeProvider.themeMode,
               routerConfig: goRouter,
               debugShowCheckedModeBanner: false,
               scrollBehavior: MyCustomScrollBehavior(),

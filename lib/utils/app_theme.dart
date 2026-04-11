@@ -61,6 +61,61 @@ class MaterialTheme {
     return theme(lightScheme());
   }
 
+  static ColorScheme darkHighContrastScheme() {
+    return const ColorScheme(
+      brightness: Brightness.dark,
+      primary: Color(0xfff6ecff),
+      surfaceTint: Color(0xffd2bcfd),
+      onPrimary: Color(0xff000000),
+      primaryContainer: Color(0xffceb8f9),
+      onPrimaryContainer: Color(0xff110031),
+      secondary: Color(0xffcffdba),
+      onSecondary: Color(0xff000000),
+      secondaryContainer: Color(0xffa3cf90),
+      onSecondaryContainer: Color(0xff010f00),
+      tertiary: Color(0xffe1f2ff),
+      onTertiary: Color(0xff000000),
+      tertiaryContainer: Color(0xff8bcbef),
+      onTertiaryContainer: Color(0xff000d15),
+      error: Color(0xffffece9),
+      onError: Color(0xff000000),
+      errorContainer: Color(0xffffaea4),
+      onErrorContainer: Color(0xff220001),
+      surface: Color(0xff141218),
+      onSurface: Color(0xffffffff),
+      onSurfaceVariant: Color(0xffffffff),
+      outline: Color(0xfff5edf9),
+      outlineVariant: Color(0xffc7c0cb),
+      shadow: Color(0xff000000),
+      scrim: Color(0xff000000),
+      inverseSurface: Color(0xffe7e0e8),
+      inversePrimary: Color(0xff503e76),
+      primaryFixed: Color(0xffeaddff),
+      onPrimaryFixed: Color(0xff000000),
+      primaryFixedDim: Color(0xffd2bcfd),
+      onPrimaryFixedVariant: Color(0xff17023c),
+      secondaryFixed: Color(0xffc2efae),
+      onSecondaryFixed: Color(0xff000000),
+      secondaryFixedDim: Color(0xffa7d394),
+      onSecondaryFixedVariant: Color(0xff011500),
+      tertiaryFixed: Color(0xffc3e8ff),
+      onTertiaryFixed: Color(0xff000000),
+      tertiaryFixedDim: Color(0xff8fcef3),
+      onTertiaryFixedVariant: Color(0xff00131d),
+      surfaceDim: Color(0xff141218),
+      surfaceBright: Color(0xff524f55),
+      surfaceContainerLowest: Color(0xff000000),
+      surfaceContainerLow: Color(0xff211f24),
+      surfaceContainer: Color(0xff322f35),
+      surfaceContainerHigh: Color(0xff3d3a40),
+      surfaceContainerHighest: Color(0xff49454c),
+    );
+  }
+
+  ThemeData darkHighContrast() {
+    return theme(darkHighContrastScheme());
+  }
+
   ThemeData theme(ColorScheme colorScheme) => ThemeData(
         useMaterial3: true,
         brightness: colorScheme.brightness,
@@ -78,6 +133,49 @@ class AppTheme {
   static ThemeData get lightTheme {
     final materialTheme = MaterialTheme(GoogleFonts.poppinsTextTheme());
     final theme = materialTheme.light();
+
+    return theme.copyWith(
+      scaffoldBackgroundColor: theme.colorScheme.surface,
+      appBarTheme: theme.appBarTheme.copyWith(
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        elevation: 1,
+        centerTitle: false,
+        titleTextStyle: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: theme.colorScheme.onPrimary,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: theme.colorScheme.primary,
+          foregroundColor: theme.colorScheme.onPrimary,
+          textStyle: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          elevation: 0,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: theme.colorScheme.primary,
+          textStyle: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  static ThemeData get darkHighContrastTheme {
+    final materialTheme = MaterialTheme(GoogleFonts.poppinsTextTheme());
+    final theme = materialTheme.darkHighContrast();
 
     return theme.copyWith(
       scaffoldBackgroundColor: theme.colorScheme.surface,

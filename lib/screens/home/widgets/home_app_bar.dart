@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/home/widgets/avatar_buttons.dart';
 import 'package:orsocook/screens/home/widgets/recipe_search_bar.dart';
+import 'package:orsocook/providers/theme_provider.dart';
 
 class HomeAppBar extends StatelessWidget {
   final VoidCallback onProfileTap;
@@ -24,6 +25,7 @@ class HomeAppBar extends StatelessWidget {
     final isDesktop = screenWidth >= 900;
     final isTablet = screenWidth >= 600 && screenWidth < 900;
     final colorScheme = Theme.of(context).colorScheme;
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     double logoSize;
     double avatarSize;
@@ -78,6 +80,8 @@ class HomeAppBar extends StatelessWidget {
                     SizedBox(width: gap),
                     _buildAddButton(iconSize),
                     SizedBox(width: gap * 0.5),
+                    _buildThemeToggleButton(iconSize, themeProvider),
+                    SizedBox(width: gap * 0.5),
                     _buildAvatar(avatarSize, iconSize),
                     SizedBox(width: gap * 0.5),
                   ],
@@ -94,6 +98,8 @@ class HomeAppBar extends StatelessWidget {
                           _buildTitle(titleSize),
                           const Spacer(),
                           _buildAddButton(iconSize),
+                          SizedBox(width: gap * 0.5),
+                          _buildThemeToggleButton(iconSize, themeProvider),
                           SizedBox(width: gap * 0.5),
                           _buildAvatar(avatarSize, iconSize),
                         ],
@@ -146,6 +152,20 @@ class HomeAppBar extends StatelessWidget {
       color: Colors.white,
       padding: EdgeInsets.zero,
       constraints: BoxConstraints(minWidth: size, minHeight: size),
+    );
+  }
+
+  Widget _buildThemeToggleButton(double size, ThemeProvider themeProvider) {
+    return IconButton(
+      icon: Icon(
+        themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+        size: size * 0.7,
+      ),
+      onPressed: () => themeProvider.toggleTheme(),
+      tooltip: themeProvider.isDarkMode ? 'Tema chiaro' : 'Tema scuro',
+      color: Colors.white,
+      padding: EdgeInsets.zero,
+      constraints: BoxConstraints(minWidth: size * 0.7, minHeight: size * 0.7),
     );
   }
 
