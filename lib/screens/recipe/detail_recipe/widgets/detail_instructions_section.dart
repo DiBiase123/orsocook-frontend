@@ -9,6 +9,8 @@ class DetailInstructionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -32,14 +34,14 @@ class DetailInstructionsSection extends StatelessWidget {
                       width: 30,
                       height: 30,
                       decoration: BoxDecoration(
-                        color: Colors.orange,
+                        color: colorScheme.tertiary,
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Center(
                         child: Text(
                           '${instruction.step}',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: colorScheme.onTertiary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

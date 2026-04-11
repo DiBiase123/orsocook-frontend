@@ -35,18 +35,9 @@ class DetailConstants {
   static const double bodyFontSize = 16.0;
   static const double captionFontSize = 14.0;
 
-  // Colori
-  static const Color primaryColor = Colors.orange;
-  static const Color shadowColor = Color.fromRGBO(0, 0, 0, 0.1);
-  static const Color greyColor = Colors.grey;
-  static const Color lightGreyColor = Color(0xFFF5F5F5);
-  static const Color chipBackground = Color(0xFFFFF3E0); // orange[50]
-  static const Color chipBorder = Color(0xFFFFB74D); // orange[300]
-  static const Color chipText = Color(0xFFE65100); // orange[900]
-
   // Shadow
   static const BoxShadow defaultShadow = BoxShadow(
-    color: shadowColor,
+    color: Color.fromRGBO(0, 0, 0, 0.1),
     blurRadius: 6,
     offset: Offset(0, 3),
   );
@@ -68,7 +59,7 @@ class DetailConstants {
 
   static const TextStyle captionStyle = TextStyle(
     fontSize: captionFontSize,
-    color: greyColor,
+    color: Colors.grey,
   );
 
   static const TextStyle boldCaptionStyle = TextStyle(

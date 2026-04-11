@@ -192,6 +192,7 @@ class _LoginModalContentState extends State<LoginModalContent> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final children = [
       const LoginLogo(),
@@ -222,7 +223,7 @@ class _LoginModalContentState extends State<LoginModalContent> {
         onClose: widget.onClose,
         showCloseButton: widget.showCloseButton,
         title: 'Accedi',
-        headerColor: const Color(0xFF7E69AB),
+        headerColor: colorScheme.primary,
         children: children,
       );
     }

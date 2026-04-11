@@ -9,6 +9,8 @@ class DetailImageSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       margin: EdgeInsets.only(
         bottom: ResponsiveValues.gapMedium(context),
@@ -18,7 +20,7 @@ class DetailImageSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: const Color.fromRGBO(0, 0, 0, 0.1),
+            color: colorScheme.shadow.withAlpha(26),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -32,7 +34,7 @@ class DetailImageSection extends StatelessWidget {
             if (loadingProgress == null) return child;
             return Container(
               height: 200,
-              color: Colors.grey[100],
+              color: colorScheme.surfaceContainerHighest,
               child: Center(
                 child: CircularProgressIndicator(
                   value: loadingProgress.expectedTotalBytes != null
@@ -46,19 +48,19 @@ class DetailImageSection extends StatelessWidget {
           errorBuilder: (context, error, stackTrace) {
             return Container(
               height: 200,
-              color: Colors.grey[200],
-              child: const Column(
+              color: colorScheme.surfaceContainerHighest,
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.broken_image_outlined,
                     size: 50,
-                    color: Colors.grey,
+                    color: colorScheme.onSurfaceVariant,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'Immagine non disponibile',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),

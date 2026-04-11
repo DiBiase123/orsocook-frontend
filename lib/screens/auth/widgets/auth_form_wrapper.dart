@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/utils/device_classifier.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_desktop.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_tablet.dart';
@@ -21,19 +20,21 @@ class AuthFormWrapper extends StatelessWidget {
     this.title,
   });
 
-  Color _getHeaderColor() {
+  Color _getHeaderColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (title == 'Accedi') {
-      return AppColors.primary;
+      return colorScheme.primary;
     }
     if (title == 'Registrati') {
-      return Colors.deepOrange.shade200;
+      return colorScheme.tertiary;
     }
-    return Colors.deepOrange;
+    return colorScheme.error;
   }
 
   @override
   Widget build(BuildContext context) {
-    final headerColor = _getHeaderColor();
+    final headerColor = _getHeaderColor(context);
     final deviceType = DeviceClassifier.getDeviceType(context);
 
     switch (deviceType) {

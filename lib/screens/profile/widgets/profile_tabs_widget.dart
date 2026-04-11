@@ -40,8 +40,8 @@ class _ProfileTabsState extends State<ProfileTabs>
           child: TabBar(
             controller: _tabController,
             tabs: _tabTitles.map((title) => Tab(text: title)).toList(),
-            indicatorColor: Colors.orange,
-            labelColor: Colors.orange,
+            indicatorColor: colorScheme.tertiary,
+            labelColor: colorScheme.tertiary,
             unselectedLabelColor: Colors.grey,
             labelStyle: const TextStyle(fontWeight: FontWeight.w600),
             onTap: controller.selectTab,
@@ -120,6 +120,8 @@ class _EmptyProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: ResponsiveValues.screenPadding(context),
       child: Column(
@@ -127,9 +129,12 @@ class _EmptyProfile extends StatelessWidget {
         children: [
           Icon(Icons.person_outline, size: 64, color: Colors.grey[400]),
           SizedBox(height: ResponsiveValues.gapMedium(context)),
-          const Text(
+          Text(
             'Nessun profilo caricato',
-            style: TextStyle(fontSize: 18, color: Color(0xFF757575)),
+            style: TextStyle(
+              fontSize: 18,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           SizedBox(height: ResponsiveValues.gapMedium(context)),
           ElevatedButton(

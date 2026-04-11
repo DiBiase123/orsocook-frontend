@@ -23,6 +23,7 @@ class HomeAppBar extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth >= 900;
     final isTablet = screenWidth >= 600 && screenWidth < 900;
+    final colorScheme = Theme.of(context).colorScheme;
 
     double logoSize;
     double avatarSize;
@@ -55,7 +56,7 @@ class HomeAppBar extends StatelessWidget {
     }
 
     return Container(
-      color: const Color(0xFF6750A4),
+      color: colorScheme.primary,
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: gap, vertical: vPadding),

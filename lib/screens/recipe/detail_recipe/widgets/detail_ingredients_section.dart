@@ -27,6 +27,8 @@ class DetailIngredientsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -43,7 +45,11 @@ class DetailIngredientsSection extends StatelessWidget {
                   EdgeInsets.only(bottom: ResponsiveValues.gapSmall(context)),
               child: Row(
                 children: [
-                  const Icon(Icons.circle, size: 8),
+                  Icon(
+                    Icons.circle,
+                    size: 8,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

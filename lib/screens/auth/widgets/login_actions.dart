@@ -7,7 +7,7 @@ class LoginActions extends StatelessWidget {
   final Function()? onRegisterPressed;
   final Function()? onContinueWithoutAuth;
   final bool showSocialLogin;
-  final bool isCompact; // 👈 NUOVO: per modalità compatta
+  final bool isCompact;
 
   const LoginActions({
     super.key,
@@ -16,16 +16,18 @@ class LoginActions extends StatelessWidget {
     this.onRegisterPressed,
     this.onContinueWithoutAuth,
     this.showSocialLogin = true,
-    this.isCompact = false, // 👈 default false
+    this.isCompact = false,
   });
 
   Widget _buildLoginButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return ElevatedButton(
       onPressed: isLoading ? null : onLoginPressed,
       style: ElevatedButton.styleFrom(
         minimumSize:
             Size(double.infinity, ResponsiveValues.buttonHeight(context)),
-        backgroundColor: const Color(0xFF6750A4),
+        backgroundColor: colorScheme.primary,
       ),
       child: isLoading
           ? const SizedBox(
@@ -47,6 +49,8 @@ class LoginActions extends StatelessWidget {
   }
 
   Widget _buildRegisterSection(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
@@ -62,11 +66,11 @@ class LoginActions extends StatelessWidget {
               const SizedBox(height: 4),
               TextButton(
                 onPressed: isLoading ? null : onRegisterPressed,
-                child: const Text(
+                child: Text(
                   'Registrati',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepOrange,
+                    color: colorScheme.tertiary,
                   ),
                 ),
               ),
@@ -86,11 +90,11 @@ class LoginActions extends StatelessWidget {
             ),
             TextButton(
               onPressed: isLoading ? null : onRegisterPressed,
-              child: const Text(
+              child: Text(
                 'Registrati',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepOrange,
+                  color: colorScheme.tertiary,
                 ),
               ),
             ),
@@ -102,19 +106,17 @@ class LoginActions extends StatelessWidget {
 
   Widget _buildSocialLogin() {
     if (!showSocialLogin) return const SizedBox.shrink();
-
-    // In modalità compatta, nascondi la sezione social
     if (isCompact) return const SizedBox.shrink();
 
     return Column(
       children: [
         const Divider(),
-        const SizedBox(height: 12), // ridotto da 16
+        const SizedBox(height: 12),
         const Text(
           'Oppure accedi con',
           style: TextStyle(color: Colors.grey),
         ),
-        const SizedBox(height: 12), // ridotto da 16
+        const SizedBox(height: 12),
         LayoutBuilder(
           builder: (context, constraints) {
             final availableWidth = constraints.maxWidth;
@@ -169,11 +171,11 @@ class LoginActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gapAfterButton = isCompact
-        ? ResponsiveValues.gapMedium(context) // ridotto
+        ? ResponsiveValues.gapMedium(context)
         : ResponsiveValues.gapLarge(context);
 
     final gapAfterRegister = isCompact
-        ? ResponsiveValues.gapSmall(context) // ridotto
+        ? ResponsiveValues.gapSmall(context)
         : ResponsiveValues.gapMedium(context);
 
     return Column(
@@ -181,7 +183,7 @@ class LoginActions extends StatelessWidget {
         _buildLoginButton(context),
         SizedBox(height: gapAfterButton),
         _buildRegisterSection(context),
-        if (!isCompact) _buildSocialLogin(), // solo in modalità normale
+        if (!isCompact) _buildSocialLogin(),
         if (onContinueWithoutAuth != null) ...[
           SizedBox(height: gapAfterRegister),
           TextButton(

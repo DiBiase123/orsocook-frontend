@@ -13,6 +13,8 @@ class DetailTagsSection extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,10 +38,10 @@ class DetailTagsSection extends StatelessWidget {
                   fontSize: ResponsiveValues.bodySize(context),
                 ),
               ),
-              backgroundColor: Colors.orange[50],
-              side: BorderSide(color: Colors.orange[300]!),
+              backgroundColor: colorScheme.tertiaryContainer,
+              side: BorderSide(color: colorScheme.tertiary),
               labelStyle: TextStyle(
-                color: Colors.orange[900],
+                color: colorScheme.onTertiaryContainer,
                 fontWeight: FontWeight.w600,
               ),
               shape: RoundedRectangleBorder(

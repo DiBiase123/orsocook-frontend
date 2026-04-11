@@ -33,9 +33,7 @@ class MyCustomScrollBehavior extends MaterialScrollBehavior {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Imposta l'icona della finestra per desktop (Windows/Linux/macOS)
   if (!kIsWeb) {
-    // Imposta il titolo e l'icona della finestra
     SystemChrome.setApplicationSwitcherDescription(
       const ApplicationSwitcherDescription(
         label: 'OrsoCook',
@@ -44,12 +42,10 @@ Future<void> main() async {
     );
   }
 
-  // Configura logger in base all'ambiente
   if (kReleaseMode) {
     AppLogger.setProductionMode();
   }
 
-  // Inizializza Auth Service
   final authService = AuthService();
   await authService.initialize();
 

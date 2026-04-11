@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:orsocook/utils/app_theme.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/services/comment_service.dart';
 import 'package:orsocook/utils/responsive_values.dart';
@@ -26,15 +25,14 @@ class CommentInputWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = AppColors();
 
     return Consumer2<AuthService, CommentService>(
       builder: (context, authService, commentService, child) {
         if (!authService.isLoggedIn) {
-          return _buildLoginPrompt(context, theme, colors);
+          return _buildLoginPrompt(context, theme);
         }
 
-        return _buildCommentInput(context, theme, colors, commentService);
+        return _buildCommentInput(context, theme, commentService);
       },
     );
   }
@@ -42,7 +40,6 @@ class CommentInputWidget extends StatelessWidget {
   Widget _buildCommentInput(
     BuildContext context,
     ThemeData theme,
-    AppColors colors,
     CommentService commentService,
   ) {
     final hasFocus = focusNode?.hasFocus ?? false;
@@ -91,7 +88,7 @@ class CommentInputWidget extends StatelessWidget {
               SizedBox(height: ResponsiveValues.gapMedium(context)),
               _buildCommentTextField(context, theme, hasFocus),
               SizedBox(height: ResponsiveValues.gapMedium(context)),
-              _buildFooter(context, theme, colors, commentService),
+              _buildFooter(context, theme, commentService),
             ],
           ),
         ),
@@ -165,7 +162,6 @@ class CommentInputWidget extends StatelessWidget {
   Widget _buildFooter(
     BuildContext context,
     ThemeData theme,
-    AppColors colors,
     CommentService commentService,
   ) {
     final textLength = commentController.text.length;
@@ -239,7 +235,6 @@ class CommentInputWidget extends StatelessWidget {
   Widget _buildLoginPrompt(
     BuildContext context,
     ThemeData theme,
-    AppColors colors,
   ) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,

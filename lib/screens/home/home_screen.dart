@@ -157,6 +157,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return ChangeNotifierProvider<HomeViewModel>.value(
       value: _viewModel,
       child: Consumer2<HomeViewModel, AuthService>(
@@ -235,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
               slivers: [
                 SliverAppBar(
                   automaticallyImplyLeading: false,
-                  backgroundColor: const Color(0xFF6750A4),
+                  backgroundColor: colorScheme.primary,
                   elevation: 0,
                   floating: true,
                   snap: false,
