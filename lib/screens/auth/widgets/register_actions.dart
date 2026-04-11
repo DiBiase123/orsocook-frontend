@@ -16,12 +16,14 @@ class RegisterActions extends StatelessWidget {
   });
 
   Widget _buildRegisterButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return ElevatedButton(
       onPressed: isLoading ? null : onRegisterPressed,
       style: ElevatedButton.styleFrom(
         minimumSize:
             Size(double.infinity, ResponsiveValues.buttonHeight(context)),
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: colorScheme.tertiary,
       ),
       child: isLoading
           ? const SizedBox(
@@ -39,7 +41,9 @@ class RegisterActions extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginLink() {
+  Widget _buildLoginLink(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -49,11 +53,11 @@ class RegisterActions extends StatelessWidget {
         ),
         TextButton(
           onPressed: isLoading ? null : onLoginPressed,
-          child: const Text(
+          child: Text(
             'Accedi',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.deepOrange,
+              color: colorScheme.tertiary,
             ),
           ),
         ),
@@ -101,7 +105,7 @@ class RegisterActions extends StatelessWidget {
       children: [
         _buildRegisterButton(context),
         SizedBox(height: ResponsiveValues.gapLarge(context)),
-        _buildLoginLink(),
+        _buildLoginLink(context),
         _buildFeaturesSection(),
       ],
     );
