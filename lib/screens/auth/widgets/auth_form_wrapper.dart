@@ -29,6 +29,9 @@ class AuthFormWrapper extends StatelessWidget {
     if (title == 'Registrati') {
       return colorScheme.tertiary;
     }
+    if (title == 'Password dimenticata') {
+      return Colors.orange;
+    }
     return colorScheme.error;
   }
 

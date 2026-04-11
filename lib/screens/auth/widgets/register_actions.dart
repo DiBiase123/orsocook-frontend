@@ -57,7 +57,7 @@ class RegisterActions extends StatelessWidget {
             'Accedi',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: colorScheme.tertiary,
+              color: colorScheme.primary,
             ),
           ),
         ),

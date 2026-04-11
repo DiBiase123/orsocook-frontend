@@ -51,56 +51,29 @@ class LoginActions extends StatelessWidget {
   Widget _buildRegisterSection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth;
-
-        if (availableWidth < 280) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Non hai un account?',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 4),
-              TextButton(
-                onPressed: isLoading ? null : onRegisterPressed,
-                child: Text(
-                  'Registrati',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.tertiary,
-                  ),
-                ),
-              ),
-            ],
-          );
-        }
-
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Flexible(
-              child: Text(
-                'Non hai un account? ',
-                style: TextStyle(color: Colors.grey),
-                overflow: TextOverflow.ellipsis,
-              ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'Non hai un account? ',
+          style: TextStyle(color: Colors.grey),
+        ),
+        TextButton(
+          onPressed: isLoading ? null : onRegisterPressed,
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            'Registrati',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.tertiary,
             ),
-            TextButton(
-              onPressed: isLoading ? null : onRegisterPressed,
-              child: Text(
-                'Registrati',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.tertiary,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 

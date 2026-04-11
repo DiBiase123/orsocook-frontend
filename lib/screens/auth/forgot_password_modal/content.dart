@@ -109,6 +109,7 @@ class _ForgotPasswordModalContentState
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final children = [
       _buildLogo(),
@@ -120,7 +121,7 @@ class _ForgotPasswordModalContentState
       SizedBox(height: ResponsiveValues.gapLarge(context)),
       _buildSubmitButton(context),
       SizedBox(height: ResponsiveValues.gapLarge(context)),
-      _buildLoginLink(),
+      _buildLoginLink(colorScheme),
       SizedBox(height: ResponsiveValues.gapLarge(context)),
       const Divider(),
       SizedBox(height: ResponsiveValues.gapMedium(context)),
@@ -142,7 +143,7 @@ class _ForgotPasswordModalContentState
         onClose: widget.onClose,
         showCloseButton: widget.showCloseButton,
         title: 'Password dimenticata',
-        headerColor: Colors.deepOrange,
+        headerColor: Colors.orange,
         children: children,
       );
     }
@@ -159,14 +160,14 @@ class _ForgotPasswordModalContentState
   Widget _buildLogo() => Column(
         children: [
           Icon(Icons.lock_reset,
-              size: 80, color: Theme.of(context).primaryColor),
+              size: 80, color: Theme.of(context).colorScheme.primary),
           SizedBox(height: ResponsiveValues.gapMedium(context)),
           const Text(
             'Password dimenticata?',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.deepOrange,
+              color: Colors.orange,
             ),
           ),
           SizedBox(height: ResponsiveValues.gapSmall(context)),
@@ -240,7 +241,7 @@ class _ForgotPasswordModalContentState
         style: ElevatedButton.styleFrom(
           minimumSize:
               Size(double.infinity, ResponsiveValues.buttonHeight(context)),
-          backgroundColor: Colors.deepOrange,
+          backgroundColor: Colors.orange,
         ),
         child: _isLoading
             ? const SizedBox(
@@ -255,16 +256,21 @@ class _ForgotPasswordModalContentState
               ),
       );
 
-  Widget _buildLoginLink() => Row(
+  Widget _buildLoginLink(ColorScheme colorScheme) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('Torna al ', style: TextStyle(color: Colors.grey)),
+          const Text('Torna a ', style: TextStyle(color: Colors.grey)),
           TextButton(
             onPressed: _isLoading ? null : _navigateToLogin,
-            child: const Text(
-              'Login',
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              'Accedi',
               style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.deepOrange),
+                  fontWeight: FontWeight.bold, color: colorScheme.primary),
             ),
           ),
         ],
@@ -274,7 +280,7 @@ class _ForgotPasswordModalContentState
         padding: const EdgeInsets.symmetric(vertical: 6.0),
         child: Row(
           children: [
-            const Icon(Icons.arrow_right, color: Colors.deepOrange, size: 20),
+            const Icon(Icons.arrow_right, color: Colors.orange, size: 20),
             const SizedBox(width: 8),
             Expanded(child: Text(text)),
           ],
