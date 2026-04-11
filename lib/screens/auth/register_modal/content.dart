@@ -6,7 +6,6 @@ import 'package:orsocook/screens/auth/widgets/register_form_fields.dart';
 import 'package:orsocook/screens/auth/widgets/register_actions.dart';
 import 'package:orsocook/screens/auth/widgets/terms_checkbox.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
 import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
 
 class RegisterModalContent extends StatefulWidget {
@@ -195,49 +194,6 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
-
-    if (isMobile) {
-      return AuthFormWrapperMobile(
-        formKey: _formKey,
-        onClose: widget.onClose,
-        showCloseButton: widget.showCloseButton,
-        title: 'Registrati',
-        headerColor: Colors.deepOrange.shade200,
-        children: [
-          const RegisterLogo(),
-          const SizedBox(height: 24),
-          RegisterFormFields(
-            usernameController: _usernameController,
-            emailController: _emailController,
-            passwordController: _passwordController,
-            confirmPasswordController: _confirmPasswordController,
-            errorMessage: _errorMessage,
-            onUsernameChanged: (_) => _clearErrorOnChange(),
-            onEmailChanged: (_) => _clearErrorOnChange(),
-            onPasswordChanged: (_) => _clearErrorOnChange(),
-            onConfirmPasswordChanged: (_) => _clearErrorOnChange(),
-            isLoading: _isLoading,
-            validateForm: () => _formKey.currentState?.validate(),
-          ),
-          const SizedBox(height: 16),
-          TermsCheckbox(
-            value: _acceptTerms,
-            onChanged: (value) => setState(() => _acceptTerms = value),
-            isLoading: _isLoading,
-          ),
-          const SizedBox(height: 24),
-          RegisterActions(
-            isLoading: _isLoading,
-            onRegisterPressed: _submitRegistration,
-            onLoginPressed: _isLoading ? null : _navigateToLogin,
-            showFeatures: true,
-          ),
-          const SizedBox(height: 16),
-        ],
-      );
-    }
-
     return AuthFormWrapper(
       formKey: _formKey,
       onClose: widget.onClose,

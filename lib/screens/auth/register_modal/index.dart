@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/auth/register_modal/style.dart';
 import 'package:orsocook/screens/auth/register_modal/content.dart';
 import 'package:orsocook/utils/device_classifier.dart';
 
@@ -36,57 +34,36 @@ class RegisterModal extends StatelessWidget {
             ),
           ],
         ),
-        body: Center(
-          child: SingleChildScrollView(
-            child: RegisterModalContent(
-              onClose: closeCallback,
-              showCloseButton: false,
-              onNavigateToLogin: onNavigateToLogin,
-            ),
-          ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: Center(
+                  child: RegisterModalContent(
+                    onClose: closeCallback,
+                    showCloseButton: false,
+                    onNavigateToLogin: onNavigateToLogin,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-            child: Container(
-              color: Colors.black.withAlpha(60),
-              width: double.infinity,
-              height: double.infinity,
-            ),
-          ),
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxHeight: double.infinity,
-              ),
-              child: Container(
-                width: RegisterModalStyle.cardWidth,
-                constraints: RegisterModalStyle.constraints,
-                margin: const EdgeInsets.symmetric(vertical: 40),
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(30),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: RegisterModalContent(
-                  onClose: closeCallback,
-                  showCloseButton: true,
-                  onNavigateToLogin: onNavigateToLogin,
-                ),
-              ),
-            ),
-          ),
-        ],
+    // Tablet e Desktop
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: RegisterModalContent(
+          onClose: closeCallback,
+          showCloseButton: true,
+          onNavigateToLogin: onNavigateToLogin,
+        ),
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/auth/forgot_password_modal/style.dart';
 import 'package:orsocook/screens/auth/forgot_password_modal/content.dart';
 import 'package:orsocook/utils/device_classifier.dart';
 
@@ -28,41 +27,35 @@ class ForgotPasswordModal extends StatelessWidget {
             onPressed: onNavigateToLogin ?? closeCallback,
           ),
         ),
-        body: Center(
-          child: SingleChildScrollView(
-            child: ForgotPasswordModalContent(
-              onClose: closeCallback,
-              showCloseButton: false,
-              onNavigateToLogin: onNavigateToLogin,
-            ),
-          ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: Center(
+                  child: ForgotPasswordModalContent(
+                    onClose: closeCallback,
+                    showCloseButton: false,
+                    onNavigateToLogin: onNavigateToLogin,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       );
     }
 
+    // Tablet e Desktop
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxHeight: double.infinity,
-        ),
-        child: Container(
-          width: ForgotPasswordModalStyle.cardWidth,
-          constraints: ForgotPasswordModalStyle.constraints,
-          margin: const EdgeInsets.symmetric(vertical: 40),
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(30),
-                blurRadius: 30,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: ForgotPasswordModalContent(
-            onClose: closeCallback,
-            showCloseButton: true,
-            onNavigateToLogin: onNavigateToLogin,
-          ),
+      child: Material(
+        color: Colors.transparent,
+        child: ForgotPasswordModalContent(
+          onClose: closeCallback,
+          showCloseButton: true,
+          onNavigateToLogin: onNavigateToLogin,
         ),
       ),
     );

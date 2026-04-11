@@ -141,7 +141,7 @@ class _ForgotPasswordModalContentState
         formKey: _formKey,
         onClose: widget.onClose,
         showCloseButton: widget.showCloseButton,
-        title: null,
+        title: 'Password dimenticata',
         headerColor: Colors.deepOrange,
         children: children,
       );
@@ -151,6 +151,7 @@ class _ForgotPasswordModalContentState
       formKey: _formKey,
       onClose: widget.onClose,
       showCloseButton: widget.showCloseButton,
+      title: 'Password dimenticata',
       children: children,
     );
   }
