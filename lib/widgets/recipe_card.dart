@@ -24,12 +24,13 @@ class RecipeCard extends StatelessWidget {
     final favoriteService =
         Provider.of<FavoriteService>(context, listen: false);
     favoriteService.registerRecipeTitle(recipe.id, recipe.title);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return _HoverCard(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -42,7 +43,7 @@ class RecipeCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildImageSection(),
+            _buildImageSection(context),
             _buildContentSection(context),
           ],
         ),
@@ -50,7 +51,9 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImageSection() {
+  Widget _buildImageSection(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Stack(
       children: [
         ClipRRect(
@@ -69,7 +72,7 @@ class RecipeCard extends StatelessWidget {
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Container(
-                        color: Colors.grey[200],
+                        color: colorScheme.surfaceContainerHighest,
                         child: Center(
                           child: CircularProgressIndicator(
                             value: loadingProgress.expectedTotalBytes != null
@@ -82,21 +85,21 @@ class RecipeCard extends StatelessWidget {
                     },
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: Colors.grey[200],
-                        child: const Icon(
+                        color: colorScheme.surfaceContainerHighest,
+                        child: Icon(
                           Icons.restaurant,
                           size: 48,
-                          color: Colors.grey,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       );
                     },
                   )
                 : Container(
-                    color: Colors.grey[200],
-                    child: const Icon(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: Icon(
                       Icons.restaurant,
                       size: 48,
-                      color: Colors.grey,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
           ),
@@ -130,47 +133,60 @@ class RecipeCard extends StatelessWidget {
         Positioned(
           top: 12,
           right: 12,
-          child: Row(
-            children: [
-              _buildActionButton(
-                child: LikeButton(
-                  recipeId: recipe.id,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 8),
-              _buildActionButton(
-                child: FavoriteButton(
-                  recipeId: recipe.id,
-                  recipe: recipe,
-                  size: 18,
-                ),
+          child: _buildActionButtons(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(40),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
               ),
             ],
+          ),
+          child: LikeButton(
+            recipeId: recipe.id,
+            size: 18,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(40),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: FavoriteButton(
+            recipeId: recipe.id,
+            recipe: recipe,
+            size: 18,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildActionButton({required Widget child}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(40),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
   Widget _buildContentSection(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -178,10 +194,11 @@ class RecipeCard extends StatelessWidget {
         children: [
           Text(
             recipe.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               height: 1.3,
+              color: colorScheme.onSurface,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -198,7 +215,7 @@ class RecipeCard extends StatelessWidget {
               _buildInfoChip(
                 icon: Icons.people,
                 label: '${recipe.servings}',
-                color: Colors.grey[600]!,
+                color: colorScheme.onSurfaceVariant,
               ),
             ],
           ),
@@ -221,7 +238,7 @@ class RecipeCard extends StatelessWidget {
                     recipe.author.displayName ?? recipe.author.username,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: colorScheme.onSurfaceVariant,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

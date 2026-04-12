@@ -18,6 +18,7 @@ class CategoriesScrollBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Consumer<CategoryService>(
       builder: (context, categoryService, child) {
@@ -29,7 +30,8 @@ class CategoriesScrollBar extends StatelessWidget {
 
         return Container(
           width: double.infinity,
-          color: Colors.white,
+          color:
+              colorScheme.surfaceContainer, // grigio Spotify (#1E1E1E in dark)
           padding: EdgeInsets.symmetric(
               vertical: ResponsiveValues.gapMedium(context)),
           child: Wrap(
@@ -73,6 +75,8 @@ class CategoriesScrollBar extends StatelessWidget {
     required ThemeData theme,
     String? slug,
   }) {
+    final colorScheme = theme.colorScheme;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       child: ActionChip(
@@ -95,7 +99,7 @@ class CategoriesScrollBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Colors.white.withAlpha(50)
-                      : theme.colorScheme.primary.withAlpha(30),
+                      : colorScheme.primary.withAlpha(30),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -103,8 +107,7 @@ class CategoriesScrollBar extends StatelessWidget {
                   style: TextStyle(
                     fontSize: isSelected ? 12 : 10,
                     fontWeight: FontWeight.w500,
-                    color:
-                        isSelected ? Colors.white : theme.colorScheme.primary,
+                    color: isSelected ? Colors.white : colorScheme.primary,
                   ),
                 ),
               ),
@@ -118,14 +121,13 @@ class CategoriesScrollBar extends StatelessWidget {
             context.push('/category/$slug');
           }
         },
-        backgroundColor:
-            isSelected ? theme.colorScheme.primary : Colors.transparent,
+        backgroundColor: isSelected ? colorScheme.primary : Colors.transparent,
         side: BorderSide(
-          color: isSelected ? Colors.transparent : Colors.grey[300]!,
+          color: isSelected ? Colors.transparent : colorScheme.outlineVariant,
           width: 1,
         ),
         labelStyle: TextStyle(
-          color: isSelected ? Colors.white : theme.colorScheme.primary,
+          color: isSelected ? Colors.white : colorScheme.primary,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

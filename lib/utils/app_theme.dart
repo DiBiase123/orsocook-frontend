@@ -6,20 +6,20 @@ class MaterialTheme {
 
   const MaterialTheme(this.textTheme);
 
-  // ==================== LIGHT THEME (Standard Contrast) ====================
+  // ==================== LIGHT THEME ====================
   static ColorScheme lightScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
-      primary: Color(0xff7E69AB), // viola
+      primary: Color(0xff7E69AB),
       surfaceTint: Color(0xff7E69AB),
       onPrimary: Color(0xffffffff),
       primaryContainer: Color(0xffeaddff),
       onPrimaryContainer: Color(0xff2e1a56),
-      secondary: Color(0xff416834), // verde
+      secondary: Color(0xff416834),
       onSecondary: Color(0xffffffff),
       secondaryContainer: Color(0xffc2efae),
       onSecondaryContainer: Color(0xff0b2b02),
-      tertiary: Color(0xff1b6585), // azzurro
+      tertiary: Color(0xff1b6585),
       onTertiary: Color(0xffffffff),
       tertiaryContainer: Color(0xffc3e8ff),
       onTertiaryContainer: Color(0xff001e2c),
@@ -58,8 +58,8 @@ class MaterialTheme {
     );
   }
 
-  // ==================== DARK THEME (High Contrast) ====================
-  static ColorScheme darkHighContrastScheme() {
+  // ==================== DARK THEME (Spotify style) ====================
+  static ColorScheme darkScheme() {
     return const ColorScheme(
       brightness: Brightness.dark,
       primary: Color(0xff1DB954), // verde Spotify
@@ -67,11 +67,11 @@ class MaterialTheme {
       onPrimary: Color(0xff000000),
       primaryContainer: Color(0xff2e8e3e),
       onPrimaryContainer: Color(0xff000000),
-      secondary: Color(0xff7E69AB), // viola (tuo primary light)
+      secondary: Color(0xff7E69AB), // viola
       onSecondary: Color(0xff000000),
       secondaryContainer: Color(0xff9a87c4),
       onSecondaryContainer: Color(0xff000000),
-      tertiary: Color(0xff1ED760), // verde hover Spotify
+      tertiary: Color(0xff1ED760), // verde hover
       onTertiary: Color(0xff000000),
       tertiaryContainer: Color(0xff0f9a3a),
       onTertiaryContainer: Color(0xff000000),
@@ -79,11 +79,11 @@ class MaterialTheme {
       onError: Color(0xff000000),
       errorContainer: Color(0xffffaea4),
       onErrorContainer: Color(0xff000000),
-      surface: Color(0xff121212), // sfondo principale dark
+      surface: Color(0xff121212), // sfondo principale nero
       onSurface: Color(0xffffffff),
-      onSurfaceVariant: Color(0xffffffff),
-      outline: Color(0xffc7c0cb),
-      outlineVariant: Color(0xff49454e),
+      onSurfaceVariant: Color(0xffb3b3b3),
+      outline: Color(0xff404040),
+      outlineVariant: Color(0xff2a2a2a),
       shadow: Color(0xff000000),
       scrim: Color(0xff000000),
       inverseSurface: Color(0xffe7e0e8),
@@ -103,10 +103,10 @@ class MaterialTheme {
       surfaceDim: Color(0xff121212),
       surfaceBright: Color(0xff3b383e),
       surfaceContainerLowest: Color(0xff0a0a0a),
-      surfaceContainerLow: Color(0xff1d1b20),
-      surfaceContainer: Color(0xff2b292f),
-      surfaceContainerHigh: Color(0xff36343a),
-      surfaceContainerHighest: Color(0xff49454c),
+      surfaceContainerLow: Color(0xff1a1a1a),
+      surfaceContainer: Color(0xff1E1E1E), // sfondo sezione categorie
+      surfaceContainerHigh: Color(0xff2A2A2A), // sfondo card
+      surfaceContainerHighest: Color(0xff333333),
     );
   }
 
@@ -114,8 +114,8 @@ class MaterialTheme {
     return theme(lightScheme());
   }
 
-  ThemeData darkHighContrast() {
-    return theme(darkHighContrastScheme());
+  ThemeData dark() {
+    return theme(darkScheme());
   }
 
   ThemeData theme(ColorScheme colorScheme) => ThemeData(
@@ -132,7 +132,6 @@ class MaterialTheme {
 }
 
 class AppTheme {
-  // ==================== LIGHT THEME ====================
   static ThemeData get lightTheme {
     final materialTheme = MaterialTheme(GoogleFonts.poppinsTextTheme());
     final theme = materialTheme.light();
@@ -194,8 +193,7 @@ class AppTheme {
             GoogleFonts.openSans(color: theme.colorScheme.onSurfaceVariant),
       ),
       cardTheme: CardThemeData(
-        // invece di CardTheme
-        color: theme.colorScheme.surface,
+        color: theme.colorScheme.surfaceContainerHigh,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -209,10 +207,9 @@ class AppTheme {
     );
   }
 
-  // ==================== DARK THEME ====================
   static ThemeData get darkTheme {
     final materialTheme = MaterialTheme(GoogleFonts.poppinsTextTheme());
-    final theme = materialTheme.darkHighContrast();
+    final theme = materialTheme.dark();
 
     return theme.copyWith(
       scaffoldBackgroundColor: theme.colorScheme.surface,
@@ -271,8 +268,7 @@ class AppTheme {
             GoogleFonts.openSans(color: theme.colorScheme.onSurfaceVariant),
       ),
       cardTheme: CardThemeData(
-        // invece di CardTheme
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: theme.colorScheme.surfaceContainerHigh,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),

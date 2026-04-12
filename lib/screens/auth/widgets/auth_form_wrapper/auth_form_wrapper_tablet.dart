@@ -20,6 +20,8 @@ class AuthFormWrapperTablet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Material(
         color: Colors.transparent,
@@ -27,7 +29,7 @@ class AuthFormWrapperTablet extends StatelessWidget {
           width: 500,
           margin: const EdgeInsets.symmetric(vertical: 30),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -40,7 +42,7 @@ class AuthFormWrapperTablet extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: Material(
-              color: Colors.white,
+              color: colorScheme.surface,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

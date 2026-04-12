@@ -53,6 +53,11 @@ class RegisterActions extends StatelessWidget {
         ),
         TextButton(
           onPressed: isLoading ? null : onLoginPressed,
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
           child: Text(
             'Accedi',
             style: TextStyle(

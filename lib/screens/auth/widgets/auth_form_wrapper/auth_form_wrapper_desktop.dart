@@ -20,6 +20,8 @@ class AuthFormWrapperDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Material(
         color: Colors.transparent,
@@ -27,7 +29,7 @@ class AuthFormWrapperDesktop extends StatelessWidget {
           width: 520,
           margin: const EdgeInsets.symmetric(vertical: 40),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(

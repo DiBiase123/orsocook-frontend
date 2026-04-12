@@ -20,6 +20,8 @@ class AuthFormWrapperMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -56,7 +58,7 @@ class AuthFormWrapperMobile extends StatelessWidget {
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           width: double.infinity,
-          color: Colors.white,
+          color: colorScheme.surface,
           padding: const EdgeInsets.all(24),
           child: Form(
             key: formKey,
