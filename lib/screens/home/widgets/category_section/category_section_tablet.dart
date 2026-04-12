@@ -25,6 +25,7 @@ class CategorySectionTablet extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardWidth = 240.0;
     final cardHeight = 300.0;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       margin: EdgeInsets.symmetric(
@@ -32,7 +33,7 @@ class CategorySectionTablet extends StatelessWidget {
         vertical: ResponsiveValues.gapMedium(context),
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(

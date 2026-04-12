@@ -25,10 +25,11 @@ class CategorySectionMobile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardWidth = 200.0;
     final cardHeight = 260.0;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       margin: EdgeInsets.only(bottom: ResponsiveValues.gapExtraLarge(context)),
-      color: Colors.white,
+      color: colorScheme.surface, // cambia con il tema
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

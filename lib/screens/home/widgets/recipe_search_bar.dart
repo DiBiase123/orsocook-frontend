@@ -18,17 +18,28 @@ class RecipeSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppLogger.debug('🔍 Building RecipeSearchBar');
+    final colorScheme = Theme.of(context).colorScheme;
 
-    final fillColor =
-        backgroundColor ?? (compact ? Colors.grey[200] : Colors.grey[100]);
+    // Usa il tema per i colori di default
+    final defaultFillColor = compact
+        ? colorScheme.surfaceContainerHighest
+        : colorScheme.surfaceContainerHigh;
+
+    final fillColor = backgroundColor ?? defaultFillColor;
+
+    // Colore del testo in base al tema
+    final textColor = colorScheme.onSurface;
+    final hintColor = colorScheme.onSurfaceVariant;
 
     if (compact) {
       return TextField(
         controller: controller,
         onChanged: onSearchChanged,
+        style: TextStyle(fontSize: 14, color: textColor),
         decoration: InputDecoration(
           hintText: 'Cerca...',
-          prefixIcon: const Icon(Icons.search, size: 18),
+          hintStyle: TextStyle(color: hintColor),
+          prefixIcon: Icon(Icons.search, size: 18, color: hintColor),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
             borderSide: BorderSide.none,
@@ -39,16 +50,17 @@ class RecipeSearchBar extends StatelessWidget {
               const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
           isDense: true,
         ),
-        style: const TextStyle(fontSize: 14),
       );
     }
 
     return TextField(
       controller: controller,
       onChanged: onSearchChanged,
+      style: TextStyle(fontSize: 14, color: textColor),
       decoration: InputDecoration(
         hintText: 'Cerca ricette, ingredienti...',
-        prefixIcon: const Icon(Icons.search),
+        hintStyle: TextStyle(color: hintColor),
+        prefixIcon: Icon(Icons.search, color: hintColor),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,
