@@ -47,45 +47,49 @@ class _CarouselTabletState extends State<CarouselTablet> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final carouselHeight = screenHeight - 100;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return SizedBox(
-      height: carouselHeight,
-      child: Stack(
-        children: [
-          CarouselSlider(
-            carouselController: _carouselController,
-            options: CarouselOptions(
-              height: carouselHeight,
-              viewportFraction: 1.0, // 👈 NESSUN PEEK, solo blocco centrale
-              enlargeCenterPage: false,
-              enableInfiniteScroll: true,
-              autoPlay: false,
+    return Container(
+      color: colorScheme.surfaceContainer,
+      child: SizedBox(
+        height: carouselHeight,
+        child: Stack(
+          children: [
+            CarouselSlider(
+              carouselController: _carouselController,
+              options: CarouselOptions(
+                height: carouselHeight,
+                viewportFraction: 1.0,
+                enlargeCenterPage: false,
+                enableInfiniteScroll: true,
+                autoPlay: false,
+              ),
+              items: widget.recipes.map((recipe) {
+                return _buildCardWithPeek(recipe, context);
+              }).toList(),
             ),
-            items: widget.recipes.map((recipe) {
-              return _buildCardWithPeek(recipe, context);
-            }).toList(),
-          ),
-          Positioned(
-            left: 8,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: CarouselPreviousButton(
-                onTap: _previousPage,
+            Positioned(
+              left: 8,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: CarouselPreviousButton(
+                  onTap: _previousPage,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            right: 8,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: CarouselNextButton(
-                onTap: _nextPage,
+            Positioned(
+              right: 8,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: CarouselNextButton(
+                  onTap: _nextPage,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

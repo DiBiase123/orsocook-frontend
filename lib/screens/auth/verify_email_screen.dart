@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/utils/responsive_values.dart';
-import 'package:universal_html/html.dart' as html;
+
+// Conditional import solo per Web
+import 'package:universal_html/html.dart' as html if (dart.library.html) 'dart:html';
 
 class VerifyEmailScreen extends StatefulWidget {
   final String? token;
@@ -38,17 +40,23 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   Future<String?> _getTokenFromStorage() async {
+    // Solo su Web: leggi da localStorage/sessionStorage
     if (kIsWeb) {
       try {
+        // eslint-disable-next-line avoid_dynamic_calls
         if (html.window.localStorage.containsKey('pendingVerificationToken')) {
+          // eslint-disable-next-line avoid_dynamic_calls
           final token = html.window.localStorage['pendingVerificationToken'];
+          // eslint-disable-next-line avoid_dynamic_calls
           html.window.localStorage.remove('pendingVerificationToken');
           return token;
         }
 
-        if (html.window.sessionStorage
-            .containsKey('pendingVerificationToken')) {
+        // eslint-disable-next-line avoid_dynamic_calls
+        if (html.window.sessionStorage.containsKey('pendingVerificationToken')) {
+          // eslint-disable-next-line avoid_dynamic_calls
           final token = html.window.sessionStorage['pendingVerificationToken'];
+          // eslint-disable-next-line avoid_dynamic_calls
           html.window.sessionStorage.remove('pendingVerificationToken');
           return token;
         }
@@ -57,6 +65,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       }
     }
 
+    // Su tutte le piattaforme: leggi da SharedPreferences
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('pendingVerificationToken');

@@ -48,7 +48,7 @@ class CreateRecipeViewModel extends ChangeNotifier {
         _recipeService = recipeService,
         _categoryService = categoryService;
 
-  // Getter per categorie - USA CategoryModel
+  // Getter per categorie
   List<CategoryModel> get availableCategories => _categoryService.categories;
 
   @override
@@ -137,7 +137,6 @@ class CreateRecipeViewModel extends ChangeNotifier {
 
   void removeInstruction(int index) {
     instructions.removeAt(index);
-    // Rinumera gli step
     for (var i = 0; i < instructions.length; i++) {
       instructions[i]['step'] = i + 1;
     }
@@ -222,7 +221,7 @@ class CreateRecipeViewModel extends ChangeNotifier {
         AppLogger.error('Errore nel trovare categoria', e);
       }
     }
-    // RIMOSSI I PRINT
+
     return Recipe(
       id: '',
       title: titleController.text.trim(),

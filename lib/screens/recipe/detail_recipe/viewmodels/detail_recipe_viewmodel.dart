@@ -21,7 +21,6 @@ class DetailRecipeViewModel extends ChangeNotifier {
   int _likeCount = 0;
   bool _isOwner = false;
 
-  // Getters
   Recipe? get recipe => _recipe;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -135,7 +134,6 @@ class DetailRecipeViewModel extends ChangeNotifier {
 
     AppLogger.api('🗑️ Eliminazione ricetta: ${_recipe!.title}');
 
-    // Salva le reference necessarie PRIMA dell'async gap
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final goRouter = GoRouter.of(context);
     final recipeTitle = _recipe!.title;
@@ -146,7 +144,6 @@ class DetailRecipeViewModel extends ChangeNotifier {
       if (success) {
         AppLogger.success('✅ Ricetta eliminata: $recipeTitle');
 
-        // Usa le reference salvate
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('"$recipeTitle" eliminata con successo'),
@@ -207,7 +204,6 @@ class DetailRecipeViewModel extends ChangeNotifier {
     if (_recipe == null) return;
     AppLogger.debug('✏️ Navigazione a EditRecipeScreen per: ${_recipe!.title}');
 
-    // Usa go_router direttamente
     GoRouter.of(context)
         .push('/recipe/edit', extra: _recipe!)
         .then((_) => refreshRecipe());

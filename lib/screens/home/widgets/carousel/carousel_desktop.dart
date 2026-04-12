@@ -56,46 +56,51 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
     final screenWidth = MediaQuery.of(context).size.width;
     final carouselHeight = screenHeight - 80;
     final viewportFraction = _getViewportFraction(screenWidth);
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return SizedBox(
-      height: carouselHeight,
-      child: Stack(
-        children: [
-          CarouselSlider(
-            carouselController: _carouselController,
-            options: CarouselOptions(
-              height: carouselHeight,
-              viewportFraction: viewportFraction,
-              enlargeCenterPage: true,
-              enlargeFactor: 0.25,
-              enableInfiniteScroll: true,
-              autoPlay: false,
+    return Container(
+      color:
+          colorScheme.surfaceContainer, // sfondo intermedio (#1E1E1E in dark)
+      child: SizedBox(
+        height: carouselHeight,
+        child: Stack(
+          children: [
+            CarouselSlider(
+              carouselController: _carouselController,
+              options: CarouselOptions(
+                height: carouselHeight,
+                viewportFraction: viewportFraction,
+                enlargeCenterPage: true,
+                enlargeFactor: 0.25,
+                enableInfiniteScroll: true,
+                autoPlay: false,
+              ),
+              items: widget.recipes.map((recipe) {
+                return _buildCardWithPeek(recipe, context);
+              }).toList(),
             ),
-            items: widget.recipes.map((recipe) {
-              return _buildCardWithPeek(recipe, context);
-            }).toList(),
-          ),
-          Positioned(
-            left: 8,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: CarouselPreviousButton(
-                onTap: _previousPage,
+            Positioned(
+              left: 8,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: CarouselPreviousButton(
+                  onTap: _previousPage,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            right: 8,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: CarouselNextButton(
-                onTap: _nextPage,
+            Positioned(
+              right: 8,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: CarouselNextButton(
+                  onTap: _nextPage,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -106,7 +111,6 @@ class _CarouselDesktopState extends State<CarouselDesktop> {
     final nextNextIndex = (index + 2) % widget.recipes.length;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Riduci il gap quando lo schermo è più stretto
     final horizontalGap =
         screenWidth < 1000 ? 12.0 : ResponsiveValues.gapSmall(context);
     final verticalGap = screenWidth < 1000 ? 16.0 : 24.0;

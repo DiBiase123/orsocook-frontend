@@ -36,33 +36,39 @@ class _CarouselMobileState extends State<CarouselMobile> {
   @override
   Widget build(BuildContext context) {
     final isSingleCard = widget.recipes.length == 1;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Column(
-      children: [
-        Expanded(
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            itemCount: widget.recipes.length,
-            itemBuilder: (context, index) {
-              return CarouselCard.buildMainCardFullWidth(
-                widget.recipes[index],
-                () => widget.onRecipeTap(widget.recipes[index]),
-                context,
-              );
-            },
+    return Container(
+      color: colorScheme.surfaceContainer,
+      child: Column(
+        children: [
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemCount: widget.recipes.length,
+              itemBuilder: (context, index) {
+                return CarouselCard.buildMainCardFullWidth(
+                  widget.recipes[index],
+                  () => widget.onRecipeTap(widget.recipes[index]),
+                  context,
+                );
+              },
+            ),
           ),
-        ),
-        if (!isSingleCard) _buildDots(context),
-      ],
+          if (!isSingleCard) _buildDots(context),
+        ],
+      ),
     );
   }
 
   Widget _buildDots(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding:
           EdgeInsets.symmetric(vertical: ResponsiveValues.gapLarge(context)),
@@ -88,8 +94,8 @@ class _CarouselMobileState extends State<CarouselMobile> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
                   color: _currentIndex == index
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey.withAlpha(150),
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant.withAlpha(150),
                 ),
               ),
             ),

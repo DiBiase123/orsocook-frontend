@@ -64,34 +64,42 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
       if (!mounted) return;
 
       if (createdRecipe != null) {
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Ricetta creata con successo!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(
+              content: Text('Ricetta creata con successo!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
 
         await categoryService.fetchCategories(forceRefresh: true);
 
         if (!mounted) return;
-        goRouter.go('/home');
+        if (mounted) {
+          goRouter.go('/home');
+        }
       } else {
         if (!mounted) return;
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Errore: Risposta vuota dal server'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(
+              content: Text('Errore: Risposta vuota dal server'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text('Errore: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text('Errore: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }
