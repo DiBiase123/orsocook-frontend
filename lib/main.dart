@@ -114,7 +114,7 @@ class MyApp extends StatelessWidget {
             child: MaterialApp.router(
               title: 'OrsoCook',
               theme: AppTheme.lightTheme,
-              darkTheme: AppTheme.darkHighContrastTheme,
+              darkTheme: AppTheme.darkTheme,
               themeMode: themeProvider.themeMode,
               routerConfig: goRouter,
               debugShowCheckedModeBanner: false,

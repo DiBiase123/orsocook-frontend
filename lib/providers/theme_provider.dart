@@ -39,7 +39,7 @@ class ThemeProvider extends ChangeNotifier {
 
   ThemeData getCurrentTheme() {
     if (_themeMode == ThemeMode.dark) {
-      return AppTheme.darkHighContrastTheme;
+      return AppTheme.darkTheme;
     } else {
       return AppTheme.lightTheme;
     }
