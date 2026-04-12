@@ -29,7 +29,8 @@ class CategorySectionMobile extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.only(bottom: ResponsiveValues.gapExtraLarge(context)),
-      color: colorScheme.surface, // cambia con il tema
+      color: colorScheme
+          .surfaceContainer, // 👈 cambiato da surface a surfaceContainer
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

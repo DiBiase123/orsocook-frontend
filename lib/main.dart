@@ -14,7 +14,7 @@ import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/favorite_service.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/navigation/go_router.dart';
-import 'package:orsocook/utils/app_theme.dart';
+import 'package:orsocook/theme/app_theme.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/providers/theme_provider.dart';
 
@@ -113,8 +113,8 @@ class MyApp extends StatelessWidget {
             onPointerUp: (_) => activityTracker.reportUserActivity(),
             child: MaterialApp.router(
               title: 'OrsoCook',
-              theme: AppTheme.lightTheme,
-              darkTheme: AppTheme.darkTheme,
+              theme: LightTheme.theme,
+              darkTheme: DarkTheme.theme,
               themeMode: themeProvider.themeMode,
               routerConfig: goRouter,
               debugShowCheckedModeBanner: false,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
-import 'package:orsocook/utils/responsive_values.dart'; // AGGIUNTO
+import 'package:orsocook/utils/responsive_values.dart';
 
 class LoginFormFields extends StatefulWidget {
   final TextEditingController emailController;
@@ -70,7 +70,7 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
           validator: _validateEmail,
           onChanged: widget.onEmailChanged,
         ),
-        SizedBox(height: ResponsiveValues.gapMedium(context)), // MODIFICATO
+        SizedBox(height: ResponsiveValues.gapMedium(context)),
         TextFormField(
           controller: widget.passwordController,
           obscureText: _obscurePassword,
@@ -97,18 +97,18 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
           },
           onChanged: widget.onPasswordChanged,
         ),
-        SizedBox(height: ResponsiveValues.gapSmall(context)), // MODIFICATO
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: widget.isLoading ? null : widget.onForgotPasswordPressed,
             child: const Text(
               'Password dimenticata?',
-              style: TextStyle(color: Colors.blue),
+              style: TextStyle(color: Colors.orange), // 👈 cambiato
             ),
           ),
         ),
-        SizedBox(height: ResponsiveValues.gapSmall(context)), // MODIFICATO
+        SizedBox(height: ResponsiveValues.gapSmall(context)),
         if (widget.errorMessage != null)
           AuthErrorBox(message: widget.errorMessage!),
       ],

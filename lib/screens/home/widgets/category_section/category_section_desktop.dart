@@ -33,7 +33,7 @@ class CategorySectionDesktop extends StatelessWidget {
         vertical: ResponsiveValues.gapLarge(context),
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: colorScheme.surfaceContainer, // 👈 cambiato
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/theme/app_theme.dart';
 
 class RegisterActions extends StatelessWidget {
   final bool isLoading;
@@ -16,14 +17,12 @@ class RegisterActions extends StatelessWidget {
   });
 
   Widget _buildRegisterButton(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return ElevatedButton(
       onPressed: isLoading ? null : onRegisterPressed,
       style: ElevatedButton.styleFrom(
         minimumSize:
             Size(double.infinity, ResponsiveValues.buttonHeight(context)),
-        backgroundColor: colorScheme.tertiary,
+        backgroundColor: DarkTheme.registerColor,
       ),
       child: isLoading
           ? const SizedBox(
@@ -42,8 +41,6 @@ class RegisterActions extends StatelessWidget {
   }
 
   Widget _buildLoginLink(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -53,16 +50,11 @@ class RegisterActions extends StatelessWidget {
         ),
         TextButton(
           onPressed: isLoading ? null : onLoginPressed,
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
           child: Text(
             'Accedi',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: colorScheme.primary,
+              color: DarkTheme.registerColor,
             ),
           ),
         ),

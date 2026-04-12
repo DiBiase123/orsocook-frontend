@@ -59,19 +59,23 @@ class _AuthDialogState extends State<AuthDialog> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // Scegli il colore dello sfondo in base al tema
+    final backgroundColor = isDarkMode
+        ? Colors.black.withAlpha(230) // Discord style: quasi nero solido
+        : Colors.black.withAlpha(60); // Light mode: trasparente come prima
 
     return Stack(
       children: [
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
           child: Container(
-            color: Colors.black.withAlpha(60),
+            color: backgroundColor,
             width: double.infinity,
             height: double.infinity,
           ),
         ),
-        // Per mobile: nessun SingleChildScrollView (è già gestito internamente)
-        // Per tablet/desktop: SingleChildScrollView per evitare overflow
         if (isMobile)
           Center(
             child: _currentScreen,

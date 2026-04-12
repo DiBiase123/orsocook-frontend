@@ -19,15 +19,18 @@ class RecipeSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     AppLogger.debug('🔍 Building RecipeSearchBar');
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
 
-    // Usa il tema per i colori di default
+    // Scegli il colore in base al tema
     final defaultFillColor = compact
-        ? colorScheme.surfaceContainerHighest
-        : colorScheme.surfaceContainerHigh;
+        ? (isDark
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surfaceContainerHighest)
+        : (isDark
+            ? colorScheme.surfaceContainer
+            : colorScheme.surfaceContainerHigh);
 
     final fillColor = backgroundColor ?? defaultFillColor;
-
-    // Colore del testo in base al tema
     final textColor = colorScheme.onSurface;
     final hintColor = colorScheme.onSurfaceVariant;
 

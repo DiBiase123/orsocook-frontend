@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:orsocook/utils/app_theme.dart';
+import 'package:orsocook/theme/app_theme.dart';
 
 class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
@@ -39,9 +39,9 @@ class ThemeProvider extends ChangeNotifier {
 
   ThemeData getCurrentTheme() {
     if (_themeMode == ThemeMode.dark) {
-      return AppTheme.darkTheme;
+      return DarkTheme.theme;
     } else {
-      return AppTheme.lightTheme;
+      return LightTheme.theme;
     }
   }
 }

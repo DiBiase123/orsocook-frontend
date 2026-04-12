@@ -74,7 +74,7 @@ class HomeAppBar extends StatelessWidget {
                         controller: searchController,
                         onSearchChanged: onSearchChanged,
                         compact: true,
-                        backgroundColor: Colors.white,
+                        // backgroundColor: Colors.white,  // RIMOSSO
                       ),
                     ),
                     SizedBox(width: gap),
@@ -112,7 +112,7 @@ class HomeAppBar extends StatelessWidget {
                         controller: searchController,
                         onSearchChanged: onSearchChanged,
                         compact: false,
-                        backgroundColor: Colors.white,
+                        // backgroundColor: Colors.white,  // RIMOSSO
                       ),
                     ),
                   ],

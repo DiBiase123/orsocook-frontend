@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/theme/app_theme.dart';
 
 class LoginActions extends StatelessWidget {
   final bool isLoading;
@@ -49,8 +50,6 @@ class LoginActions extends StatelessWidget {
   }
 
   Widget _buildRegisterSection(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -69,7 +68,7 @@ class LoginActions extends StatelessWidget {
             'Registrati',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: colorScheme.tertiary,
+              color: DarkTheme.registerColor, // 👈 cambiato
             ),
           ),
         ),
