@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/register_modal/content.dart';
 import 'package:orsocook/utils/device_classifier.dart';
+import 'package:orsocook/theme/app_theme.dart';
 
-class RegisterModal extends StatelessWidget {
+class RegisterModal extends StatefulWidget {
   final VoidCallback? onNavigateToLogin;
   final VoidCallback? onClose;
 
@@ -13,44 +14,78 @@ class RegisterModal extends StatelessWidget {
   });
 
   @override
+  State<RegisterModal> createState() => _RegisterModalState();
+}
+
+class _RegisterModalState extends State<RegisterModal> {
+  final ScrollController _scrollController = ScrollController();
+
+  void resetScroll() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isMobile = DeviceClassifier.isMobile(context);
-    final closeCallback = onClose ?? () => Navigator.of(context).pop();
+    final closeCallback = widget.onClose ?? () => Navigator.of(context).pop();
+    final screenHeight = MediaQuery.of(context).size.height;
+    final colorScheme = Theme.of(context).colorScheme;
 
     if (isMobile) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('Registrazione'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: onNavigateToLogin ?? closeCallback,
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: closeCallback,
-              tooltip: 'Chiudi',
-            ),
-          ],
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
+      return Material(
+        color: colorScheme.surface,
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                title: const Text('Registrazione'),
+                backgroundColor: DarkTheme.registerColor,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: widget.onNavigateToLogin ?? closeCallback,
                 ),
-                child: Center(
-                  child: RegisterModalContent(
-                    onClose: closeCallback,
-                    showCloseButton: false,
-                    onNavigateToLogin: onNavigateToLogin,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: closeCallback,
+                    tooltip: 'Chiudi',
+                  ),
+                ],
+                automaticallyImplyLeading: true,
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    constraints: BoxConstraints(
+                      minHeight: screenHeight - 100,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RegisterModalContent(
+                          onClose: closeCallback,
+                          showCloseButton: false,
+                          onNavigateToLogin: widget.onNavigateToLogin,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            );
-          },
+            ],
+          ),
         ),
       );
     }
@@ -59,10 +94,13 @@ class RegisterModal extends StatelessWidget {
     return Center(
       child: Material(
         color: Colors.transparent,
-        child: RegisterModalContent(
-          onClose: closeCallback,
-          showCloseButton: true,
-          onNavigateToLogin: onNavigateToLogin,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: RegisterModalContent(
+            onClose: closeCallback,
+            showCloseButton: true,
+            onNavigateToLogin: widget.onNavigateToLogin,
+          ),
         ),
       ),
     );

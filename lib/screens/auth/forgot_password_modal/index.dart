@@ -16,107 +16,67 @@ class ForgotPasswordModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = DeviceClassifier.isMobile(context);
     final closeCallback = onClose ?? () => Navigator.of(context).pop();
+    final screenHeight = MediaQuery.of(context).size.height;
+    final colorScheme = Theme.of(context).colorScheme;
 
     if (isMobile) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: onNavigateToLogin ?? closeCallback,
-            tooltip: 'Torna al login',
-          ),
-          title: const Text('Password dimenticata'),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: closeCallback,
-              tooltip: 'Chiudi',
-            ),
-          ],
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
+      return Material(
+        color: colorScheme.surface,
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                title: const Text('Password dimenticata'),
+                backgroundColor:
+                    Colors.orange, // Colore del bottone "INVIA ISTRUZIONI"
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: onNavigateToLogin ?? closeCallback,
+                  tooltip: 'Torna al login',
                 ),
-                child: Center(
-                  child: ForgotPasswordModalContent(
-                    onClose: closeCallback,
-                    showCloseButton: false,
-                    onNavigateToLogin: onNavigateToLogin,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: closeCallback,
+                    tooltip: 'Chiudi',
                   ),
-                ),
+                ],
+                automaticallyImplyLeading: true,
               ),
-            );
-          },
-        ),
-      );
-    }
-
-    // Tablet e Desktop con freccia e X
-    return Center(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 40), // 👈 spazio sopra
-            Material(
-              color: Colors.transparent,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 520,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    constraints: BoxConstraints(
+                      minHeight: screenHeight - 100,
                     ),
-                    child: Row(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        IconButton(
-                          icon:
-                              const Icon(Icons.arrow_back, color: Colors.white),
-                          onPressed: onNavigateToLogin ?? closeCallback,
-                          tooltip: 'Torna al login',
-                        ),
-                        const Expanded(
-                          child: Text(
-                            'Password dimenticata',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: closeCallback,
-                          tooltip: 'Chiudi',
+                        ForgotPasswordModalContent(
+                          onClose: closeCallback,
+                          showCloseButton: false,
+                          onNavigateToLogin: onNavigateToLogin,
                         ),
                       ],
                     ),
                   ),
-                  ForgotPasswordModalContent(
-                    onClose: closeCallback,
-                    showCloseButton: false,
-                    onNavigateToLogin: onNavigateToLogin,
-                  ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 40), // 👈 spazio sotto
-          ],
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Tablet e Desktop
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: ForgotPasswordModalContent(
+          onClose: closeCallback,
+          showCloseButton: true,
+          onNavigateToLogin: onNavigateToLogin,
         ),
       ),
     );

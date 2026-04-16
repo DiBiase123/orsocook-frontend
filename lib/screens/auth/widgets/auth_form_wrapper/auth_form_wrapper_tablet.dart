@@ -22,73 +22,74 @@ class AuthFormWrapperTablet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Center(
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          width: 500,
-          margin: const EdgeInsets.symmetric(vertical: 30),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(25),
-                blurRadius: 25,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Material(
+    return SingleChildScrollView(
+      child: Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: 500,
+            decoration: BoxDecoration(
               color: colorScheme.surface,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (showCloseButton)
-                    Container(
-                      width: double.infinity,
-                      color: headerColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          if (title != null)
-                            Expanded(
-                              child: Text(
-                                title!,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(25),
+                  blurRadius: 25,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Material(
+                color: colorScheme.surface,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (showCloseButton)
+                      Container(
+                        width: double.infinity,
+                        color: headerColor,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 14),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if (title != null)
+                              Expanded(
+                                child: Text(
+                                  title!,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            )
-                          else
-                            const SizedBox.shrink(),
-                          IconButton(
-                            icon: const Icon(Icons.close,
-                                size: 22, color: Colors.white),
-                            onPressed: onClose,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
+                              )
+                            else
+                              const SizedBox.shrink(),
+                            IconButton(
+                              icon: const Icon(Icons.close,
+                                  size: 22, color: Colors.white),
+                              onPressed: onClose,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Form(
+                        key: formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: children,
+                        ),
                       ),
                     ),
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: children,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

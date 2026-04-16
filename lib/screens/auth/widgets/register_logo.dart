@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart';
 import 'package:orsocook/utils/responsive_values.dart';
 
 class RegisterLogo extends StatelessWidget {
@@ -7,35 +6,17 @@ class RegisterLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dimensioni responsive usando i breakpoint centralizzati
-    double logoSize;
-    double titleFontSize;
-    double subtitleFontSize;
-    double iconSize;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-    if (ResponsiveBreakpoints.isLargeDesktop(context)) {
-      logoSize = 120;
-      titleFontSize = 32;
-      subtitleFontSize = 16;
-      iconSize = 26;
-    } else if (ResponsiveBreakpoints.isDesktop(context)) {
-      logoSize = 100;
-      titleFontSize = 28;
-      subtitleFontSize = 15;
-      iconSize = 24;
-    } else if (ResponsiveBreakpoints.isTablet(context)) {
-      logoSize = 90;
-      titleFontSize = 32;
-      subtitleFontSize = 15;
-      iconSize = 26;
-    } else {
-      logoSize = 80;
-      titleFontSize = 35;
-      subtitleFontSize = 16;
-      iconSize = 28;
-    }
+    // Logo variabile tra 120 e 150 in base all'altezza
+    double logoSize = (screenHeight * 0.12).clamp(120.0, 150.0);
+
+    const double titleFontSize = 28;
+    const double subtitleFontSize = 15;
+    const double iconSize = 24;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         ClipOval(
           child: Image.asset(

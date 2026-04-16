@@ -13,24 +13,50 @@ class AuthDialog extends StatefulWidget {
 
 class _AuthDialogState extends State<AuthDialog> {
   late Widget _currentScreen;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _loginKey = GlobalKey();
+  double _loginHeight = 0;
+  bool _heightMeasured = false;
+
+  void _scrollToTop() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     _currentScreen = LoginModal(
+      key: _loginKey,
       onNavigateToRegister: () => _navigateToRegister(),
       onNavigateToForgotPassword: () => _navigateToForgotPassword(),
       onClose: () => _closeDialog(),
     );
   }
 
+  void _measureLoginHeight() {
+    if (_heightMeasured) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final box = _loginKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box != null && box.hasSize) {
+        _loginHeight = box.size.height;
+        _heightMeasured = true;
+      }
+    });
+  }
+
   void _navigateToRegister() {
+    _measureLoginHeight();
     setState(() {
       _currentScreen = RegisterModal(
         onNavigateToLogin: () => _navigateToLogin(),
         onClose: () => _closeDialog(),
       );
     });
+    _scrollToTop();
   }
 
   void _navigateToForgotPassword() {
@@ -40,6 +66,7 @@ class _AuthDialogState extends State<AuthDialog> {
         onClose: () => _closeDialog(),
       );
     });
+    _scrollToTop();
   }
 
   void _navigateToLogin() {
@@ -50,6 +77,7 @@ class _AuthDialogState extends State<AuthDialog> {
         onClose: () => _closeDialog(),
       );
     });
+    _scrollToTop();
   }
 
   void _closeDialog() {
@@ -57,14 +85,41 @@ class _AuthDialogState extends State<AuthDialog> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-    // Scegli il colore dello sfondo in base al tema
-    final backgroundColor = isDarkMode
-        ? Colors.black.withAlpha(230) // Discord style: quasi nero solido
-        : Colors.black.withAlpha(60); // Light mode: trasparente come prima
+    final backgroundColor =
+        isDarkMode ? Colors.black.withAlpha(230) : Colors.black.withAlpha(60);
+
+    // Determina se siamo su Register
+    final isRegister = _currentScreen is RegisterModal;
+    final useFixedHeight = isRegister && _heightMeasured && _loginHeight > 0;
+
+    // Widget da mostrare (con o senza altezza fissa per Register)
+    Widget modalContent = _currentScreen;
+
+    if (!isMobile && useFixedHeight) {
+      modalContent = SizedBox(
+        height: _loginHeight.clamp(0.0, screenHeight * 0.85),
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: _currentScreen,
+        ),
+      );
+    } else if (!isMobile) {
+      modalContent = SingleChildScrollView(
+        controller: _scrollController,
+        child: _currentScreen,
+      );
+    }
 
     return Stack(
       children: [
@@ -76,16 +131,16 @@ class _AuthDialogState extends State<AuthDialog> {
             height: double.infinity,
           ),
         ),
-        if (isMobile)
-          Center(
-            child: _currentScreen,
-          )
-        else
-          Center(
-            child: SingleChildScrollView(
-              child: _currentScreen,
-            ),
-          ),
+        Center(
+          child: isMobile
+              ? modalContent
+              : ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: screenHeight * 0.85,
+                  ),
+                  child: modalContent,
+                ),
+        ),
       ],
     );
   }
