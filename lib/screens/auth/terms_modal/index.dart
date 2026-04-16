@@ -1,56 +1,83 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/auth/terms_modal/style.dart';
 import 'package:orsocook/screens/auth/terms_modal/content.dart';
+import 'package:orsocook/utils/device_classifier.dart';
 
 class TermsModal extends StatelessWidget {
-  const TermsModal({super.key});
+  final VoidCallback? onClose;
+
+  const TermsModal({
+    super.key,
+    this.onClose,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = DeviceClassifier.isMobile(context);
+    final closeCallback = onClose ?? () => Navigator.of(context).pop();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    const double borderRadius = 24;
+    const double cardWidth = 520;
 
     if (isMobile) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('Termini e Privacy'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
+      return Material(
+        color: colorScheme.surface,
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                title: const Text('Termini e Condizioni'),
+                backgroundColor: Colors.orange,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: closeCallback,
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: closeCallback,
+                    tooltip: 'Chiudi',
+                  ),
+                ],
+                automaticallyImplyLeading: true,
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: TermsModalContent(
+                    onClose: closeCallback,
+                  ),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: Colors.deepOrange,
-          foregroundColor: Colors.white,
-        ),
-        body: TermsModalContent(
-          onClose: () => Navigator.of(context).pop(),
         ),
       );
     }
 
+    // Tablet e Desktop
     return Center(
-      child: Container(
-        width: TermsModalStyle.getCardWidth(context),
-        height: TermsModalStyle.getCardHeight(context),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(TermsModalStyle.borderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(40),
-              blurRadius: 40,
-              offset: const Offset(0, 20),
+      child: Material(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
+          child: Container(
+            width: cardWidth,
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(borderRadius),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(30),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-            BoxShadow(
-              color: Colors.deepOrange.withAlpha(30),
-              blurRadius: 30,
-              offset: const Offset(0, 8),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(borderRadius),
+              child: TermsModalContent(
+                onClose: closeCallback,
+              ),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(TermsModalStyle.borderRadius),
-          child: TermsModalContent(
-            onClose: () => Navigator.of(context).pop(),
           ),
         ),
       ),
@@ -63,6 +90,8 @@ Future<void> showTermsModal(BuildContext context) {
     context: context,
     barrierDismissible: true,
     barrierColor: Colors.transparent,
-    builder: (context) => const TermsModal(),
+    builder: (context) => TermsModal(
+      onClose: () => Navigator.of(context).pop(),
+    ),
   );
 }
