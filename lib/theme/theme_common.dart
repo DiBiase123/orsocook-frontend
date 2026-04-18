@@ -94,4 +94,32 @@ class ThemeCommon {
       thickness: 1,
     );
   }
+
+  // ==================== COLORI INFORMATIVI (Privacy Policy, Termini, ecc.) ====================
+
+  /// Sfondo delle sezioni informative (light: azzurro ghiaccio, dark: blu notte)
+  static Color informativeSectionBg(ColorScheme colorScheme) {
+    return colorScheme.brightness == Brightness.light
+        ? const Color(0xFFF0F9FF)
+        : const Color(0xFF0C4A6E);
+  }
+
+  /// Colore dei bordi delle sezioni informative
+  static Color informativeBorder(ColorScheme colorScheme) {
+    return colorScheme.brightness == Brightness.light
+        ? const Color(0xFFBAE6FD)
+        : const Color(0xFF38BDF8);
+  }
+
+  /// Colore principale per icone e titoli delle sezioni informative
+  static Color informativeAccent(ColorScheme colorScheme) {
+    return colorScheme.brightness == Brightness.light
+        ? const Color(0xFF0284C7)
+        : const Color(0xFF7DD3FC);
+  }
+
+  /// Colore per l'header delle sezioni informative
+  static Color informativeHeaderBg(ColorScheme colorScheme) {
+    return informativeAccent(colorScheme);
+  }
 }

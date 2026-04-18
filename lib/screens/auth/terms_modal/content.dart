@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/legal/privacy_policy_screen.dart';
-import 'package:orsocook/screens/legal/cookie_policy_screen.dart';
+import 'package:orsocook/screens/legal/cookie_policy.dart';
 import 'package:orsocook/utils/responsive_values.dart';
 
 class TermsModalContent extends StatelessWidget {
   final VoidCallback onClose;
+  final bool showCloseButton;
 
-  const TermsModalContent({super.key, required this.onClose});
+  const TermsModalContent({
+    super.key,
+    required this.onClose,
+    this.showCloseButton = true,
+  });
 
   void _openPrivacyPolicy(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+      MaterialPageRoute(builder: (_) => const CookiePolicyScreen()),
     );
   }
 
@@ -22,36 +26,14 @@ class TermsModalContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDarkMode = colorScheme.brightness == Brightness.dark;
+
     return SingleChildScrollView(
       padding: ResponsiveValues.screenPadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.deepOrange.shade400,
-                  Colors.deepOrange.shade700,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Center(
-              child: Text(
-                '📜 Termini & Privacy',
-                style: TextStyle(
-                  fontSize: ResponsiveValues.titleSize(context),
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: ResponsiveValues.gapLarge(context)),
           _buildSection(
             icon: Icons.description,
             title: 'Termini di Utilizzo',
@@ -94,9 +76,11 @@ Hai diritto a:
           Container(
             padding: ResponsiveValues.screenPadding(context),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(
+                color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade200,
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,57 +89,60 @@ Hai diritto a:
                   children: [
                     Icon(Icons.book, color: Colors.deepOrange.shade600),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Documentazione Completa',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        'Documentazione Completa',
+                        style: TextStyle(
+                          fontSize: ResponsiveValues.titleSize(context),
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
                       ),
                     ),
                   ],
                 ),
                 SizedBox(height: ResponsiveValues.gapMedium(context)),
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () => _openPrivacyPolicy(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Row(
-                        children: [
-                          Icon(Icons.privacy_tip, color: Colors.blue.shade600),
-                          const SizedBox(width: 8),
-                          const Text(
-                            '📄 Privacy Policy completa',
+                GestureDetector(
+                  onTap: () => _openPrivacyPolicy(context),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.privacy_tip,
+                            color: Colors.blue.shade600, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Privacy Policy completa',
                             style: TextStyle(
-                              color: Colors.blue,
-                              decoration: TextDecoration.underline,
+                              fontSize: ResponsiveValues.bodySize(context),
+                              color: Colors.blue.shade600,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () => _openCookiePolicy(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Row(
-                        children: [
-                          Icon(Icons.cookie, color: Colors.brown.shade600),
-                          const SizedBox(width: 8),
-                          const Text(
-                            '🍪 Informativa Cookie',
+                GestureDetector(
+                  onTap: () => _openCookiePolicy(context),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.cookie,
+                            color: Colors.brown.shade600, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Informativa Cookie',
                             style: TextStyle(
-                              color: Colors.blue,
-                              decoration: TextDecoration.underline,
+                              fontSize: ResponsiveValues.bodySize(context),
+                              color: Colors.blue.shade600,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -163,31 +150,33 @@ Hai diritto a:
             ),
           ),
           SizedBox(height: ResponsiveValues.gapExtraLarge(context)),
-          Center(
-            child: ElevatedButton(
-              onPressed: onClose,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  horizontal: ResponsiveValues.gapExtraLarge(context),
-                  vertical: ResponsiveValues.gapMedium(context),
+          if (showCloseButton)
+            Center(
+              child: ElevatedButton(
+                onPressed: onClose,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrange,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveValues.gapExtraLarge(context),
+                    vertical: ResponsiveValues.gapMedium(context),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 2,
+                  minimumSize:
+                      Size(120, ResponsiveValues.buttonHeight(context)),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 2,
-                minimumSize: Size(120, ResponsiveValues.buttonHeight(context)),
-              ),
-              child: Text(
-                'CHIUDI',
-                style: TextStyle(
-                  fontSize: ResponsiveValues.bodySize(context),
-                  fontWeight: FontWeight.bold,
+                child: Text(
+                  'CHIUDI',
+                  style: TextStyle(
+                    fontSize: ResponsiveValues.bodySize(context),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
           SizedBox(height: ResponsiveValues.gapMedium(context)),
         ],
       ),
@@ -201,12 +190,15 @@ Hai diritto a:
     required String content,
     required BuildContext context,
   }) {
+    final isDarkMode =
+        Theme.of(context).colorScheme.brightness == Brightness.dark;
+
     return Container(
       padding: ResponsiveValues.screenPadding(context),
       decoration: BoxDecoration(
-        color: color.withAlpha(26),
+        color: color.withAlpha(isDarkMode ? 30 : 26),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withAlpha(51)),
+        border: Border.all(color: color.withAlpha(isDarkMode ? 60 : 51)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,12 +207,14 @@ Hai diritto a:
             children: [
               Icon(icon, color: color, size: 22),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: ResponsiveValues.titleSize(context),
-                  fontWeight: FontWeight.bold,
-                  color: color,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: ResponsiveValues.titleSize(context),
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
               ),
             ],
@@ -231,6 +225,7 @@ Hai diritto a:
             style: TextStyle(
               fontSize: ResponsiveValues.bodySize(context),
               height: 1.4,
+              color: isDarkMode ? Colors.white70 : Colors.black87,
             ),
           ),
         ],

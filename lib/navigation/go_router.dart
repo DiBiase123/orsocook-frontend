@@ -9,7 +9,7 @@ import 'package:orsocook/screens/recipe/create_recipe/create_recipe_screen.dart'
 import 'package:orsocook/screens/recipe/edit_recipe_screen.dart';
 import 'package:orsocook/screens/category/category_recipes_screen.dart';
 import 'package:orsocook/screens/legal/privacy_policy_screen.dart';
-import 'package:orsocook/screens/legal/cookie_policy_screen.dart';
+import 'package:orsocook/screens/legal/cookie_policy.dart';
 import 'package:orsocook/models/recipe.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();

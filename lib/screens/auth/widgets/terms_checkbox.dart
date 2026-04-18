@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/screens/auth/terms_modal/index.dart';
-import 'package:orsocook/utils/responsive_values.dart';
 
 class TermsCheckbox extends StatefulWidget {
   final bool value;
   final Function(bool) onChanged;
   final bool isLoading;
+  final VoidCallback? onTermsModalClosed; // Nuovo callback
 
   const TermsCheckbox({
     super.key,
     required this.value,
     required this.onChanged,
     required this.isLoading,
+    this.onTermsModalClosed,
   });
 
   @override
@@ -22,16 +23,20 @@ class TermsCheckbox extends StatefulWidget {
 class _TermsCheckboxState extends State<TermsCheckbox> {
   void _showTermsModal() {
     AppLogger.debug('📄 Apri termini e condizioni');
-    showTermsModal(context);
+    showTermsModal(context).then((_) {
+      // Quando il modale viene chiuso, chiama il callback
+      widget.onTermsModalClosed?.call();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: ResponsiveValues.horizontalPadding(context),
-      child: Row(
-        children: [
-          Checkbox(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Transform.translate(
+          offset: const Offset(-8, 0),
+          child: Checkbox(
             value: widget.value,
             onChanged: widget.isLoading
                 ? null
@@ -40,20 +45,20 @@ class _TermsCheckboxState extends State<TermsCheckbox> {
                     widget.onChanged(value ?? false);
                   },
           ),
-          Expanded(
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: widget.isLoading ? null : _showTermsModal,
-                child: const Text(
-                  'Accetto i termini, condizioni e privacy',
-                  style: TextStyle(color: Colors.blue),
-                ),
+        ),
+        Expanded(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: widget.isLoading ? null : _showTermsModal,
+              child: const Text(
+                'Accetto i termini, condizioni e privacy',
+                style: TextStyle(color: Colors.blue),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
