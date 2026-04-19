@@ -2,6 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ThemeCommon {
+  // ==================== TEXT STYLES RESPONSIVE ====================
+
+  static double _getAppBarTitleSize(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1024) return 28;
+    if (width >= 768) return 26;
+    return 24;
+  }
+
+  static TextStyle appBarTitleStyle(BuildContext context) {
+    return GoogleFonts.poppins(
+      fontSize: _getAppBarTitleSize(context),
+      fontWeight: FontWeight.w600,
+    );
+  }
+
+  // ==================== BASE THEME ====================
+
   static ThemeData baseTheme(ColorScheme colorScheme) {
     return ThemeData(
       useMaterial3: true,
@@ -95,30 +113,26 @@ class ThemeCommon {
     );
   }
 
-  // ==================== COLORI INFORMATIVI (Privacy Policy, Termini, ecc.) ====================
+  // ==================== COLORI INFORMATIVI ====================
 
-  /// Sfondo delle sezioni informative (light: azzurro ghiaccio, dark: blu notte)
   static Color informativeSectionBg(ColorScheme colorScheme) {
     return colorScheme.brightness == Brightness.light
         ? const Color(0xFFF0F9FF)
         : const Color(0xFF0C4A6E);
   }
 
-  /// Colore dei bordi delle sezioni informative
   static Color informativeBorder(ColorScheme colorScheme) {
     return colorScheme.brightness == Brightness.light
         ? const Color(0xFFBAE6FD)
         : const Color(0xFF38BDF8);
   }
 
-  /// Colore principale per icone e titoli delle sezioni informative
   static Color informativeAccent(ColorScheme colorScheme) {
     return colorScheme.brightness == Brightness.light
         ? const Color(0xFF0284C7)
         : const Color(0xFF7DD3FC);
   }
 
-  /// Colore per l'header delle sezioni informative
   static Color informativeHeaderBg(ColorScheme colorScheme) {
     return informativeAccent(colorScheme);
   }

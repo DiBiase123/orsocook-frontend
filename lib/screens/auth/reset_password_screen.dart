@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/auth/login.dart';
 import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/theme/theme_common.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
@@ -353,7 +354,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reimposta Password'),
+        title: Text('Reimposta Password',
+            style: ThemeCommon.appBarTitleStyle(context)),
         leading: _isSuccess
             ? null
             : IconButton(

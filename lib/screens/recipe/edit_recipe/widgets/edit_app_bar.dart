@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/theme/theme_common.dart';
 
 class EditAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isLoading;
@@ -15,7 +16,8 @@ class EditAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: const Text('Modifica Ricetta'),
+      title: Text('Modifica Ricetta',
+          style: ThemeCommon.appBarTitleStyle(context)),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: onBack,

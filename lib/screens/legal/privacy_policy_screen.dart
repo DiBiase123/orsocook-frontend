@@ -10,9 +10,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Color _getSectionColor(int index, ColorScheme colorScheme, bool isDarkMode) {
     final List<Color> lightColors = [
       const Color(0xFF0284C7),
+      const Color(0xFF0D9488),
       const Color(0xFF059669),
       const Color(0xFF7C3AED),
-      const Color(0xFF0D9488),
       const Color(0xFFEA580C),
       const Color(0xFFDB2777),
       const Color(0xFF4F46E5),
@@ -23,9 +23,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
     final List<Color> darkColors = [
       const Color(0xFF7DD3FC),
+      const Color(0xFF5EEAD4),
       const Color(0xFF86EFAC),
       const Color(0xFFC4B5FD),
-      const Color(0xFF5EEAD4),
       const Color(0xFFFDBA74),
       const Color(0xFFF9A8D4),
       const Color(0xFFA5B4FC),
@@ -47,7 +47,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
     final sectionBg = ThemeCommon.informativeSectionBg(colorScheme);
     final borderColor = ThemeCommon.informativeBorder(colorScheme);
 
-    // Colore AppBar: in dark mode usa blu notte per leggibilità
     final appBarColor = isDarkMode ? const Color(0xFF0C4A6E) : accentColor;
 
     AppLogger.debug('📄 Apertura PrivacyPolicyScreen');
@@ -55,7 +54,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Privacy Policy'),
+        title: Text('Privacy Policy',
+            style: ThemeCommon.appBarTitleStyle(context)),
         backgroundColor: appBarColor,
         foregroundColor: Colors.white,
         leading: IconButton(
@@ -260,7 +260,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
     final bgColor =
         isDarkMode ? sectionColor.withAlpha(25) : sectionColor.withAlpha(20);
-
     final borderColor =
         isDarkMode ? sectionColor.withAlpha(60) : sectionColor.withAlpha(40);
 

@@ -6,6 +6,7 @@ import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/profile_body.dart';
 import 'package:orsocook/services/logout_manager.dart';
 import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/theme/theme_common.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -113,8 +114,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => context.go('/home'),
             tooltip: 'Home',
           ),
-          title: const Text('Il Mio Profilo',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text('Il Mio Profilo',
+              style: ThemeCommon.appBarTitleStyle(context)),
           actions: [
             IconButton(
               icon: const Icon(Icons.logout),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/theme/theme_common.dart';
 
 class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Recipe? recipe;
@@ -20,7 +21,8 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(recipe?.title ?? 'Dettaglio Ricetta'),
+      title: Text(recipe?.title ?? 'Dettaglio Ricetta',
+          style: ThemeCommon.appBarTitleStyle(context)),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: onBackPressed,

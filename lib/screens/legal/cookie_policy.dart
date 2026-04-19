@@ -28,13 +28,8 @@ class CookiePolicyScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: Row(
-          children: [
-            Icon(Icons.cookie, size: 28, color: const Color(0xFFB45309)),
-            const SizedBox(width: 8),
-            const Text('Informativa Cookie'),
-          ],
-        ),
+        title: Text('Informativa Cookie',
+            style: ThemeCommon.appBarTitleStyle(context)),
         backgroundColor: isDarkMode ? const Color(0xFF0C4A6E) : accentColor,
         foregroundColor: Colors.white,
         leading: IconButton(

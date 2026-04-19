@@ -17,12 +17,8 @@ class TermsModal extends StatelessWidget {
     final closeCallback = onClose ?? () => Navigator.of(context).pop();
     final colorScheme = Theme.of(context).colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
-    final isDarkMode = colorScheme.brightness == Brightness.dark;
 
-    // Colori informativi dal tema
-    final accentColor = ThemeCommon.informativeAccent(colorScheme);
-    // Colore header: in dark mode usa blu notte per leggibilità
-    final headerBg = isDarkMode ? const Color(0xFF0C4A6E) : accentColor;
+    final headerBg = ThemeCommon.informativeHeaderBg(colorScheme);
 
     const double borderRadius = 24;
 
@@ -33,7 +29,8 @@ class TermsModal extends StatelessWidget {
           child: Column(
             children: [
               AppBar(
-                title: const Text('Termini e Condizioni'),
+                title: Text('Termini e Condizioni',
+                    style: ThemeCommon.appBarTitleStyle(context)),
                 backgroundColor: headerBg,
                 foregroundColor: Colors.white,
                 leading: IconButton(
@@ -63,7 +60,7 @@ class TermsModal extends StatelessWidget {
       );
     }
 
-    // Tablet e Desktop - con header personalizzato
+    // Tablet e Desktop
     final cardWidth = screenWidth * 0.75;
 
     return SingleChildScrollView(
@@ -89,7 +86,6 @@ class TermsModal extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Header azzurro (o blu notte in dark) con icona, titolo e pulsante X
                   Container(
                     width: double.infinity,
                     color: headerBg,
@@ -124,7 +120,6 @@ class TermsModal extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Contenuto
                   TermsModalContent(
                     onClose: closeCallback,
                     showCloseButton: false,

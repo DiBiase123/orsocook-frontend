@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/register_modal/content.dart';
 import 'package:orsocook/utils/device_classifier.dart';
 import 'package:orsocook/theme/app_theme.dart';
+import 'package:orsocook/theme/theme_common.dart';
 
 class RegisterModal extends StatefulWidget {
   final VoidCallback? onNavigateToLogin;
@@ -48,7 +49,8 @@ class _RegisterModalState extends State<RegisterModal> {
           child: Column(
             children: [
               AppBar(
-                title: const Text('Registrazione'),
+                title: Text('Registrazione',
+                    style: ThemeCommon.appBarTitleStyle(context)),
                 backgroundColor: DarkTheme.registerColor,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),

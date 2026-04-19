@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/login_modal/content.dart';
 import 'package:orsocook/utils/device_classifier.dart';
+import 'package:orsocook/theme/theme_common.dart';
 
 class LoginModal extends StatefulWidget {
   final VoidCallback? onNavigateToRegister;
@@ -49,7 +50,8 @@ class _LoginModalState extends State<LoginModal> {
           child: Column(
             children: [
               AppBar(
-                title: const Text('Login'),
+                title:
+                    Text('Login', style: ThemeCommon.appBarTitleStyle(context)),
                 backgroundColor: colorScheme.primary,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
