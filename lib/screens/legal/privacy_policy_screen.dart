@@ -1,8 +1,9 @@
+import 'package:orsocook/theme/informative_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
-import 'package:orsocook/theme/theme_common.dart';
+import 'package:orsocook/theme/common_theme.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -43,9 +44,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDarkMode = colorScheme.brightness == Brightness.dark;
-    final accentColor = ThemeCommon.informativeAccent(colorScheme);
-    final sectionBg = ThemeCommon.informativeSectionBg(colorScheme);
-    final borderColor = ThemeCommon.informativeBorder(colorScheme);
+    final accentColor = InformativeTheme.accent(colorScheme);
+    final sectionBg = InformativeTheme.sectionBg(colorScheme);
+    final borderColor = InformativeTheme.border(colorScheme);
 
     final appBarColor = isDarkMode ? const Color(0xFF0C4A6E) : accentColor;
 

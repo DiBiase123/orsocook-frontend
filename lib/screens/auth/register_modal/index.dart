@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/register_modal/content.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/theme/app_theme.dart';
-import 'package:orsocook/theme/theme_common.dart';
+import 'package:orsocook/theme/common_theme.dart';
 
 class RegisterModal extends StatefulWidget {
   final VoidCallback? onNavigateToLogin;

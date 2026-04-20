@@ -6,7 +6,7 @@ import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/profile_body.dart';
 import 'package:orsocook/services/logout_manager.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
-import 'package:orsocook/theme/theme_common.dart';
+import 'package:orsocook/theme/common_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

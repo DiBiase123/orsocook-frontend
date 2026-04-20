@@ -1,8 +1,9 @@
+import 'package:orsocook/theme/informative_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
-import 'package:orsocook/theme/theme_common.dart';
+import 'package:orsocook/theme/common_theme.dart';
 import 'package:orsocook/screens/legal/widgets/accordion_section.dart';
 import 'package:orsocook/screens/legal/widgets/cookie_section.dart';
 import 'package:orsocook/screens/legal/widgets/cookie_item.dart';
@@ -36,9 +37,9 @@ class _CookiePolicyScreenState extends State<CookiePolicyScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDarkMode = colorScheme.brightness == Brightness.dark;
-    final accentColor = ThemeCommon.informativeAccent(colorScheme);
-    final sectionBg = ThemeCommon.informativeSectionBg(colorScheme);
-    final borderColor = ThemeCommon.informativeBorder(colorScheme);
+    final accentColor = InformativeTheme.accent(colorScheme);
+    final sectionBg = InformativeTheme.sectionBg(colorScheme);
+    final borderColor = InformativeTheme.border(colorScheme);
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 

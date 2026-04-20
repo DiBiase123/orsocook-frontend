@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
-import 'package:orsocook/theme/theme_common.dart';
+import 'package:orsocook/theme/common_theme.dart';
 
 class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Recipe? recipe;
