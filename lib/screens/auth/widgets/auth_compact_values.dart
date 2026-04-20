@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class AuthCompactValues {
   // Padding per l'header

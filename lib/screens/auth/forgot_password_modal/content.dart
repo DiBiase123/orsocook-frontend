@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';

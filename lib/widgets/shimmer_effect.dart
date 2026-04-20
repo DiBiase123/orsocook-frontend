@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class ShimmerEffect extends StatelessWidget {
   final Widget child;

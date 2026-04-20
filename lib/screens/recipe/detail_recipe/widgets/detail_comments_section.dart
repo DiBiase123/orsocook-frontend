@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/comment_service.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'comment_input_widget.dart';
 import 'comments_list_widget.dart';
 import 'utils/comment_state_manager.dart';

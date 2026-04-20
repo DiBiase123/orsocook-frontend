@@ -134,6 +134,8 @@ class ThemeCommon {
   }
 
   static Color informativeHeaderBg(ColorScheme colorScheme) {
-    return informativeAccent(colorScheme);
+    return colorScheme.brightness == Brightness.light
+        ? informativeAccent(colorScheme)
+        : const Color(0xFF0C4A6E);
   }
 }

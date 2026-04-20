@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/recipe_service.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class EmptyState extends StatelessWidget {
   final String? searchQuery;

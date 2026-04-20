@@ -7,7 +7,7 @@ import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/recipe/create_recipe/viewmodels/create_recipe_viewmodel.dart';
 import 'package:orsocook/screens/recipe/create_recipe/widgets/recipe_app_bar.dart';
 import 'package:orsocook/screens/recipe/create_recipe/widgets/recipe_form.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class CreateRecipeScreen extends StatefulWidget {
   const CreateRecipeScreen({super.key});

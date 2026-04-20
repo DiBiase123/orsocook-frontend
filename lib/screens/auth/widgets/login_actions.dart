@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/theme/app_theme.dart';
 
 class LoginActions extends StatelessWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class HeroHeader extends StatelessWidget {
   const HeroHeader({super.key});

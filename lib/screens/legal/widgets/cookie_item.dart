@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/screens/legal/colors/section_colors.dart';
 import 'package:orsocook/screens/legal/data/cookie_data.dart';
 
@@ -35,19 +35,23 @@ class CookieItemWidget extends StatelessWidget {
         children: [
           Row(
             children: [
+              // Badge adattato per dark mode
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: color,
+                  color: isDarkMode ? Colors.grey.shade800 : color,
                   borderRadius: BorderRadius.circular(8),
+                  border: isDarkMode
+                      ? Border.all(color: color.withAlpha(80))
+                      : null,
                 ),
                 child: Text(
                   cookie.type.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: isDarkMode ? color : Colors.white,
                   ),
                 ),
               ),
@@ -58,7 +62,7 @@ class CookieItemWidget extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: color,
+                    color: isDarkMode ? Colors.white : color,
                   ),
                 ),
               ),

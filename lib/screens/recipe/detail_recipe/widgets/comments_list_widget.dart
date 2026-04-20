@@ -4,7 +4,7 @@ import 'package:orsocook/services/comment_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/models/comment.dart';
 import 'package:orsocook/screens/recipe/detail_recipe/widgets/comment_item_widget.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 @immutable
 class CommentsListWidget extends StatelessWidget {

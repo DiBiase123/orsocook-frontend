@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/forgot_password_modal/content.dart';
-import 'package:orsocook/utils/device_classifier.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/theme/theme_common.dart';
 
 class ForgotPasswordModal extends StatelessWidget {

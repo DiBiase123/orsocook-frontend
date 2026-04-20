@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/services/recipe_service.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class RecipeList extends StatefulWidget {
   final void Function(Recipe) onRecipeTap;

@@ -6,8 +6,7 @@ import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/screens/category/viewmodels/category_recipes_viewmodel.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/widgets/shimmer_effect.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class CategoryRecipesScreen extends StatefulWidget {
   final String categorySlug;

@@ -3,8 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/screens/profile/widgets/avatar_picker_widget.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});

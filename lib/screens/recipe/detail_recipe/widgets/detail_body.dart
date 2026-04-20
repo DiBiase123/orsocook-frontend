@@ -7,7 +7,7 @@ import 'package:orsocook/screens/recipe/detail_recipe/widgets/detail_ingredients
 import 'package:orsocook/screens/recipe/detail_recipe/widgets/detail_instructions_section.dart';
 import 'package:orsocook/screens/recipe/detail_recipe/widgets/detail_tags_section.dart';
 import 'package:orsocook/screens/recipe/detail_recipe/widgets/detail_comments_section.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class DetailBody extends StatelessWidget {
   final Recipe recipe;

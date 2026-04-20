@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class LoginFormFields extends StatefulWidget {
   final TextEditingController emailController;

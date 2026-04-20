@@ -7,7 +7,7 @@ import 'package:orsocook/services/profile/profile_service.dart';
 import 'package:orsocook/services/profile/profile_controller.dart';
 import 'package:orsocook/widgets/recipe_card.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class ProfileRecipesList extends StatefulWidget {
   final List<Recipe> recipes;

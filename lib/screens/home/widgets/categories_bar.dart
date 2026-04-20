@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/home/widgets/categories_skeleton.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class CategoriesBar extends StatefulWidget {
   final ValueChanged<String?>? onCategorySelected;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/screens/recipe/widgets/favorite_button.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/screens/home/widgets/carousel/hover_card.dart';
 import 'package:orsocook/screens/home/widgets/carousel/carousel_card_image.dart';
 import 'package:orsocook/screens/home/widgets/carousel/carousel_card_gradient.dart';

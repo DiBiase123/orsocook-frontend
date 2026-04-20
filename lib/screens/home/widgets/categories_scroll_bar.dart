@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/home/widgets/categories_skeleton.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class CategoriesScrollBar extends StatelessWidget {
   final ValueChanged<String?> onCategorySelected;

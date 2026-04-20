@@ -4,7 +4,7 @@ import 'package:orsocook/screens/recipe/widgets/favorite_button.dart';
 import 'package:orsocook/screens/recipe/widgets/like_button.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/favorite_service.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 @immutable
 class RecipeCard extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/screens/home/widgets/carousel/index.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class HomeCarouselSection extends StatelessWidget {
   final List<Recipe> recipes;

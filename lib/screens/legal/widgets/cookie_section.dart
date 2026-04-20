@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/screens/legal/colors/section_colors.dart';
 
 class CookieSection extends StatelessWidget {
@@ -52,7 +52,8 @@ class CookieSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.cookie, color: const Color(0xFFB45309), size: 26),
+              Icon(Icons.cookie,
+                  color: const Color(0xFFB45309), size: 32), // Icona più grande
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
@@ -120,7 +121,12 @@ class __AccordionItemState extends State<_AccordionItem> {
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: widget.bgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: _isExpanded
+            ? const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              )
+            : BorderRadius.circular(16),
         border: Border.all(color: widget.borderColor, width: 1.2),
       ),
       child: Column(
@@ -128,16 +134,28 @@ class __AccordionItemState extends State<_AccordionItem> {
         children: [
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: _isExpanded
+                ? const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  )
+                : BorderRadius.circular(16),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
                 color: _isExpanded ? headerBgColor : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: _isExpanded
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      )
+                    : BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.cookie, color: const Color(0xFFB45309), size: 26),
+                  Icon(Icons.cookie,
+                      color: const Color(0xFFB45309),
+                      size: 32), // Icona più grande
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(

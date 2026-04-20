@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/legal/cookie_policy.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class TermsModalContent extends StatelessWidget {
   final VoidCallback onClose;
@@ -73,13 +73,14 @@ Hai diritto a:
             context: context,
           ),
           SizedBox(height: ResponsiveValues.gapLarge(context)),
+          // Sezione Documentazione Completa con colori azzurri
           Container(
             padding: ResponsiveValues.screenPadding(context),
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade50,
+              color: isDarkMode ? Colors.blue.shade900 : Colors.blue.shade50,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade200,
+                color: isDarkMode ? Colors.blue.shade700 : Colors.blue.shade200,
               ),
             ),
             child: Column(
@@ -87,7 +88,10 @@ Hai diritto a:
               children: [
                 Row(
                   children: [
-                    Icon(Icons.book, color: Colors.deepOrange.shade600),
+                    Icon(Icons.book,
+                        color: isDarkMode
+                            ? Colors.blue.shade300
+                            : Colors.blue.shade700),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -109,14 +113,19 @@ Hai diritto a:
                     child: Row(
                       children: [
                         Icon(Icons.privacy_tip,
-                            color: Colors.blue.shade600, size: 20),
+                            color: isDarkMode
+                                ? Colors.blue.shade400
+                                : Colors.blue.shade600,
+                            size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Privacy Policy completa',
                             style: TextStyle(
                               fontSize: ResponsiveValues.bodySize(context),
-                              color: Colors.blue.shade600,
+                              color: isDarkMode
+                                  ? Colors.blue.shade400
+                                  : Colors.blue.shade600,
                             ),
                           ),
                         ),
@@ -131,14 +140,19 @@ Hai diritto a:
                     child: Row(
                       children: [
                         Icon(Icons.cookie,
-                            color: Colors.brown.shade600, size: 20),
+                            color: isDarkMode
+                                ? Colors.blue.shade400
+                                : Colors.blue.shade600,
+                            size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Informativa Cookie',
                             style: TextStyle(
                               fontSize: ResponsiveValues.bodySize(context),
-                              color: Colors.blue.shade600,
+                              color: isDarkMode
+                                  ? Colors.blue.shade400
+                                  : Colors.blue.shade600,
                             ),
                           ),
                         ),

@@ -4,7 +4,6 @@ import 'package:orsocook/services/recipe_service.dart';
 import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/utils/recipe_helpers.dart';
 import 'package:go_router/go_router.dart';
 
 class DetailRecipeViewModel extends ChangeNotifier {
@@ -94,13 +93,12 @@ class DetailRecipeViewModel extends ChangeNotifier {
       final favorite = _recipe!.isFavorite;
 
       final currentUserId = _authService.userId;
-      final authorId = RecipeHelpers.extractAuthorId(_recipe!.author);
+      final authorId = _recipe!.author.id;
 
       AppLogger.debug('🔍 currentUserId: $currentUserId');
       AppLogger.debug('🔍 authorId: $authorId');
 
       final isOwner = currentUserId != null &&
-          authorId != null &&
           currentUserId.trim().toLowerCase() == authorId.trim().toLowerCase();
 
       AppLogger.debug('🔍 isOwner: $isOwner');

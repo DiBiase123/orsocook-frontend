@@ -14,7 +14,7 @@ class CookieTable extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= 600) {
-          return _buildDesktopTable();
+          return _buildDesktopTable(constraints);
         } else {
           return _buildMobileTable();
         }
@@ -22,64 +22,124 @@ class CookieTable extends StatelessWidget {
     );
   }
 
-  Widget _buildDesktopTable() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columnSpacing: 32,
-        horizontalMargin: 16,
-        headingRowColor: WidgetStateProperty.resolveWith(
-          (states) => isDarkMode
-              ? Colors.white.withAlpha(15)
-              : Colors.blue.withAlpha(15),
-        ),
-        dataRowColor:
-            WidgetStateProperty.resolveWith((states) => Colors.transparent),
-        dividerThickness: 0.5,
-        columns: const [
-          DataColumn(
-              label: Text('Categoria',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
-          DataColumn(
-              label: Text('Finalità',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
-          DataColumn(
-              label: Text('Esempi',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
-        ],
-        rows: cookieTableData.map((row) => _buildDataRow(row)).toList(),
+  Widget _buildDesktopTable(BoxConstraints constraints) {
+    final tableWidth = constraints.maxWidth;
+    // Ribilancia le larghezze: più spazio per Esempi
+    final col1Width = tableWidth * 0.22; // 22% per Categoria
+    final col2Width = tableWidth * 0.33; // 33% per Finalità
+    final col3Width = tableWidth * 0.45; // 45% per Esempi
+
+    return DataTable(
+      columnSpacing: 4,
+      horizontalMargin: 0,
+      headingRowColor: WidgetStateProperty.resolveWith(
+        (states) =>
+            isDarkMode ? Colors.white.withAlpha(15) : Colors.blue.withAlpha(15),
       ),
+      dataRowColor:
+          WidgetStateProperty.resolveWith((states) => Colors.transparent),
+      dividerThickness: 0.5,
+      columns: [
+        DataColumn(
+          label: SizedBox(
+            width: col1Width,
+            child: const Center(
+              child: Text('Categoria',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: SizedBox(
+            width: col2Width,
+            child: const Center(
+              child: Text('Finalità',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: SizedBox(
+            width: col3Width,
+            child: const Center(
+              child: Text('Esempi',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            ),
+          ),
+        ),
+      ],
+      rows: cookieTableData
+          .map((row) => _buildDataRow(row, col1Width, col2Width, col3Width))
+          .toList(),
     );
   }
 
   Widget _buildMobileTable() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: cookieTableData.map((row) => _buildCompactRow(row)).toList(),
+      children: [
+        ...cookieTableData.map((row) => _buildCompactRow(row)),
+        const SizedBox(height: 8),
+      ],
     );
   }
 
-  DataRow _buildDataRow(CookieTableRow row) {
+  DataRow _buildDataRow(CookieTableRow row, double col1Width, double col2Width,
+      double col3Width) {
     final color = SectionColors.getColor(row.index, isDarkMode);
     return DataRow(cells: [
-      DataCell(Text(row.category,
-          style: TextStyle(
-              fontWeight: FontWeight.w700, color: color, fontSize: 14))),
-      DataCell(Text(row.purpose,
-          style: TextStyle(
-              fontSize: 14,
-              color: isDarkMode ? Colors.white70 : Colors.black87))),
-      DataCell(Text(row.examples,
-          style: TextStyle(
-              fontSize: 14,
-              color: isDarkMode ? Colors.white70 : Colors.black87))),
+      DataCell(
+        SizedBox(
+          width: col1Width,
+          child: Center(
+            child: Text(
+              row.category,
+              style: TextStyle(
+                  fontWeight: FontWeight.w700, color: color, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+      DataCell(
+        SizedBox(
+          width: col2Width,
+          child: Center(
+            child: Text(
+              row.purpose,
+              style: TextStyle(
+                  fontSize: 14,
+                  color: isDarkMode ? Colors.white70 : Colors.black87),
+              textAlign: TextAlign.center,
+              softWrap: true,
+            ),
+          ),
+        ),
+      ),
+      DataCell(
+        SizedBox(
+          width: col3Width,
+          child: Center(
+            child: Text(
+              row.examples,
+              style: TextStyle(
+                  fontSize: 14,
+                  color: isDarkMode ? Colors.white70 : Colors.black87),
+              textAlign: TextAlign.center,
+              softWrap: true,
+            ),
+          ),
+        ),
+      ),
     ]);
   }
 
   Widget _buildCompactRow(CookieTableRow row) {
     final color = SectionColors.getColor(row.index, isDarkMode);
+    final bool isLast = cookieTableData.last == row;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDarkMode ? color.withAlpha(15) : color.withAlpha(12),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/models/recipe.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'category_section_mobile.dart';
 import 'category_section_tablet.dart';
 import 'category_section_desktop.dart';

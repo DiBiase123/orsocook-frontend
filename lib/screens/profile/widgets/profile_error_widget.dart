@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/services/profile/profile_controller.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class ProfileErrorWidget extends StatelessWidget {
   final ProfileController controller;

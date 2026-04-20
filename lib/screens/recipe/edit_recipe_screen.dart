@@ -8,7 +8,7 @@ import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/viewmodels/edit_recipe_viewmodel.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/widgets/edit_app_bar.dart';
 import 'package:orsocook/screens/recipe/edit_recipe/widgets/edit_form.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;

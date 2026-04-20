@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/widgets/password_strength_indicator.dart';
 import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 
 class RegisterFormFields extends StatefulWidget {
   final TextEditingController usernameController;

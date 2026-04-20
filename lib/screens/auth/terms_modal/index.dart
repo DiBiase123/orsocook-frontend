@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/terms_modal/content.dart';
-import 'package:orsocook/utils/device_classifier.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/theme/theme_common.dart';
 
 class TermsModal extends StatelessWidget {
@@ -47,11 +47,9 @@ class TermsModal extends StatelessWidget {
                 automaticallyImplyLeading: true,
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  child: TermsModalContent(
-                    onClose: closeCallback,
-                    showCloseButton: false,
-                  ),
+                child: TermsModalContent(
+                  onClose: closeCallback,
+                  showCloseButton: false,
                 ),
               ),
             ],
@@ -104,8 +102,8 @@ class TermsModal extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'Termini & Privacy',
-                            style: const TextStyle(
-                              fontSize: 20,
+                            style: TextStyle(
+                              fontSize: ResponsiveValues.titleSize(context),
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),

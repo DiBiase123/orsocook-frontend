@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/theme/app_theme.dart';
-import 'package:orsocook/utils/device_classifier.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_desktop.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_tablet.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';

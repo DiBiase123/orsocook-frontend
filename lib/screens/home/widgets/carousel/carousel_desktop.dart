@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:orsocook/models/recipe.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'carousel_card.dart';
 import 'carousel_previous_button.dart';
 import 'carousel_next_button.dart';

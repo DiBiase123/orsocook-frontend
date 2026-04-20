@@ -15,8 +15,7 @@ import 'package:orsocook/services/like_service.dart';
 import 'package:orsocook/services/category_service.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/utils/logger.dart';
-import 'package:orsocook/utils/responsive_breakpoints.dart';
-import 'package:orsocook/utils/responsive_values.dart';
+import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/widgets/shimmer_effect.dart';
 
 class HomeScreen extends StatefulWidget {
