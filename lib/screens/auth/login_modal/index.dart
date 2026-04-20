@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/auth/login_modal/content.dart';
+import 'package:orsocook/screens/auth/login_modal/login_content.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/theme/common_theme.dart';
 

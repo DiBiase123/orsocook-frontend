@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/theme/app_theme.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_desktop.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_tablet.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
 
 class AuthFormWrapper extends StatelessWidget {
   final GlobalKey<FormState> formKey;
@@ -11,62 +8,113 @@ class AuthFormWrapper extends StatelessWidget {
   final VoidCallback onClose;
   final bool showCloseButton;
   final String? title;
+  final Color headerColor;
 
   const AuthFormWrapper({
     super.key,
     required this.formKey,
-    required this.onClose,
     required this.children,
-    this.showCloseButton = true,
+    required this.onClose,
+    required this.showCloseButton,
     this.title,
+    required this.headerColor,
   });
-
-  Color _getHeaderColor(BuildContext context) {
-    if (title == 'Accedi') {
-      return Theme.of(context).colorScheme.primary;
-    }
-    if (title == 'Registrati') {
-      return DarkTheme.registerColor;
-    }
-    if (title == 'Password dimenticata') {
-      return Colors.orange; // 👈 aggiungi questo
-    }
-    return Colors.deepOrange;
-  }
 
   @override
   Widget build(BuildContext context) {
-    final headerColor = _getHeaderColor(context);
+    final colorScheme = Theme.of(context).colorScheme;
     final deviceType = DeviceClassifier.getDeviceType(context);
 
-    switch (deviceType) {
-      case DeviceType.mobile:
-        return AuthFormWrapperMobile(
-          formKey: formKey,
-          onClose: onClose,
-          showCloseButton: showCloseButton,
-          title: title,
-          headerColor: headerColor,
-          children: children,
-        );
-      case DeviceType.tablet:
-        return AuthFormWrapperTablet(
-          formKey: formKey,
-          onClose: onClose,
-          showCloseButton: showCloseButton,
-          title: title,
-          headerColor: headerColor,
-          children: children,
-        );
-      case DeviceType.desktop:
-        return AuthFormWrapperDesktop(
-          formKey: formKey,
-          onClose: onClose,
-          showCloseButton: showCloseButton,
-          title: title,
-          headerColor: headerColor,
-          children: children,
-        );
+    // Valori responsivi
+    final bool isDesktop = deviceType == DeviceType.desktop;
+    final bool isTablet = deviceType == DeviceType.tablet;
+
+    final double containerWidth =
+        isDesktop ? 520 : (isTablet ? 500 : double.infinity);
+    final double borderRadius = isDesktop ? 24 : (isTablet ? 20 : 0);
+    final double shadowIntensity = isDesktop ? 30 : (isTablet ? 25 : 0);
+    final bool needsScroll = isDesktop || isTablet;
+
+    Widget content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showCloseButton)
+          Container(
+            width: double.infinity,
+            color: headerColor,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (title != null)
+                  Expanded(
+                    child: Text(
+                      title!,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                else
+                  const SizedBox.shrink(),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 22, color: Colors.white),
+                  onPressed: onClose,
+                  tooltip: 'Chiudi',
+                ),
+              ],
+            ),
+          ),
+        Flexible(
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: children,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    // Desktop e Tablet: centrato con container
+    if (needsScroll) {
+      content = SingleChildScrollView(
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: containerWidth,
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(borderRadius),
+                boxShadow: shadowIntensity > 0
+                    ? [
+                        BoxShadow(
+                          color: Colors.black
+                              .withAlpha((shadowIntensity * 0.85).toInt()),
+                          blurRadius: shadowIntensity.toDouble(),
+                          offset: Offset(0, shadowIntensity / 3),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: content,
+              ),
+            ),
+          ),
+        ),
+      );
     }
+
+    return content;
   }
+
 }

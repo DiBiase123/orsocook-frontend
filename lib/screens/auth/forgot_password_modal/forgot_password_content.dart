@@ -5,8 +5,7 @@ import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
 import 'package:orsocook/screens/auth/widgets/auth_error_box.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
-import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
+import 'package:orsocook/utils/auth_utils.dart';
 
 class ForgotPasswordModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -138,7 +137,7 @@ class _ForgotPasswordModalContentState
     ];
 
     if (isMobile) {
-      return AuthFormWrapperMobile(
+      return AuthFormWrapper(
         formKey: _formKey,
         onClose: widget.onClose,
         showCloseButton: widget.showCloseButton,
@@ -153,6 +152,7 @@ class _ForgotPasswordModalContentState
       onClose: widget.onClose,
       showCloseButton: widget.showCloseButton,
       title: 'Password dimenticata',
+      headerColor: Colors.orange,
       children: children,
     );
   }

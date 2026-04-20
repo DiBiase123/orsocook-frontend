@@ -1,6 +1,6 @@
 import 'package:orsocook/theme/common_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/auth/terms_modal/content.dart';
+import 'package:orsocook/screens/auth/terms_modal/terms_content.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
 
 class TermsModal extends StatelessWidget {

@@ -1,12 +1,13 @@
+import 'package:orsocook/theme/dark_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/screens/auth/widgets/register_logo.dart';
-import 'package:orsocook/screens/auth/widgets/register_form_fields.dart';
-import 'package:orsocook/screens/auth/widgets/register_actions.dart';
-import 'package:orsocook/screens/auth/widgets/terms_checkbox.dart';
+import 'package:orsocook/screens/auth/register_modal/register_logo.dart';
+import 'package:orsocook/screens/auth/register_modal/register_form_fields.dart';
+import 'package:orsocook/screens/auth/register_modal/register_actions.dart';
+import 'package:orsocook/screens/auth/register_modal/register_terms_checkbox.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
-import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
+import 'package:orsocook/utils/auth_utils.dart';
 
 class RegisterModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -199,6 +200,7 @@ class _RegisterModalContentState extends State<RegisterModalContent> {
       onClose: widget.onClose,
       showCloseButton: widget.showCloseButton,
       title: 'Registrati',
+      headerColor: DarkTheme.registerColor,
       children: [
         const RegisterLogo(),
         const SizedBox(height: 24),

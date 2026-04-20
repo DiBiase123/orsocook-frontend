@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:orsocook/services/auth_service.dart';
-import 'package:orsocook/screens/auth/widgets/login_logo.dart';
-import 'package:orsocook/screens/auth/widgets/login_form_fields.dart';
-import 'package:orsocook/screens/auth/widgets/login_actions.dart';
+import 'package:orsocook/screens/auth/login_modal/login_logo.dart';
+import 'package:orsocook/screens/auth/login_modal/login_form_fields.dart';
+import 'package:orsocook/screens/auth/login_modal/login_actions.dart';
 import 'package:orsocook/screens/auth/widgets/auth_form_wrapper.dart';
-import 'package:orsocook/screens/auth/widgets/auth_form_wrapper/auth_form_wrapper_mobile.dart';
-import 'package:orsocook/screens/auth/widgets/auth_utils.dart';
+import 'package:orsocook/utils/auth_utils.dart';
 
 class LoginModalContent extends StatefulWidget {
   final VoidCallback onClose;
@@ -218,7 +217,7 @@ class _LoginModalContentState extends State<LoginModalContent> {
     ];
 
     if (isMobile) {
-      return AuthFormWrapperMobile(
+      return AuthFormWrapper(
         formKey: _formKey,
         onClose: widget.onClose,
         showCloseButton: widget.showCloseButton,
@@ -233,6 +232,7 @@ class _LoginModalContentState extends State<LoginModalContent> {
       onClose: widget.onClose,
       showCloseButton: widget.showCloseButton,
       title: 'Accedi',
+      headerColor: colorScheme.primary,
       children: children,
     );
   }
