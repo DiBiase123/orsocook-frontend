@@ -8,7 +8,7 @@ import 'package:orsocook/screens/recipe/detail_recipe/detail_recipe_screen.dart'
 import 'package:orsocook/screens/recipe/create_recipe/create_recipe_screen.dart';
 import 'package:orsocook/screens/recipe/edit_recipe_screen.dart';
 import 'package:orsocook/screens/category/category_recipes_screen.dart';
-import 'package:orsocook/screens/legal/privacy_policy_screen.dart';
+import 'package:orsocook/screens/legal/privacy_policy.dart';
 import 'package:orsocook/screens/legal/cookie_policy.dart';
 import 'package:orsocook/models/recipe.dart';
 
@@ -109,7 +109,7 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/privacy-policy',
       name: 'privacy-policy',
-      builder: (context, state) => const PrivacyPolicyScreen(),
+      builder: (context, state) => const PrivacyPolicyPage(),
     ),
     GoRoute(
       path: '/cookie-policy',

@@ -112,4 +112,29 @@ class ThemeCommon {
       thickness: 1,
     );
   }
+  // ==================== COLORI INFORMATIVI GENERICI ====================
+
+  static Color informativeSectionBg(ColorScheme colorScheme) {
+    return colorScheme.brightness == Brightness.light
+        ? const Color(0xFFF0F9FF)
+        : const Color(0xFF0C4A6E);
+  }
+
+  static Color informativeBorder(ColorScheme colorScheme) {
+    return colorScheme.brightness == Brightness.light
+        ? const Color(0xFFBAE6FD)
+        : const Color(0xFF38BDF8);
+  }
+
+  static Color informativeAccent(ColorScheme colorScheme) {
+    return colorScheme.brightness == Brightness.light
+        ? const Color(0xFF0284C7)
+        : const Color(0xFF7DD3FC);
+  }
+
+  static Color informativeHeaderBg(ColorScheme colorScheme) {
+    return colorScheme.brightness == Brightness.light
+        ? informativeAccent(colorScheme)
+        : const Color(0xFF0C4A6E);
+  }
 }

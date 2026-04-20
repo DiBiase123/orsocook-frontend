@@ -1,8 +1,7 @@
-import 'package:orsocook/theme/informative_theme.dart';
+import 'package:orsocook/theme/common_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/auth/terms_modal/content.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
-import 'package:orsocook/theme/common_theme.dart';
 
 class TermsModal extends StatelessWidget {
   final VoidCallback? onClose;
@@ -19,7 +18,7 @@ class TermsModal extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final headerBg = InformativeTheme.headerBg(colorScheme);
+    final headerBg = ThemeCommon.informativeHeaderBg(colorScheme);
 
     const double borderRadius = 24;
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
-import 'package:orsocook/screens/legal/colors/section_colors.dart';
+import 'package:orsocook/theme/informativa_cookie_theme.dart';
 
 class CookieSection extends StatelessWidget {
   final int index;
@@ -22,7 +22,7 @@ class CookieSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = SectionColors.getColor(index, isDarkMode);
+    final color = InformativaCookieTheme.getColor(index, isDarkMode);
     final bgColor = isDarkMode ? color.withAlpha(28) : color.withAlpha(25);
     final borderColor = isDarkMode ? color.withAlpha(60) : color.withAlpha(40);
 

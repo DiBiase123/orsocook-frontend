@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SectionColors {
+class InformativaCookieTheme {
   static const List<Color> lightColors = [
     Color(0xFF0284C7),
     Color(0xFF0D9488),

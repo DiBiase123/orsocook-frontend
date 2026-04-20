@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
-import 'package:orsocook/screens/legal/colors/section_colors.dart';
+import 'package:orsocook/theme/informativa_cookie_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AccordionSection extends StatefulWidget {
@@ -53,7 +53,7 @@ class _AccordionSectionState extends State<AccordionSection> {
 
   @override
   Widget build(BuildContext context) {
-    final color = SectionColors.getColor(widget.index, widget.isDarkMode);
+    final color = InformativaCookieTheme.getColor(widget.index, widget.isDarkMode);
     final bgColor =
         widget.isDarkMode ? color.withAlpha(35) : color.withAlpha(28);
     final borderColor =

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/screens/legal/colors/section_colors.dart';
+import 'package:orsocook/theme/informativa_cookie_theme.dart';
 import 'package:orsocook/screens/legal/data/cookie_table_data.dart';
 
 class CookieTable extends StatelessWidget {
@@ -86,7 +86,7 @@ class CookieTable extends StatelessWidget {
 
   DataRow _buildDataRow(CookieTableRow row, double col1Width, double col2Width,
       double col3Width) {
-    final color = SectionColors.getColor(row.index, isDarkMode);
+    final color = InformativaCookieTheme.getColor(row.index, isDarkMode);
     return DataRow(cells: [
       DataCell(
         SizedBox(
@@ -135,7 +135,7 @@ class CookieTable extends StatelessWidget {
   }
 
   Widget _buildCompactRow(CookieTableRow row) {
-    final color = SectionColors.getColor(row.index, isDarkMode);
+    final color = InformativaCookieTheme.getColor(row.index, isDarkMode);
     final bool isLast = cookieTableData.last == row;
 
     return Container(

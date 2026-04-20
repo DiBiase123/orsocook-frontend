@@ -1,12 +1,11 @@
-import 'package:orsocook/theme/informative_theme.dart';
+import 'package:orsocook/theme/common_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orsocook/utils/logger.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
-import 'package:orsocook/theme/common_theme.dart';
 
-class PrivacyPolicyScreen extends StatelessWidget {
-  const PrivacyPolicyScreen({super.key});
+class PrivacyPolicyPage extends StatelessWidget {
+  const PrivacyPolicyPage({super.key});
 
   Color _getSectionColor(int index, ColorScheme colorScheme, bool isDarkMode) {
     final List<Color> lightColors = [
@@ -44,13 +43,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDarkMode = colorScheme.brightness == Brightness.dark;
-    final accentColor = InformativeTheme.accent(colorScheme);
-    final sectionBg = InformativeTheme.sectionBg(colorScheme);
-    final borderColor = InformativeTheme.border(colorScheme);
+    final accentColor = ThemeCommon.informativeAccent(colorScheme);
+    final sectionBg = ThemeCommon.informativeSectionBg(colorScheme);
+    final borderColor = ThemeCommon.informativeBorder(colorScheme);
 
     final appBarColor = isDarkMode ? const Color(0xFF0C4A6E) : accentColor;
 
-    AppLogger.debug('📄 Apertura PrivacyPolicyScreen');
+    AppLogger.debug('📄 Apertura PrivacyPolicyPage');
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -261,7 +260,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
     final bgColor =
         isDarkMode ? sectionColor.withAlpha(25) : sectionColor.withAlpha(20);
-    final borderColor =
+    final borderColorWidget =
         isDarkMode ? sectionColor.withAlpha(60) : sectionColor.withAlpha(40);
 
     return Container(
@@ -270,7 +269,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: borderColorWidget),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

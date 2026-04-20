@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/screens/legal/cookie_policy.dart';
+import 'package:orsocook/screens/legal/privacy_policy.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
 
 class TermsModalContent extends StatelessWidget {
@@ -14,7 +15,7 @@ class TermsModalContent extends StatelessWidget {
 
   void _openPrivacyPolicy(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const CookiePolicyScreen()),
+      MaterialPageRoute(builder: (_) => PrivacyPolicyPage()),
     );
   }
 
