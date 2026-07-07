@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orsocook/theme/app_theme.dart';
 import 'package:orsocook/utils/responsive_utils.dart';
 
 class AuthFormWrapper extends StatelessWidget {
@@ -116,5 +115,4 @@ class AuthFormWrapper extends StatelessWidget {
 
     return content;
   }
-
 }
