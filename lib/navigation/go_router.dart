@@ -13,6 +13,7 @@ import 'package:orsocook/screens/legal/cookie_policy.dart';
 import 'package:orsocook/screens/webdocuments/webdocuments_login.dart';
 import 'package:orsocook/screens/webdocuments/webdocuments_list.dart';
 import 'package:orsocook/models/recipe.dart';
+import 'package:orsocook/screens/webdocuments/webdocuments_dashboard.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -128,6 +129,11 @@ final goRouter = GoRouter(
       path: '/webdocuments/list',
       name: 'webdocuments-list',
       builder: (context, state) => const WebDocumentsList(),
+    ),
+    GoRoute(
+      path: '/webdocuments/dashboard',
+      name: 'webdocuments-dashboard',
+      builder: (context, state) => const WebDocumentsDashboard(),
     ),
   ],
 );
