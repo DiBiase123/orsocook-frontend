@@ -17,6 +17,7 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _obscurePassword = true;
   String? _errorMessage;
 
   @override
@@ -37,7 +38,6 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
     try {
       final authService = context.read<AuthService>();
 
-      // Forza logout per ottenere un token fresco con ruolo
       await authService.logout();
       await Future.delayed(const Duration(milliseconds: 300));
 
@@ -49,7 +49,6 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
       if (!mounted) return;
 
       if (response.success) {
-        // Leggi ruolo dal token JWT (ora include role)
         final tokenStr = response.data?['token'] as String?;
         String userRole = 'USER';
         if (tokenStr != null) {
@@ -102,31 +101,21 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.lock_outline,
-                    size: 64,
-                    color: Colors.white70,
-                  ),
+                  const Icon(Icons.lock_outline,
+                      size: 64, color: Colors.white70),
                   const SizedBox(height: 16),
-                  const Text(
-                    'WebDocuments',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  const Text('WebDocuments',
+                      style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Area riservata',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white54,
-                    ),
-                  ),
+                  const Text('Area riservata',
+                      style: TextStyle(fontSize: 14, color: Colors.white54)),
                   const SizedBox(height: 40),
                   TextFormField(
                     controller: _usernameController,
+                    textInputAction: TextInputAction.next,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Username',
@@ -136,57 +125,60 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
                       filled: true,
                       fillColor: Colors.white.withAlpha(25),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.orange),
-                      ),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.orange)),
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Inserisci username';
-                      }
-                      return null;
-                    },
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'Inserisci username'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _login(),
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Password',
                       labelStyle: const TextStyle(color: Colors.white54),
                       prefixIcon:
                           const Icon(Icons.lock_outline, color: Colors.white54),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.white54,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                       filled: true,
                       fillColor: Colors.white.withAlpha(25),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.orange),
-                      ),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.orange)),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Inserisci password';
-                      }
-                      return null;
-                    },
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Inserisci password'
+                        : null,
                   ),
                   const SizedBox(height: 24),
                   if (_errorMessage != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: Colors.redAccent),
-                      ),
+                      child: Text(_errorMessage!,
+                          style: const TextStyle(color: Colors.redAccent)),
                     ),
                   SizedBox(
                     width: double.infinity,
@@ -197,25 +189,17 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
                         backgroundColor: Colors.orange,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       child: _isLoading
                           ? const SizedBox(
                               height: 24,
                               width: 24,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'ENTRA',
+                                  strokeWidth: 2, color: Colors.white))
+                          : const Text('ENTRA',
                               style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                                  fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

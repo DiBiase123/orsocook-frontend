@@ -1,9 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:universal_html/html.dart' as html;
 import 'package:orsocook/config.dart';
 import 'package:orsocook/services/auth_modules/storage/auth_storage.dart';
 import 'package:orsocook/services/webdocuments/webdocuments_service.dart';
+import 'package:orsocook/screens/webdocuments/webdocuments_dashboard.dart';
 
 class WebDocumentsList extends StatefulWidget {
   const WebDocumentsList({super.key});
@@ -49,6 +50,20 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
     }
   }
 
+  Future<bool> _isAdmin() async {
+    final authData = await _authStorage.loadAuthData();
+    if (authData == null) return false;
+    final parts = authData.token.split('.');
+    if (parts.length == 3) {
+      final payload = parts[1];
+      final normalized = base64.normalize(payload);
+      final decoded = utf8.decode(base64.decode(normalized));
+      final payloadMap = jsonDecode(decoded);
+      return payloadMap['role'] == 'ADMIN';
+    }
+    return false;
+  }
+
   Future<String> _getPdfUrl(Map<String, dynamic> doc,
       {bool download = false}) async {
     final authData = await _authStorage.loadAuthData();
@@ -63,16 +78,17 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
     if (!mounted) return;
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, webOnlyWindowName: '_blank');
+      await launchUrl(uri, webOnlyWindowName: 'pdf-preview');
     }
   }
 
   Future<void> _downloadPdf(Map<String, dynamic> doc) async {
     final url = await _getPdfUrl(doc, download: true);
     if (!mounted) return;
-    html.AnchorElement(href: url)
-      ..setAttribute('download', doc['fileName'] ?? 'document.pdf')
-      ..click();
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   String _formatDate(String dateStr) {
@@ -92,6 +108,26 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
         backgroundColor: const Color(0xFF16213E),
         title: const Text('WebDocuments'),
         centerTitle: true,
+        actions: [
+          FutureBuilder<bool>(
+            future: _isAdmin(),
+            builder: (context, snapshot) {
+              if (snapshot.data == true) {
+                return IconButton(
+                  icon: const Icon(Icons.dashboard),
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                          builder: (_) => const WebDocumentsDashboard()),
+                    );
+                  },
+                  tooltip: 'Dashboard',
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(

@@ -66,7 +66,7 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
     if (!mounted) return;
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, webOnlyWindowName: '_blank');
+      await launchUrl(uri, webOnlyWindowName: 'pdf-preview');
     }
   }
 
@@ -75,7 +75,7 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
     if (!mounted) return;
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, webOnlyWindowName: '_blank');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
