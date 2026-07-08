@@ -300,7 +300,11 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${_formatDate(doc['documentDate'] ?? '')} - ${doc['ente'] ?? ''}',
+                                  'Ente: ${doc['ente'] ?? ''}',
+                                  style: const TextStyle(color: Colors.white54),
+                                ),
+                                Text(
+                                  'Data: ${_formatDate(doc['documentDate'] ?? '')}',
                                   style: const TextStyle(color: Colors.white54),
                                 ),
                                 Text(
