@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:orsocook/config.dart';
 import 'package:orsocook/services/auth_modules/storage/auth_storage.dart';
 import 'package:orsocook/services/webdocuments/webdocuments_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class WebDocumentsList extends StatefulWidget {
   const WebDocumentsList({super.key});
@@ -48,25 +48,29 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
     }
   }
 
-  Future<void> _openDocument(String id) async {
-    try {
-      final doc = await _service.getDocumentById(id);
-      final authData = await _authStorage.loadAuthData();
-      final baseUrl = Config.buildUrl();
+  Future<String> _getPdfUrl(Map<String, dynamic> doc,
+      {bool download = false}) async {
+    final authData = await _authStorage.loadAuthData();
+    final baseUrl = Config.buildUrl();
+    final url =
+        '$baseUrl/api/webdocuments/download/${doc['fileName']}?token=${authData?.token ?? ''}';
+    return download ? '$url&download=true' : url;
+  }
 
-      final url = Uri.parse(
-          '$baseUrl/api/webdocuments/download/${doc['fileName']}?token=${authData?.token ?? ''}');
-
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, webOnlyWindowName: '_blank');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Errore nell\'apertura del documento')),
-        );
-      }
+  Future<void> _openPdf(Map<String, dynamic> doc) async {
+    final url = await _getPdfUrl(doc);
+    if (!mounted) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, webOnlyWindowName: '_blank');
     }
+  }
+
+  Future<void> _downloadPdf(Map<String, dynamic> doc) async {
+    final url = await _getPdfUrl(doc, download: true);
+    if (!mounted) return;
+    final uri = Uri.parse(url);
+    await launchUrl(uri, webOnlyWindowName: '_blank');
   }
 
   String _formatDate(String dateStr) {
@@ -113,49 +117,54 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
                         style: TextStyle(color: Colors.white54, fontSize: 16),
                       ),
                     )
-                  : SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: DataTable(
-                          headingRowColor: WidgetStateProperty.all(
-                            Colors.white.withAlpha(15),
-                          ),
-                          headingTextStyle: const TextStyle(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                          dataTextStyle: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                          ),
-                          columns: const [
-                            DataColumn(label: Text('Descrizione')),
-                            DataColumn(label: Text('Data')),
-                            DataColumn(label: Text('Ente')),
-                          ],
-                          rows: _documents.map((doc) {
-                            return DataRow(
-                              onSelectChanged: (_) => _openDocument(doc['id']),
-                              cells: [
-                                DataCell(
-                                  SizedBox(
-                                    width: 250,
-                                    child: Text(
-                                      doc['description'] ?? '',
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _documents.length,
+                      itemBuilder: (context, index) {
+                        final doc = _documents[index];
+                        return Card(
+                          color: Colors.white.withAlpha(15),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            title: Text(
+                              'Nome file: ${doc['fileName'] ?? ''}',
+                              style: const TextStyle(
+                                  color: Colors.amber, fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Descrizione: ${doc['description'] ?? ''}',
+                                  style: const TextStyle(color: Colors.white),
                                 ),
-                                DataCell(Text(
-                                    _formatDate(doc['documentDate'] ?? ''))),
-                                DataCell(Text(doc['ente'] ?? '')),
+                                Text(
+                                  'Ente: ${doc['ente'] ?? ''} - ${_formatDate(doc['documentDate'] ?? '')}',
+                                  style: const TextStyle(color: Colors.white54),
+                                ),
                               ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.visibility,
+                                      color: Colors.cyanAccent),
+                                  onPressed: () => _openPdf(doc),
+                                  tooltip: 'Anteprima',
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.download,
+                                      color: Colors.greenAccent),
+                                  onPressed: () => _downloadPdf(doc),
+                                  tooltip: 'Download',
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
     );
   }

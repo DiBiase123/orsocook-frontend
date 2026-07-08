@@ -1,14 +1,19 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:orsocook/config.dart';
 import 'package:orsocook/services/auth_modules/storage/auth_storage.dart';
 
 class WebDocumentsService {
-  final String baseUrl;
+  final Dio _dio;
   final AuthStorage _authStorage;
 
   WebDocumentsService({String? baseUrl})
-      : baseUrl = baseUrl ?? Config.buildUrl(),
+      : _dio = Dio(BaseOptions(
+          baseUrl: baseUrl ?? Config.buildUrl(''),
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+        )),
         _authStorage = AuthStorage();
 
   Future<Map<String, String>> _getHeaders() async {
@@ -21,35 +26,41 @@ class WebDocumentsService {
 
   // GET - Lista documenti
   Future<List<dynamic>> getDocuments() async {
-    final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/webdocuments'),
-      headers: headers,
-    );
+    try {
+      final response = await _dio.get(
+        '/api/webdocuments',
+        options: Options(headers: await _getHeaders()),
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['data'] ?? [];
+      if (response.data['success'] == true) {
+        return response.data['data'] ?? [];
+      }
+      throw Exception('Errore nel caricamento documenti');
+    } catch (e) {
+      debugPrint('❌ getDocuments error: $e');
+      throw Exception('Errore nel caricamento documenti');
     }
-    throw Exception('Errore nel caricamento documenti');
   }
 
   // GET - Singolo documento
   Future<Map<String, dynamic>> getDocumentById(String id) async {
-    final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/webdocuments/$id'),
-      headers: headers,
-    );
+    try {
+      final response = await _dio.get(
+        '/api/webdocuments/$id',
+        options: Options(headers: await _getHeaders()),
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['data'];
+      if (response.data['success'] == true) {
+        return response.data['data'];
+      }
+      throw Exception('Documento non trovato');
+    } catch (e) {
+      debugPrint('❌ getDocumentById error: $e');
+      throw Exception('Documento non trovato');
     }
-    throw Exception('Documento non trovato');
   }
 
-  // POST - Upload documento (base64)
+  // POST - Upload documento (base64 via Dio)
   Future<Map<String, dynamic>> createDocument({
     required String description,
     required String documentDate,
@@ -57,27 +68,29 @@ class WebDocumentsService {
     required List<int> fileBytes,
     required String fileName,
   }) async {
-    final headers = await _getHeaders();
-    final body = jsonEncode({
-      'description': description,
-      'documentDate': documentDate,
-      'ente': ente,
-      'fileName': fileName,
-      'fileData': base64.encode(fileBytes),
-    });
+    try {
+      final headers = await _getHeaders();
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/webdocuments'),
-      headers: headers,
-      body: body,
-    );
+      final response = await _dio.post(
+        '/api/webdocuments',
+        data: {
+          'description': description,
+          'documentDate': documentDate,
+          'ente': ente,
+          'fileName': fileName,
+          'fileData': base64.encode(fileBytes),
+        },
+        options: Options(headers: headers),
+      );
 
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      return data['data'];
+      if (response.data['success'] == true) {
+        return response.data['data'];
+      }
+      throw Exception(response.data['message'] ?? 'Errore nel caricamento');
+    } catch (e) {
+      debugPrint('❌ createDocument error: $e');
+      throw Exception('Errore nel caricamento documento');
     }
-    throw Exception(
-        'Errore nel caricamento documento: ${response.statusCode} ${response.body}');
   }
 
   // PUT - Modifica documento
@@ -87,32 +100,42 @@ class WebDocumentsService {
     String? documentDate,
     String? ente,
   }) async {
-    final headers = await _getHeaders();
-    final body = <String, dynamic>{};
-    if (description != null) body['description'] = description;
-    if (documentDate != null) body['documentDate'] = documentDate;
-    if (ente != null) body['ente'] = ente;
+    try {
+      final headers = await _getHeaders();
+      final body = <String, dynamic>{};
+      if (description != null) body['description'] = description;
+      if (documentDate != null) body['documentDate'] = documentDate;
+      if (ente != null) body['ente'] = ente;
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/api/webdocuments/$id'),
-      headers: headers,
-      body: jsonEncode(body),
-    );
+      final response = await _dio.put(
+        '/api/webdocuments/$id',
+        data: body,
+        options: Options(headers: headers),
+      );
 
-    if (response.statusCode != 200) {
+      if (response.data['success'] != true) {
+        throw Exception('Errore nella modifica documento');
+      }
+    } catch (e) {
+      debugPrint('❌ updateDocument error: $e');
       throw Exception('Errore nella modifica documento');
     }
   }
 
   // DELETE - Elimina documento
   Future<void> deleteDocument(String id) async {
-    final headers = await _getHeaders();
-    final response = await http.delete(
-      Uri.parse('$baseUrl/api/webdocuments/$id'),
-      headers: headers,
-    );
+    try {
+      final headers = await _getHeaders();
+      final response = await _dio.delete(
+        '/api/webdocuments/$id',
+        options: Options(headers: headers),
+      );
 
-    if (response.statusCode != 200) {
+      if (response.data['success'] != true) {
+        throw Exception('Errore nell\'eliminazione documento');
+      }
+    } catch (e) {
+      debugPrint('❌ deleteDocument error: $e');
       throw Exception('Errore nell\'eliminazione documento');
     }
   }

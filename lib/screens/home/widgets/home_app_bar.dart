@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/home/widgets/avatar_buttons.dart';
 import 'package:orsocook/screens/home/widgets/recipe_search_bar.dart';
@@ -74,11 +75,12 @@ class HomeAppBar extends StatelessWidget {
                         controller: searchController,
                         onSearchChanged: onSearchChanged,
                         compact: true,
-                        // backgroundColor: Colors.white,  // RIMOSSO
                       ),
                     ),
                     SizedBox(width: gap),
                     _buildAddButton(iconSize),
+                    SizedBox(width: gap * 0.5),
+                    _buildWebDocumentsButton(iconSize, context),
                     SizedBox(width: gap * 0.5),
                     _buildThemeToggleButton(iconSize, themeProvider),
                     SizedBox(width: gap * 0.5),
@@ -99,6 +101,8 @@ class HomeAppBar extends StatelessWidget {
                           const Spacer(),
                           _buildAddButton(iconSize),
                           SizedBox(width: gap * 0.5),
+                          _buildWebDocumentsButton(iconSize, context),
+                          SizedBox(width: gap * 0.5),
                           _buildThemeToggleButton(iconSize, themeProvider),
                           SizedBox(width: gap * 0.5),
                           _buildAvatar(avatarSize, iconSize),
@@ -112,7 +116,6 @@ class HomeAppBar extends StatelessWidget {
                         controller: searchController,
                         onSearchChanged: onSearchChanged,
                         compact: false,
-                        // backgroundColor: Colors.white,  // RIMOSSO
                       ),
                     ),
                   ],
@@ -149,6 +152,19 @@ class HomeAppBar extends StatelessWidget {
       icon: Icon(Icons.add_circle_outline, size: size),
       onPressed: onCreateRecipeTap,
       tooltip: 'Crea ricetta',
+      color: Colors.white,
+      padding: EdgeInsets.zero,
+      constraints: BoxConstraints(minWidth: size, minHeight: size),
+    );
+  }
+
+  Widget _buildWebDocumentsButton(double size, BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.folder, size: size),
+      onPressed: () {
+        context.go('/webdocuments');
+      },
+      tooltip: 'WebDocuments',
       color: Colors.white,
       padding: EdgeInsets.zero,
       constraints: BoxConstraints(minWidth: size, minHeight: size),

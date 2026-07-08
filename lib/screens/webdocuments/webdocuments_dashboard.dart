@@ -1,8 +1,12 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:universal_html/html.dart' as html;
+import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:orsocook/config.dart';
+import 'package:orsocook/services/auth_modules/storage/auth_storage.dart';
 import 'package:orsocook/services/webdocuments/webdocuments_service.dart';
+import 'package:orsocook/screens/webdocuments/webdocuments_login.dart';
+import 'package:orsocook/screens/webdocuments/webdocuments_list.dart';
 
 class WebDocumentsDashboard extends StatefulWidget {
   const WebDocumentsDashboard({super.key});
@@ -13,6 +17,7 @@ class WebDocumentsDashboard extends StatefulWidget {
 
 class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
   final WebDocumentsService _service = WebDocumentsService();
+  final AuthStorage _authStorage = AuthStorage();
   List<dynamic> _documents = [];
   bool _isLoading = true;
   String? _error;
@@ -47,35 +52,44 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
     }
   }
 
+  Future<String> _getPdfUrl(Map<String, dynamic> doc,
+      {bool download = false}) async {
+    final authData = await _authStorage.loadAuthData();
+    final baseUrl = Config.buildUrl();
+    final url =
+        '$baseUrl/api/webdocuments/download/${doc['fileName']}?token=${authData?.token ?? ''}';
+    return download ? '$url&download=true' : url;
+  }
+
+  Future<void> _openPdf(Map<String, dynamic> doc) async {
+    final url = await _getPdfUrl(doc);
+    if (!mounted) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, webOnlyWindowName: '_blank');
+    }
+  }
+
+  Future<void> _downloadPdf(Map<String, dynamic> doc) async {
+    final url = await _getPdfUrl(doc, download: true);
+    if (!mounted) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, webOnlyWindowName: '_blank');
+    }
+  }
+
   Future<void> _uploadDocument() async {
-    // Pick PDF via input HTML
-    final fileInput = html.FileUploadInputElement()
-      ..accept = 'application/pdf'
-      ..click();
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      withData: true,
+    );
 
-    final completer = Completer<html.File?>();
-    fileInput.onChange.listen((event) {
-      final files = fileInput.files;
-      if (files != null && files.isNotEmpty) {
-        completer.complete(files.first);
-      } else {
-        completer.complete(null);
-      }
-    });
+    if (result == null || result.files.isEmpty) return;
 
-    final selectedFile = await completer.future;
-    if (selectedFile == null) return;
-
-    final reader = html.FileReader();
-    reader.readAsArrayBuffer(selectedFile);
-
-    final loadCompleter = Completer<Uint8List>();
-    reader.onLoad.listen((event) {
-      final result = reader.result as List<int>;
-      loadCompleter.complete(Uint8List.fromList(result));
-    });
-
-    final bytes = await loadCompleter.future;
+    final file = result.files.first;
+    if (file.bytes == null) return;
 
     if (!mounted) return;
 
@@ -91,8 +105,8 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
         description: formResult['description']!,
         documentDate: formResult['documentDate']!,
         ente: formResult['ente']!,
-        fileBytes: bytes,
-        fileName: selectedFile.name,
+        fileBytes: file.bytes!,
+        fileName: file.name,
       );
 
       if (mounted) {
@@ -104,7 +118,7 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Errore nel caricamento')),
+          SnackBar(content: Text('Errore nel caricamento: $e')),
         );
       }
     }
@@ -204,6 +218,24 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const WebDocumentsList()),
+              );
+            },
+            tooltip: 'Vai alla lista',
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const WebDocumentsLogin()),
+              );
+            },
+            tooltip: 'Logout',
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
             onPressed: _uploadDocument,
             tooltip: 'Carica documento',
@@ -264,22 +296,46 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
                               doc['description'] ?? '',
                               style: const TextStyle(color: Colors.white),
                             ),
-                            subtitle: Text(
-                              '${_formatDate(doc['documentDate'] ?? '')} - ${doc['ente'] ?? ''}',
-                              style: const TextStyle(color: Colors.white54),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${_formatDate(doc['documentDate'] ?? '')} - ${doc['ente'] ?? ''}',
+                                  style: const TextStyle(color: Colors.white54),
+                                ),
+                                Text(
+                                  'File: ${doc['fileName'] ?? ''}',
+                                  style: const TextStyle(
+                                      color: Colors.amber, fontSize: 12),
+                                ),
+                              ],
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
+                                  icon: const Icon(Icons.visibility,
+                                      color: Colors.cyanAccent),
+                                  onPressed: () => _openPdf(doc),
+                                  tooltip: 'Anteprima',
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.download,
+                                      color: Colors.greenAccent),
+                                  onPressed: () => _downloadPdf(doc),
+                                  tooltip: 'Download',
+                                ),
+                                IconButton(
                                   icon: const Icon(Icons.edit,
                                       color: Colors.orange),
                                   onPressed: () => _editDocument(doc),
+                                  tooltip: 'Modifica',
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.delete,
                                       color: Colors.redAccent),
                                   onPressed: () => _deleteDocument(doc),
+                                  tooltip: 'Elimina',
                                 ),
                               ],
                             ),
