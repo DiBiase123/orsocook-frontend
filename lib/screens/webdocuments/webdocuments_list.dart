@@ -65,16 +65,19 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
   }
 
   Future<String> _getPdfUrl(Map<String, dynamic> doc,
-      {bool download = false}) async {
+      {bool download = false, bool preview = false}) async {
     final authData = await _authStorage.loadAuthData();
     final baseUrl = Config.buildUrl();
     final url =
         '$baseUrl/api/webdocuments/download/${doc['fileName']}?token=${authData?.token ?? ''}';
-    return download ? '$url&download=true' : url;
+    if (download) return '$url&download=true';
+    if (preview)
+      return 'https://docs.google.com/viewer?url=${Uri.encodeComponent(url)}&embedded=true';
+    return url;
   }
 
   Future<void> _openPdf(Map<String, dynamic> doc) async {
-    final url = await _getPdfUrl(doc);
+    final url = await _getPdfUrl(doc, preview: true);
     if (!mounted) return;
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
