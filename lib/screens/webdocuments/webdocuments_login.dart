@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/webdocuments/webdocuments_list.dart';
+import 'package:orsocook/screens/webdocuments/webdocuments_dashboard.dart';
 import 'package:provider/provider.dart';
 
 class WebDocumentsLogin extends StatefulWidget {
@@ -42,8 +43,13 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
       if (!mounted) return;
 
       if (response.success) {
+        final userRole = response.data?['user']?['role'] ?? 'USER';
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const WebDocumentsList()),
+          MaterialPageRoute(
+            builder: (_) => userRole == 'ADMIN'
+                ? const WebDocumentsDashboard()
+                : const WebDocumentsList(),
+          ),
         );
       } else {
         setState(() {
@@ -77,7 +83,6 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Icona lucchetto
                   const Icon(
                     Icons.lock_outline,
                     size: 64,
@@ -101,8 +106,6 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
                     ),
                   ),
                   const SizedBox(height: 40),
-
-                  // Campo username
                   TextFormField(
                     controller: _usernameController,
                     style: const TextStyle(color: Colors.white),
@@ -130,8 +133,6 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
                     },
                   ),
                   const SizedBox(height: 16),
-
-                  // Campo password
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
@@ -160,8 +161,6 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
                     },
                   ),
                   const SizedBox(height: 24),
-
-                  // Messaggio errore
                   if (_errorMessage != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
@@ -170,8 +169,6 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
                         style: const TextStyle(color: Colors.redAccent),
                       ),
                     ),
-
-                  // Bottone Entra
                   SizedBox(
                     width: double.infinity,
                     height: 50,
