@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:orsocook/services/auth_service.dart';
 import 'package:orsocook/screens/webdocuments/webdocuments_list.dart';
@@ -35,6 +36,11 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
 
     try {
       final authService = context.read<AuthService>();
+
+      // Forza logout per ottenere un token fresco con ruolo
+      await authService.logout();
+      await Future.delayed(const Duration(milliseconds: 300));
+
       final response = await authService.login(
         _usernameController.text.trim(),
         _passwordController.text,
@@ -43,7 +49,20 @@ class _WebDocumentsLoginState extends State<WebDocumentsLogin> {
       if (!mounted) return;
 
       if (response.success) {
-        final userRole = response.data?['user']?['role'] ?? 'USER';
+        // Leggi ruolo dal token JWT (ora include role)
+        final tokenStr = response.data?['token'] as String?;
+        String userRole = 'USER';
+        if (tokenStr != null) {
+          final parts = tokenStr.split('.');
+          if (parts.length == 3) {
+            final payload = parts[1];
+            final normalized = base64.normalize(payload);
+            final decoded = utf8.decode(base64.decode(normalized));
+            final payloadMap = jsonDecode(decoded);
+            userRole = payloadMap['role'] ?? 'USER';
+          }
+        }
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => userRole == 'ADMIN'

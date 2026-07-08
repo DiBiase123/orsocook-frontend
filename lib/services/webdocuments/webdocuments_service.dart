@@ -58,12 +58,14 @@ class WebDocumentsService {
     required String fileName,
   }) async {
     final authData = await _authStorage.loadAuthData();
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/api/webdocuments'),
-    );
+    if (authData == null) {
+      throw Exception('Utente non autenticato');
+    }
 
-    request.headers['Authorization'] = 'Bearer ${authData!.token}';
+    final uri = Uri.parse('$baseUrl/api/webdocuments');
+    final request = http.MultipartRequest('POST', uri);
+
+    request.headers['Authorization'] = 'Bearer ${authData.token}';
     request.fields['description'] = description;
     request.fields['documentDate'] = documentDate;
     request.fields['ente'] = ente;
@@ -71,14 +73,15 @@ class WebDocumentsService {
       http.MultipartFile.fromBytes('file', fileBytes, filename: fileName),
     );
 
-    final response = await request.send();
-    final responseBody = await response.stream.bytesToString();
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 201) {
-      final data = jsonDecode(responseBody);
+      final data = jsonDecode(response.body);
       return data['data'];
     }
-    throw Exception('Errore nel caricamento documento');
+    throw Exception(
+        'Errore nel caricamento documento: ${response.statusCode} ${response.body}');
   }
 
   // PUT - Modifica documento
