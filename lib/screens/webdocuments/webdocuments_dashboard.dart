@@ -118,7 +118,7 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore nel caricamento: $e')),
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
         );
       }
     }
@@ -251,7 +251,7 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(_error!,
+                      SelectableText(_error!,
                           style: const TextStyle(color: Colors.redAccent)),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -269,7 +269,7 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
                           const Icon(Icons.folder_open,
                               size: 64, color: Colors.white54),
                           const SizedBox(height: 16),
-                          const Text(
+                          const SelectableText(
                             'Nessun documento',
                             style:
                                 TextStyle(color: Colors.white54, fontSize: 16),
@@ -292,22 +292,22 @@ class _WebDocumentsDashboardState extends State<WebDocumentsDashboard> {
                           color: Colors.white.withAlpha(15),
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
-                            title: Text(
+                            title: SelectableText(
                               doc['description'] ?? '',
                               style: const TextStyle(color: Colors.white),
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                SelectableText(
                                   'Ente: ${doc['ente'] ?? ''}',
                                   style: const TextStyle(color: Colors.white54),
                                 ),
-                                Text(
+                                SelectableText(
                                   'Data: ${_formatDate(doc['documentDate'] ?? '')}',
                                   style: const TextStyle(color: Colors.white54),
                                 ),
-                                Text(
+                                SelectableText(
                                   'File: ${doc['fileName'] ?? ''}',
                                   style: const TextStyle(
                                       color: Colors.amber, fontSize: 12),

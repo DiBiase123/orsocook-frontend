@@ -150,7 +150,7 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
                 )
               : _documents.isEmpty
                   ? const Center(
-                      child: Text(
+                      child: SelectableText(
                         'Nessun documento',
                         style: TextStyle(color: Colors.white54, fontSize: 16),
                       ),
@@ -164,24 +164,23 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
                           color: Colors.white.withAlpha(15),
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
-                            title: Text(
+                            title: SelectableText(
                               'Nome file: ${doc['fileName'] ?? ''}',
                               style: const TextStyle(
                                   color: Colors.amber, fontSize: 14),
-                              overflow: TextOverflow.ellipsis,
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                SelectableText(
                                   'Descrizione: ${doc['description'] ?? ''}',
                                   style: const TextStyle(color: Colors.white),
                                 ),
-                                Text(
+                                SelectableText(
                                   'Ente: ${doc['ente'] ?? ''}',
                                   style: const TextStyle(color: Colors.white54),
                                 ),
-                                Text(
+                                SelectableText(
                                   'Data: ${_formatDate(doc['documentDate'] ?? '')}',
                                   style: const TextStyle(color: Colors.white54),
                                 ),
