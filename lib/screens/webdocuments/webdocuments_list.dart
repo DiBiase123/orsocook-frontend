@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:orsocook/config.dart';
+import 'package:orsocook/services/auth_modules/storage/auth_storage.dart';
 import 'package:orsocook/services/webdocuments/webdocuments_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class WebDocumentsList extends StatefulWidget {
   const WebDocumentsList({super.key});
@@ -10,6 +13,7 @@ class WebDocumentsList extends StatefulWidget {
 
 class _WebDocumentsListState extends State<WebDocumentsList> {
   final WebDocumentsService _service = WebDocumentsService();
+  final AuthStorage _authStorage = AuthStorage();
   List<dynamic> _documents = [];
   bool _isLoading = true;
   String? _error;
@@ -40,6 +44,27 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
           _error = 'Errore nel caricamento documenti';
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  Future<void> _openDocument(String id) async {
+    try {
+      final doc = await _service.getDocumentById(id);
+      final authData = await _authStorage.loadAuthData();
+      final baseUrl = Config.buildUrl();
+
+      final url = Uri.parse(
+          '$baseUrl/api/webdocuments/download/${doc['fileName']}?token=${authData?.token ?? ''}');
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, webOnlyWindowName: '_blank');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Errore nell\'apertura del documento')),
+        );
       }
     }
   }
@@ -112,9 +137,7 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
                           ],
                           rows: _documents.map((doc) {
                             return DataRow(
-                              onSelectChanged: (_) {
-                                // TODO: apri documento
-                              },
+                              onSelectChanged: (_) => _openDocument(doc['id']),
                               cells: [
                                 DataCell(
                                   SizedBox(
