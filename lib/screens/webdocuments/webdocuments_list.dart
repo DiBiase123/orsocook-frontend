@@ -89,12 +89,11 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
   Future<void> _downloadPdf(Map<String, dynamic> doc) async {
     final url = await _getPdfUrl(doc, download: true);
     if (!mounted) return;
-    final anchor = html.AnchorElement(href: url)
-      ..setAttribute('download', doc['fileName'] ?? 'document.pdf')
+    final iframe = html.IFrameElement()
+      ..src = url
       ..style.display = 'none';
-    html.document.body?.append(anchor);
-    anchor.click();
-    anchor.remove();
+    html.document.body?.append(iframe);
+    Future.delayed(const Duration(seconds: 5), () => iframe.remove());
   }
 
   String _formatDate(String dateStr) {

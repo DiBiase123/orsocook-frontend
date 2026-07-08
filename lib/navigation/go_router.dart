@@ -12,8 +12,8 @@ import 'package:orsocook/screens/legal/privacy_policy.dart';
 import 'package:orsocook/screens/legal/cookie_policy.dart';
 import 'package:orsocook/screens/webdocuments/webdocuments_login.dart';
 import 'package:orsocook/screens/webdocuments/webdocuments_list.dart';
-import 'package:orsocook/models/recipe.dart';
 import 'package:orsocook/screens/webdocuments/webdocuments_dashboard.dart';
+import 'package:orsocook/models/recipe.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -25,7 +25,6 @@ final goRouter = GoRouter(
       path: '/',
       redirect: (context, state) => '/home',
     ),
-    // Reset password - screen (arriva da email)
     GoRoute(
       path: '/reset-password',
       name: 'reset-password',
@@ -39,7 +38,6 @@ final goRouter = GoRouter(
         return ResetPasswordScreen(token: token);
       },
     ),
-    // Verify email - screen (arriva da email)
     GoRoute(
       path: '/verify-email',
       name: 'verify-email',
@@ -48,19 +46,16 @@ final goRouter = GoRouter(
         return VerifyEmailScreen(token: token);
       },
     ),
-    // Home
     GoRoute(
       path: '/home',
       name: 'home',
       builder: (context, state) => const HomeScreen(),
     ),
-    // Profile
     GoRoute(
       path: '/profile',
       name: 'profile',
       builder: (context, state) => const ProfileScreen(),
     ),
-    // Recipe detail
     GoRoute(
       path: '/recipe/detail/:id',
       name: 'recipe-detail',
@@ -74,13 +69,11 @@ final goRouter = GoRouter(
         return DetailRecipeScreen(recipeId: id);
       },
     ),
-    // Create recipe
     GoRoute(
       path: '/create-recipe',
       name: 'create-recipe',
       builder: (context, state) => const CreateRecipeScreen(),
     ),
-    // Edit recipe
     GoRoute(
       path: '/recipe/edit',
       name: 'recipe-edit',
@@ -94,7 +87,6 @@ final goRouter = GoRouter(
         return EditRecipeScreen(recipe: recipe);
       },
     ),
-    // Category
     GoRoute(
       path: '/category/:categorySlug',
       name: 'category',
@@ -108,7 +100,6 @@ final goRouter = GoRouter(
         return CategoryRecipesScreen(categorySlug: categorySlug);
       },
     ),
-    // Legal
     GoRoute(
       path: '/privacy-policy',
       name: 'privacy-policy',
@@ -119,7 +110,6 @@ final goRouter = GoRouter(
       name: 'cookie-policy',
       builder: (context, state) => const CookiePolicyScreen(),
     ),
-    // WebDocuments
     GoRoute(
       path: '/webdocuments',
       name: 'webdocuments',
