@@ -49,7 +49,7 @@ class WebDocumentsService {
     throw Exception('Documento non trovato');
   }
 
-  // POST - Upload documento
+  // POST - Upload documento (base64)
   Future<Map<String, dynamic>> createDocument({
     required String description,
     required String documentDate,
@@ -57,24 +57,20 @@ class WebDocumentsService {
     required List<int> fileBytes,
     required String fileName,
   }) async {
-    final authData = await _authStorage.loadAuthData();
-    if (authData == null) {
-      throw Exception('Utente non autenticato');
-    }
+    final headers = await _getHeaders();
+    final body = jsonEncode({
+      'description': description,
+      'documentDate': documentDate,
+      'ente': ente,
+      'fileName': fileName,
+      'fileData': base64.encode(fileBytes),
+    });
 
-    final uri = Uri.parse('$baseUrl/api/webdocuments');
-    final request = http.MultipartRequest('POST', uri);
-
-    request.headers['Authorization'] = 'Bearer ${authData.token}';
-    request.fields['description'] = description;
-    request.fields['documentDate'] = documentDate;
-    request.fields['ente'] = ente;
-    request.files.add(
-      http.MultipartFile.fromBytes('file', fileBytes, filename: fileName),
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/webdocuments'),
+      headers: headers,
+      body: body,
     );
-
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
