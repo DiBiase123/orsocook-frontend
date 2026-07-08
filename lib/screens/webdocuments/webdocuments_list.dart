@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:universal_html/html.dart' as html;
 import 'package:orsocook/config.dart';
 import 'package:orsocook/services/auth_modules/storage/auth_storage.dart';
 import 'package:orsocook/services/webdocuments/webdocuments_service.dart';
@@ -88,10 +89,12 @@ class _WebDocumentsListState extends State<WebDocumentsList> {
   Future<void> _downloadPdf(Map<String, dynamic> doc) async {
     final url = await _getPdfUrl(doc, download: true);
     if (!mounted) return;
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', doc['fileName'] ?? 'document.pdf')
+      ..style.display = 'none';
+    html.document.body?.append(anchor);
+    anchor.click();
+    anchor.remove();
   }
 
   String _formatDate(String dateStr) {
