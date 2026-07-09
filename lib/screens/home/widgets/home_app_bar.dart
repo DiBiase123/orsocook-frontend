@@ -80,8 +80,6 @@ class HomeAppBar extends StatelessWidget {
                     SizedBox(width: gap),
                     _buildAddButton(iconSize),
                     SizedBox(width: gap * 0.5),
-                    _buildWebDocumentsButton(iconSize, context),
-                    SizedBox(width: gap * 0.5),
                     _buildThemeToggleButton(iconSize, themeProvider),
                     SizedBox(width: gap * 0.5),
                     _buildAvatar(avatarSize, iconSize),
@@ -100,8 +98,6 @@ class HomeAppBar extends StatelessWidget {
                           _buildTitle(titleSize),
                           const Spacer(),
                           _buildAddButton(iconSize),
-                          SizedBox(width: gap * 0.5),
-                          _buildWebDocumentsButton(iconSize, context),
                           SizedBox(width: gap * 0.5),
                           _buildThemeToggleButton(iconSize, themeProvider),
                           SizedBox(width: gap * 0.5),
@@ -152,19 +148,6 @@ class HomeAppBar extends StatelessWidget {
       icon: Icon(Icons.add_circle_outline, size: size),
       onPressed: onCreateRecipeTap,
       tooltip: 'Crea ricetta',
-      color: Colors.white,
-      padding: EdgeInsets.zero,
-      constraints: BoxConstraints(minWidth: size, minHeight: size),
-    );
-  }
-
-  Widget _buildWebDocumentsButton(double size, BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.folder, size: size),
-      onPressed: () {
-        context.go('/webdocuments');
-      },
-      tooltip: 'WebDocuments',
       color: Colors.white,
       padding: EdgeInsets.zero,
       constraints: BoxConstraints(minWidth: size, minHeight: size),

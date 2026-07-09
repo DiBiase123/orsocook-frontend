@@ -10,9 +10,6 @@ import 'package:orsocook/screens/recipe/edit_recipe_screen.dart';
 import 'package:orsocook/screens/category/category_recipes_screen.dart';
 import 'package:orsocook/screens/legal/privacy_policy.dart';
 import 'package:orsocook/screens/legal/cookie_policy.dart';
-import 'package:orsocook/screens/webdocuments/webdocuments_login.dart';
-import 'package:orsocook/screens/webdocuments/webdocuments_list.dart';
-import 'package:orsocook/screens/webdocuments/webdocuments_dashboard.dart';
 import 'package:orsocook/models/recipe.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -109,21 +106,6 @@ final goRouter = GoRouter(
       path: '/cookie-policy',
       name: 'cookie-policy',
       builder: (context, state) => const CookiePolicyScreen(),
-    ),
-    GoRoute(
-      path: '/webdocuments',
-      name: 'webdocuments',
-      builder: (context, state) => const WebDocumentsLogin(),
-    ),
-    GoRoute(
-      path: '/webdocuments/list',
-      name: 'webdocuments-list',
-      builder: (context, state) => const WebDocumentsList(),
-    ),
-    GoRoute(
-      path: '/webdocuments/dashboard',
-      name: 'webdocuments-dashboard',
-      builder: (context, state) => const WebDocumentsDashboard(),
     ),
   ],
 );
